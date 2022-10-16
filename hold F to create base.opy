@@ -1,6 +1,6 @@
 settings {
     "main": {
-        "description": "[v2.6] chill / kill bases (by shifterest) • TSX53\r\nlast updated: 10/16/2022\r\n\r\nbased on Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n\r\na chill or kill gamemode designed with AFKing in mind.",
+        "description": "[v2.6b1] chill / kill bases (by shifterest) • TSX53\r\nlast updated: 10/16/2022\r\n\r\nbased on Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n\r\na chill or kill gamemode designed with AFKing in mind.",
         "modeName": "hold F to create base"
     },
     "lobby": {
@@ -1071,9 +1071,10 @@ rule " • global HUD":
         if localPlayer.playerPrefs[prefsIndex.baseColor] > 14
         else COLORS[localPlayer.playerPrefs[prefsIndex.baseColor]],
         localPlayer.baseVector,
-        updateEveryTick((((1 - localPlayer.centerOrbRadiusT) ** 3) * localPlayer.cubicBezier)
-        * localPlayer.playerPrefs[prefsIndex.baseRadius]
-        + CENTER_ORB_RADIUS),
+        CENTER_ORB_RADIUS,
+        # (((1 - localPlayer.centerOrbRadiusT) ** 3) * localPlayer.cubicBezier)
+        # * localPlayer.playerPrefs[prefsIndex.baseRadius]
+        # + CENTER_ORB_RADIUS,
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
     # keyboard
@@ -1271,7 +1272,8 @@ rule " • global HUD":
         prefsVect(0.4),
         0.8,
         Clip.NONE,
-        COLORS[localPlayer.playerPrefs[prefsIndex.baseColor]],
+        rainbow()
+        if localPlayer.playerPrefs[prefsIndex.baseColor] > 14 else COLORS[localPlayer.playerPrefs[prefsIndex.baseColor]],
         null,
         ProgressWorldTextReeval.VISIBILITY_POSITION_VALUES_AND_COLOR,
         SpecVisibility.DEFAULT

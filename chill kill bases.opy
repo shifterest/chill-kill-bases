@@ -148,7 +148,7 @@ enum baseVarsI:
     baseInRadiusOfPrev,
     baseModePrev,
     baseSizePrev,
-    basePaddingPrev,
+    baseGapSizePrev,
     basePrefsPrev
 
 
@@ -213,7 +213,7 @@ enum prefsI:
     baseColor,
     baseLock,
     baseSize,
-    basePadding,
+    baseGapSize,
     inBaseGravity,
     inBaseMovementSpeed
 
@@ -651,8 +651,8 @@ rule " • global variables":
         ["base lock", "prevents you from leaving your base", prefsTypeI.boolean],
         ["base size", "the radius of your base", prefsTypeI.numeric, [1, 15, 0.5]],
         [
-            "base padding",
-            "the minimum distance of your base to another's",
+            "base gap size",
+            "the minimum distance between your base and another's",
             prefsTypeI.numeric,
             [0, 5, 0.5]
         ],
@@ -927,8 +927,8 @@ rule " • global variables":
     defaultPrefs[prefsI.baseSize] = createWorkshopSetting(
         float[1:15], "default base preferences", "base radius", 3, prefsI.baseSize
     )
-    defaultPrefs[prefsI.basePadding] = createWorkshopSetting(
-        float[0:5], "default base preferences", "base padding", 0, prefsI.basePadding
+    defaultPrefs[prefsI.baseGapSize] = createWorkshopSetting(
+        float[0:5], "default base preferences", "base gap size", 0, prefsI.baseGapSize
     )
     defaultPrefs[prefsI.inBaseGravity] = createWorkshopSetting(
         int[0:500],
@@ -975,9 +975,9 @@ rule " • player initialization":
                     prefsI.baseSize
                 ]
                 + max(
-                    player.prefs[prefsI.basePadding],
+                    player.prefs[prefsI.baseGapSize],
                     prefsList[playerNameList.index("{}".format(eventPlayer))].prefs[
-                        prefsI.basePadding
+                        prefsI.baseGapSize
                     ]
                 )
                 for player in getAllPlayers()
@@ -2643,7 +2643,7 @@ rule " • base preparation":
                 prefsI.baseSize
             ]
             eventPlayer.baseVars[baseVarsI.baseSizePrev] = eventPlayer.prefs[prefsI.baseSize]
-            eventPlayer.baseVars[baseVarsI.basePaddingPrev] = eventPlayer.prefs[prefsI.basePadding]
+            eventPlayer.baseVars[baseVarsI.baseGapSizePrev] = eventPlayer.prefs[prefsI.baseGapSize]
             eventPlayer.modeVars[modeVarsI.createMode] = true
             async(UpdateAbilities, AsyncBehavior.RESTART)
 
@@ -2663,8 +2663,8 @@ rule " • base creation":
             <= player.prefs[prefsI.baseSize]
             + eventPlayer.prefs[prefsI.baseSize]
             + max(
-                player.prefs[prefsI.basePadding],
-                eventPlayer.prefs[prefsI.basePadding]
+                player.prefs[prefsI.baseGapSize],
+                eventPlayer.prefs[prefsI.baseGapSize]
             )
             for player in getAllPlayers()
         ]
@@ -4397,8 +4397,8 @@ def PrefsInteract():
                 prefsI.baseSize
             ] = eventPlayer.baseVars[baseVarsI.baseSizePrev]
             eventPlayer.prefs[
-                prefsI.basePadding
-            ] = eventPlayer.baseVars[baseVarsI.basePaddingPrev]
+                prefsI.baseGapSize
+            ] = eventPlayer.baseVars[baseVarsI.baseGapSizePrev]
             async(UpdateHero, AsyncBehavior.RESTART)
             ResetCam()
             UpdateHeroOutline()
@@ -4457,7 +4457,7 @@ def PrefsInteract():
                     and player.baseVector
                     and distance(eventPlayer.baseVector, player.baseVector)
                     <= player.prefs[prefsI.baseSize] + eventPlayer.prefs[prefsI.baseSize]
-                    + max(player.prefs[prefsI.basePadding], eventPlayer.prefs[prefsI.basePadding])
+                    + max(player.prefs[prefsI.baseGapSize], eventPlayer.prefs[prefsI.baseGapSize])
                     for player in getAllPlayers()
                 ]
             ):
@@ -4469,23 +4469,23 @@ def PrefsInteract():
                 prefsI.baseSize
             ]
             break
-        case prefsI.basePadding:
+        case prefsI.baseGapSize:
             while any(
                 [
                     player != eventPlayer
                     and player.baseVector
                     and distance(eventPlayer.baseVector, player.baseVector)
                     <= player.prefs[prefsI.baseSize] + eventPlayer.prefs[prefsI.baseSize]
-                    + max(player.prefs[prefsI.basePadding], eventPlayer.prefs[prefsI.basePadding])
+                    + max(player.prefs[prefsI.baseGapSize], eventPlayer.prefs[prefsI.baseGapSize])
                     for player in getAllPlayers()
                 ]
             ):
-                eventPlayer.prefs[prefsI.basePadding] -= PREFS_DATA[prefsI.basePadding][
+                eventPlayer.prefs[prefsI.baseGapSize] -= PREFS_DATA[prefsI.baseGapSize][
                     prefsDataI.parameters
                 ][2]
 
-            eventPlayer.baseVars[baseVarsI.basePaddingPrev] = eventPlayer.prefs[
-                prefsI.basePadding
+            eventPlayer.baseVars[baseVarsI.baseGapSizePrev] = eventPlayer.prefs[
+                prefsI.baseGapSize
             ]
             break
 

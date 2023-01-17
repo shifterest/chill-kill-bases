@@ -1,6 +1,6 @@
 settings {
     "main": {
-        "description": "<FGA5F2F3FF>chill<FGFFFFFFFF> / <FGFF6961FF>kill<FGFFFFFFFF> bases (by shifterest) • <FGFDFD96FF>TSX53<FGFFFFFFFF>\r\n<FGC1E1C1FF>» [v2.11.1] last updated: 12/6/2022<FGFFFFFFFF>\r\n\r\na chill or kill gamemode designed with AFKing in mind.\r\n\r\nbased on:\r\n» Chill Zone Base Creator by AlaskaWolf • <FGFDFD96FF>ARYD2<FGFFFFFFFF>\r\n» Base Wars by Zezombye • <FGFDFD96FF>14WON<FGFFFFFFFF>",
+        "description": "<FGA5F2F3FF>chill<FGFFFFFFFF> / <FGFF6961FF>kill<FGFFFFFFFF> bases (by shifterest) • <FGFDFD96FF>TSX53<FGFFFFFFFF>\r\n<FGC1E1C1FF>» [v2.12] last updated: 1/13/2023<FGFFFFFFFF>\r\n\r\na chill or kill gamemode designed with AFKing in mind.\r\n\r\nbased on:\r\n» Chill Zone Base Creator by AlaskaWolf • <FGFDFD96FF>ARYD2<FGFFFFFFFF>\r\n» Base Wars by Zezombye • <FGFDFD96FF>14WON<FGFFFFFFFF>",
         "modeName": "<FGA5F2F3FF>chill <FGFF6961FF>kill <FGFFFFFFFF>bases"
     },
     "lobby": {
@@ -165,8 +165,8 @@ enum modeVarsI:
 
 
 enum statusVarsI:
-    isAsleepMod,
-    isAsleep,
+    isParalyzedMod,
+    isParalyzed,
     isInvisible
 
 
@@ -186,7 +186,8 @@ enum prefsI:
     customMessage,
     customMessageColor,
     instantRespawn,
-    selfSleep,
+    selfParalyze,
+    paralysisEffect,
     spectatorMode,
     spectateOnAFK,
     smoothSpectatorCam,
@@ -272,6 +273,13 @@ enum baseModesI:
     friendly,
     exclusive,
     arena
+
+
+enum paralysisEffectsI:
+    knockDown,
+    stun,
+    sleep,
+    freeze
 
 
 enum prefsDataI:
@@ -468,12 +476,23 @@ rule " • global variables":
             prefsTypeI.boolean
         ],
         [
-            "self-sleep",
-            "lets you sleep yourself",
+            "self-paralyze",
+            "lets you paralyze yourself",
             prefsTypeI.boolean,
             null,
             null,
             true
+        ],
+        [
+            "paralysis effect",
+            "the status effect to inflict on your hero if paralyzed",
+            prefsTypeI.multipleChoice,
+            [
+                "knock down",
+                "stun",
+                "sleep",
+                "freeze"
+            ]
         ],
         [
             "spectator mode",
@@ -795,6 +814,16 @@ rule " • global variables":
     defaultPrefs[prefsI.instantRespawn] = createWorkshopSetting(
         bool, "default game preferences", "instant respawn", true, prefsI.instantRespawn
     )
+    defaultPrefs[prefsI.selfParalyze] = createWorkshopSetting(
+        bool, "default game preferences", "self-paralyze", true, prefsI.selfParalyze
+    )
+    defaultPrefs[prefsI.paralysisEffect] = createWorkshopSetting(
+        enum["knock down", "stun", "sleep", "freeze"],
+        "default game preferences",
+        "paralysis effect",
+        0,
+        prefsI.paralysisEffect
+    )
     defaultPrefs[prefsI.spectatorMode] = false
     defaultPrefs[prefsI.spectateOnAFK] = createWorkshopSetting(
         float[0:30],
@@ -830,9 +859,6 @@ rule " • global variables":
         "spectator switch timer",
         10,
         prefsI.spectatorSwitchTimer
-    )
-    defaultPrefs[prefsI.selfSleep] = createWorkshopSetting(
-        bool, "default spectator preferences", "self-sleep", true, prefsI.selfSleep
     )
     defaultPrefs[prefsI.heroOutlineColor] = createWorkshopSetting(
         colorsEnumNoRainbow(),
@@ -1154,7 +1180,9 @@ rule " • global HUD":
     # moderator hotkeys
     hudSubheader(
         localPlayer if localPlayer.modeVars[modeVarsI.modMode] else null,
-        "{} • switch player\n{} • sleep / wake up\n{} • kill\nhold {} • teleport to player\nhold {} • teleport player to you\nhold {} • ban until server restart\nhold {} • delete base\n{}".format(
+        "{} • next player\n{} + {} • previous player\n{} • paralyze / unparalyze\n{} • kill\nhold {} • teleport to player\nhold {} • teleport player to you\nhold {} • ban until server restart\nhold {} • delete base\n{}".format(
+            buttonString(Button.JUMP),
+            buttonString(Button.CROUCH),
             buttonString(Button.JUMP),
             buttonString(Button.PRIMARY_FIRE),
             buttonString(Button.SECONDARY_FIRE),
@@ -1275,18 +1303,18 @@ rule " • global HUD":
         HudReeval.VISIBILITY_AND_STRING,
         SpecVisibility.NEVER
     )
-    # self-sleep hotkey
+    # self-paralyze hotkey
     hudSubheader(
         null
         if localPlayer.modeVars[modeVarsI.modMode]
         or localPlayer.modeVars[modeVarsI.keyboardMode]
         or not localPlayer.prefs[prefsI.playerMode]
         or localPlayer.prefs[prefsI.spectatorMode]
-        or not localPlayer.prefs[prefsI.selfSleep]
+        or not localPlayer.prefs[prefsI.selfParalyze]
         else localPlayer,
         "hold {} + {} • {}".format(
             buttonString(Button.CROUCH), buttonString(Button.MELEE),
-            "wake up" if localPlayer.statusVars[statusVarsI.isAsleep] else "sleep"
+            "unparalyze self" if localPlayer.statusVars[statusVarsI.isParalyzed] else "paralyze self"
         ),
         HudPosition.TOP,
         4,
@@ -1907,34 +1935,36 @@ rule " • player spawned":
 
 rule " • switch spectated player":
     @Event eachPlayer
-    @Condition eventPlayer.miscVars[miscVarsI.playerInFocus].isAlive()
     @Condition eventPlayer.prefs[prefsI.spectatorMode]
 
-    eventPlayer.miscVars[miscVarsI.playerInFocus] = random.choice(
-        [
-            player
-            for player in getAllPlayers()
-            if player.hasSpawned()
-            and not player.statusVars[statusVarsI.isInvisible]
-            and not (
-                eventPlayer.getCurrentHero() == Hero.SOMBRA
-                and eventPlayer.isUsingAbility1()
-            )
-        ]
-    )
+    do:
+        eventPlayer.miscVars[miscVarsI.playerInFocus] = random.choice(
+            [
+                player
+                for player in getAllPlayers()
+                if player.hasSpawned()
+                and player != eventPlayer.miscVars[miscVarsI.playerInFocus]
+                and not player.statusVars[statusVarsI.isInvisible]
+                and not (
+                    eventPlayer.getCurrentHero() == Hero.SOMBRA
+                    and eventPlayer.isUsingAbility1()
+                )
+            ]
+        )
 
-    SpectatorCam()
+        if not eventPlayer.miscVars[miscVarsI.playerInFocus]:
+            eventPlayer.miscVars[miscVarsI.playerInFocus] = eventPlayer
 
-    waitUntil(
-        not eventPlayer.prefs[prefsI.spectatorMode]
-        or not eventPlayer.miscVars[miscVarsI.playerInFocus].hasSpawned()
-        or eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isInvisible]
-        or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1()),
-        eventPlayer.prefs[prefsI.spectatorSwitchTimer]
-    )
+        SpectatorCam()
 
-    if RULE_CONDITION:
-        goto RULE_START
+        waitUntil(
+            not eventPlayer.prefs[prefsI.spectatorMode]
+            or not eventPlayer.miscVars[miscVarsI.playerInFocus].hasSpawned()
+            or eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isInvisible]
+            or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1()),
+            eventPlayer.prefs[prefsI.spectatorSwitchTimer]
+        )
+    while RULE_CONDITION
 
 
 rule " • reset AFK timer":
@@ -1942,12 +1972,11 @@ rule " • reset AFK timer":
     @Condition eventPlayer.prefs[prefsI.spectateOnAFK] > 0
     @Condition isActive()
 
-    eventPlayer.afkTimer = 0
-    eventPlayer.miscVars[miscVarsI.facingDirPrev] = eventPlayer.getFacingDirection()
-    wait(1)
-
-    if RULE_CONDITION:
-        goto RULE_START
+    do:
+        eventPlayer.afkTimer = 0
+        eventPlayer.miscVars[miscVarsI.facingDirPrev] = eventPlayer.getFacingDirection()
+        wait(1)
+    while RULE_CONDITION
 
 
 rule " • auto-spectate on AFK":
@@ -2035,67 +2064,65 @@ rule " • keyboard mode • cursor bounds":
     @Event eachPlayer
     @Condition eventPlayer.modeVars[modeVarsI.keyboardMode]
 
-    if (
-        angleDifference(
-            horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
-            eventPlayer.getHorizontalFacingAngle()
-        )
-        > 43.5
-    ):
-        eventPlayer.setFacing(
-            angleToDirection(
-                horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) + 43.5,
+    do:
+        if (
+            angleDifference(
+                horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
+                eventPlayer.getHorizontalFacingAngle()
+            )
+            > 43.5
+        ):
+            eventPlayer.setFacing(
+                angleToDirection(
+                    horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) + 43.5,
+                    eventPlayer.getVerticalFacingAngle()
+                ),
+                Relativity.TO_WORLD
+            )
+        if (
+            angleDifference(
+                horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
+                eventPlayer.getHorizontalFacingAngle()
+            )
+            < -43.5
+        ):
+            eventPlayer.setFacing(
+                angleToDirection(
+                    horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) - 43.5,
+                    eventPlayer.getVerticalFacingAngle()
+                ),
+                Relativity.TO_WORLD
+            )
+        if (
+            angleDifference(
+                verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
                 eventPlayer.getVerticalFacingAngle()
-            ),
-            Relativity.TO_WORLD
-        )
-    if (
-        angleDifference(
-            horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
-            eventPlayer.getHorizontalFacingAngle()
-        )
-        < -43.5
-    ):
-        eventPlayer.setFacing(
-            angleToDirection(
-                horizontalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) - 43.5,
+            )
+            > 27
+        ):
+            eventPlayer.setFacing(
+                angleToDirection(
+                    eventPlayer.getHorizontalFacingAngle(),
+                    verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) + 27
+                ),
+                Relativity.TO_WORLD
+            )
+        if (
+            angleDifference(
+                verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
                 eventPlayer.getVerticalFacingAngle()
-            ),
-            Relativity.TO_WORLD
-        )
-    if (
-        angleDifference(
-            verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
-            eventPlayer.getVerticalFacingAngle()
-        )
-        > 27
-    ):
-        eventPlayer.setFacing(
-            angleToDirection(
-                eventPlayer.getHorizontalFacingAngle(),
-                verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) + 27
-            ),
-            Relativity.TO_WORLD
-        )
-    if (
-        angleDifference(
-            verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]),
-            eventPlayer.getVerticalFacingAngle()
-        )
-        < -21.7
-    ):
-        eventPlayer.setFacing(
-            angleToDirection(
-                eventPlayer.getHorizontalFacingAngle(),
-                verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) - 21.7
-            ),
-            Relativity.TO_WORLD
-        )
-
-    wait(0.15)
-
-    if RULE_CONDITION:
-        goto RULE_START
+            )
+            < -21.7
+        ):
+            eventPlayer.setFacing(
+                angleToDirection(
+                    eventPlayer.getHorizontalFacingAngle(),
+                    verticalAngleOfDirection(eventPlayer.miscVars[miscVarsI.lastPosDir][1]) - 21.7
+                ),
+                Relativity.TO_WORLD
+            )
+        wait(0.15)
+    while RULE_CONDITION
 
 
 rule " • third-person mode • ADS":
@@ -2107,13 +2134,9 @@ rule " • third-person mode • ADS":
         or isCurrOrDupHero(Hero.WIDOWMAKER)
     )
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
-
-    if (
-        eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
-        or eventPlayer.modeVars[modeVarsI.modMode]
-        or eventPlayer.statusVars[statusVarsI.isInvisible]
-    ):
-        return
+    @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.statusVars[statusVarsI.isInvisible]
 
     eventPlayer.stopCamera()
 
@@ -2125,7 +2148,8 @@ rule " • third-person mode • ADS":
         99999
     )
 
-    ResetCam()
+    if not eventPlayer.modeVars[modeVarsI.modMode]:
+        ResetCam()
 
 
 rule " • third-person mode • ultimate":
@@ -2133,12 +2157,8 @@ rule " • third-person mode • ultimate":
     @Condition eventPlayer.prefs[prefsI.thirdPersonMode]
     @Condition isCurrOrDupHero(Hero.BASTION) or isCurrOrDupHero(Hero.JUNKRAT)
     @Condition eventPlayer.isUsingUltimate()
-
-    if (
-        eventPlayer.modeVars[modeVarsI.modMode]
-        or eventPlayer.prefs[prefsI.spectatorMode]
-    ):
-        return
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.prefs[prefsI.spectatorMode]
 
     eventPlayer.stopCamera()
 
@@ -2148,73 +2168,141 @@ rule " • third-person mode • ultimate":
         99999
     )
 
-    ResetCam()
+    if not eventPlayer.modeVars[modeVarsI.modMode]:
+        ResetCam()
 
 
-rule " • self-sleep":
+rule " • self-paralyze":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
-    @Condition eventPlayer.prefs[prefsI.selfSleep]
+    @Condition eventPlayer.prefs[prefsI.selfParalyze]
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
+    @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
 
-    if (
-        eventPlayer.modeVars[modeVarsI.modMode]
-        or eventPlayer.modeVars[modeVarsI.keyboardMode]
-        or eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
-    ):
-        return
-
-    if eventPlayer.statusVars[statusVarsI.isAsleep]:
-        eventPlayer.progressHUD[progressHUDI.text] = "waking up..."
+    if eventPlayer.statusVars[statusVarsI.isParalyzed]:
+        eventPlayer.progressHUD[progressHUDI.text] = "unparalyzing..."
     else:
-        eventPlayer.progressHUD[progressHUDI.text] = "sleeping..."
+        eventPlayer.progressHUD[progressHUDI.text] = "paralyzing..."
 
     eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.prefs[prefsI.heroOutlineColor]
     chase(eventPlayer.progress, 100, duration = 0.6, ChaseReeval.NONE)
 
     waitUntil(
         eventPlayer.progress == 100
-        or eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
         or not eventPlayer.prefs[prefsI.playerMode]
-        or not eventPlayer.prefs[prefsI.selfSleep]
+        or not eventPlayer.prefs[prefsI.selfParalyze]
         or not eventPlayer.isHoldingButton(Button.CROUCH)
         or not eventPlayer.isHoldingButton(Button.MELEE)
+        or eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
         or eventPlayer.isDead(),
         0.6
     )
 
     if eventPlayer.progress == 100:
-        if eventPlayer.statusVars[statusVarsI.isAsleep]:
-            eventPlayer.statusVars[statusVarsI.isAsleep] = false
-            if not eventPlayer.statusVars[statusVarsI.isAsleepMod]:
-                eventPlayer.clearStatusEffect(Status.ASLEEP)
+        if eventPlayer.statusVars[statusVarsI.isParalyzed]:
+            eventPlayer.statusVars[statusVarsI.isParalyzed] = false
+            if not eventPlayer.statusVars[statusVarsI.isParalyzedMod]:
+                switch eventPlayer.prefs[prefsI.paralysisEffect]:
+                    case paralysisEffectsI.knockDown:
+                        eventPlayer.clearStatusEffect(Status.KNOCKED_DOWN)
+                        break
+                    case paralysisEffectsI.stun:
+                        eventPlayer.clearStatusEffect(Status.STUNNED)
+                        break
+                    case paralysisEffectsI.sleep:
+                        eventPlayer.clearStatusEffect(Status.ASLEEP)
+                        break
+                    case paralysisEffectsI.freeze:
+                        eventPlayer.clearStatusEffect(Status.FROZEN)
+                        break
         else:
-            eventPlayer.statusVars[statusVarsI.isAsleep] = true
+            eventPlayer.statusVars[statusVarsI.isParalyzed] = true
 
     stopChasingVariable(eventPlayer.progress)
     eventPlayer.progress = 0
 
 
-rule " • keep slept player asleep":
+rule " • keep paralysis inflicted (knock down)":
     @Event eachPlayer
+    @Condition eventPlayer.prefs[prefsI.paralysisEffect] == paralysisEffectsI.knockDown
     @Condition (
-        eventPlayer.statusVars[statusVarsI.isAsleepMod]
-        or eventPlayer.statusVars[statusVarsI.isAsleep]
+        eventPlayer.statusVars[statusVarsI.isParalyzedMod]
+        or eventPlayer.statusVars[statusVarsI.isParalyzed]
+    )
+    @Condition not eventPlayer.hasStatusEffect(Status.KNOCKED_DOWN)
+
+    do:
+        if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
+            eventPlayer.clearStatusEffect(Status.PHASED_OUT)
+            eventPlayer.setStatusEffect(null, Status.KNOCKED_DOWN, 99999)
+            async(UpdateHero, AsyncBehavior.RESTART)
+        else:
+            eventPlayer.setStatusEffect(null, Status.KNOCKED_DOWN, 99999)
+        wait(0.1)
+    while RULE_CONDITION
+
+
+rule " • keep paralysis inflicted (stun)":
+    @Event eachPlayer
+    @Condition eventPlayer.prefs[prefsI.paralysisEffect] == paralysisEffectsI.stun
+    @Condition (
+        eventPlayer.statusVars[statusVarsI.isParalyzedMod]
+        or eventPlayer.statusVars[statusVarsI.isParalyzed]
+    )
+    @Condition not eventPlayer.hasStatusEffect(Status.STUNNED)
+
+    do:
+        if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
+            eventPlayer.clearStatusEffect(Status.PHASED_OUT)
+            eventPlayer.setStatusEffect(null, Status.STUNNED, 99999)
+            async(UpdateHero, AsyncBehavior.RESTART)
+        else:
+            eventPlayer.setStatusEffect(null, Status.STUNNED, 99999)
+        wait(0.1)
+    while RULE_CONDITION
+
+
+rule " • keep paralysis inflicted (sleep)":
+    @Event eachPlayer
+    @Condition eventPlayer.prefs[prefsI.paralysisEffect] == paralysisEffectsI.sleep
+    @Condition (
+        eventPlayer.statusVars[statusVarsI.isParalyzedMod]
+        or eventPlayer.statusVars[statusVarsI.isParalyzed]
     )
     @Condition not eventPlayer.hasStatusEffect(Status.ASLEEP)
 
-    if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
-        eventPlayer.clearStatusEffect(Status.PHASED_OUT)
-        eventPlayer.setStatusEffect(null, Status.ASLEEP, 99999)
-        async(UpdateHero, AsyncBehavior.RESTART)
-    else:
-        eventPlayer.setStatusEffect(null, Status.ASLEEP, 99999)
+    do:
+        if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
+            eventPlayer.clearStatusEffect(Status.PHASED_OUT)
+            eventPlayer.setStatusEffect(null, Status.ASLEEP, 99999)
+            async(UpdateHero, AsyncBehavior.RESTART)
+        else:
+            eventPlayer.setStatusEffect(null, Status.ASLEEP, 99999)
+        wait(0.1)
+    while RULE_CONDITION
 
-    wait(0.1)
 
-    if RULE_CONDITION:
-        goto RULE_START
+rule " • keep paralysis inflicted (freeze)":
+    @Event eachPlayer
+    @Condition eventPlayer.prefs[prefsI.paralysisEffect] == paralysisEffectsI.freeze
+    @Condition (
+        eventPlayer.statusVars[statusVarsI.isParalyzedMod]
+        or eventPlayer.statusVars[statusVarsI.isParalyzed]
+    )
+    @Condition not eventPlayer.hasStatusEffect(Status.FROZEN)
+
+    do:
+        if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
+            eventPlayer.clearStatusEffect(Status.PHASED_OUT)
+            eventPlayer.setStatusEffect(null, Status.FROZEN, 99999)
+            async(UpdateHero, AsyncBehavior.RESTART)
+        else:
+            eventPlayer.setStatusEffect(null, Status.FROZEN, 99999)
+        wait(0.1)
+    while RULE_CONDITION
 
 
 rule "moderator":
@@ -2226,28 +2314,33 @@ rule " • toggle moderator mode":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+    @Condition eventPlayer in modList.concat(hostPlayer)
+    @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
+    @Condition not eventPlayer.modeVars[modeVarsI.createMode]
+    @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
+    @Condition not eventPlayer.prefs[prefsI.spectatorMode]
 
-    if (
+    eventPlayer.modeVars[modeVarsI.modMode] = true
+    eventPlayer.miscVars[miscVarsI.playerInFocus] = eventPlayer.getPlayerClosestToReticle(Team.ALL)
+    ThirdPersonSpecCam()
+    async(UpdateAbilities, AsyncBehavior.RESTART)
+
+    waitUntil(
+        not eventPlayer.isHoldingButton(Button.CROUCH)
+        and not eventPlayer.isHoldingButton(Button.RELOAD),
+        99999
+    )
+
+    waitUntil(
         not eventPlayer in modList.concat(hostPlayer)
-        or eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
-        or eventPlayer.modeVars[modeVarsI.createMode]
-        or eventPlayer.modeVars[modeVarsI.keyboardMode]
-        or eventPlayer.prefs[prefsI.spectatorMode]
-    ):
-        return
+        or eventPlayer.isHoldingButton(Button.CROUCH)
+        and eventPlayer.isHoldingButton(Button.RELOAD),
+        99999
+    )
 
-    if eventPlayer.modeVars[modeVarsI.modMode]:
-        eventPlayer.modeVars[modeVarsI.modMode] = false
-        eventPlayer.miscVars[miscVarsI.playerInFocus] = null
-        ResetCam()
-    else:
-        eventPlayer.modeVars[modeVarsI.modMode] = true
-        if eventPlayer.getPlayerClosestToReticle(Team.ALL):
-            eventPlayer.miscVars[miscVarsI.playerInFocus] = eventPlayer.getPlayerClosestToReticle(Team.ALL)
-        else:
-            eventPlayer.miscVars[miscVarsI.playerInFocus] = getAllPlayers()[0]
-        ThirdPersonSpecCam()
-
+    eventPlayer.modeVars[modeVarsI.modMode] = false
+    eventPlayer.miscVars[miscVarsI.playerInFocus] = null
+    ResetCam()
     async(UpdateAbilities, AsyncBehavior.RESTART)
 
 
@@ -2258,8 +2351,13 @@ rule " • switch focused player":
 
     if not eventPlayer.miscVars[miscVarsI.playerInFocus] in getAllPlayers():
         eventPlayer.miscVars[miscVarsI.playerInFocus] = eventPlayer
-
-        smallMessage(eventPlayer, "player left, switching to you")
+    elif eventPlayer.isHoldingButton(Button.CROUCH):
+        if eventPlayer.miscVars[miscVarsI.playerInFocus] == getAllPlayers()[0]:
+            eventPlayer.miscVars[miscVarsI.playerInFocus] = getAllPlayers()[getNumberOfPlayers(Team.ALL) - 1]
+        else:
+            eventPlayer.miscVars[miscVarsI.playerInFocus] = getAllPlayers()[
+                getAllPlayers().index(eventPlayer.miscVars[miscVarsI.playerInFocus]) - 1
+            ]
     elif (
         getNumberOfPlayers(Team.ALL)
         < getAllPlayers().index(eventPlayer.miscVars[miscVarsI.playerInFocus]) + 2
@@ -2273,53 +2371,66 @@ rule " • switch focused player":
     ThirdPersonSpecCam()
 
 
-rule " • sleep / wake up player":
+rule " • paralyze / unparalyze player":
     @Event eachPlayer
     @Condition eventPlayer.modeVars[modeVarsI.modMode]
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
 
     if (
         eventPlayer.miscVars[miscVarsI.playerInFocus]
-        in modList.concat(hostPlayer)
+        in modList.concat(hostPlayer).exclude(eventPlayer)
         or eventPlayer.miscVars[miscVarsI.playerInFocus].isDead()
         or not eventPlayer.miscVars[miscVarsI.playerInFocus].hasSpawned()
     ):
         DebuffPlayerOnFocus()
-        if eventPlayer.miscVars[miscVarsI.playerInFocus].hasStatusEffect(Status.ASLEEP):
+        if (
+            eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isParalyzed]
+            or eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isParalyzedMod]
+        ):
             smallMessage(
                 eventPlayer,
-                "   {}  you can't wake this player up".format(iconString(Icon.WARNING))
+                "   {}  you can't unparalyze this player".format(iconString(Icon.WARNING))
             )
         else:
             smallMessage(
                 eventPlayer,
-                "   {}  you can't sleep this player".format(iconString(Icon.WARNING))
+                "   {}  you can't paralyze this player".format(iconString(Icon.WARNING))
             )
     else:
-        if eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isAsleepMod]:
-            eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[
-                statusVarsI.isAsleepMod
-            ] = false
-            if not eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isAsleep]:
-                eventPlayer.miscVars[miscVarsI.playerInFocus].clearStatusEffect(Status.ASLEEP)
+        if eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isParalyzedMod]:
+            eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isParalyzedMod] = false
+            if not eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[statusVarsI.isParalyzed]:
+                switch eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[prefsI.paralysisEffect]:
+                    case paralysisEffectsI.knockDown:
+                        eventPlayer.miscVars[miscVarsI.playerInFocus].clearStatusEffect(Status.KNOCKED_DOWN)
+                        break
+                    case paralysisEffectsI.stun:
+                        eventPlayer.miscVars[miscVarsI.playerInFocus].clearStatusEffect(Status.STUNNED)
+                        break
+                    case paralysisEffectsI.sleep:
+                        eventPlayer.miscVars[miscVarsI.playerInFocus].clearStatusEffect(Status.ASLEEP)
+                        break
+                    case paralysisEffectsI.freeze:
+                        eventPlayer.miscVars[miscVarsI.playerInFocus].clearStatusEffect(Status.FROZEN)
+                        break
             smallMessage(
-                eventPlayer, "   {}  player woken up".format(iconString(Icon.CHECKMARK))
+                eventPlayer, "   {}  player unparalyzed".format(iconString(Icon.CHECKMARK))
             )
             BuffPlayer()
         else:
             eventPlayer.miscVars[miscVarsI.playerInFocus].statusVars[
-                statusVarsI.isAsleepMod
+                statusVarsI.isParalyzedMod
             ] = true
             if eventPlayer.miscVars[miscVarsI.playerInFocus] != eventPlayer:
                 smallMessage(
                     eventPlayer.miscVars[miscVarsI.playerInFocus],
-                    "   {}  put to sleep by a moderator".format(
+                    "   {}  paralyzed by a moderator".format(
                         abilityIconString(Hero.ANA, Button.ABILITY_1)
                     )
                 )
             smallMessage(
                 eventPlayer,
-                "   {}  player put to sleep".format(
+                "   {}  player paralyzed".format(
                     abilityIconString(Hero.ANA, Button.ABILITY_1)
                 )
             )
@@ -2419,7 +2530,7 @@ rule " • teleport to player":
 
         if eventPlayer.progress == 100:
             eventPlayer.teleport(eventPlayer.miscVars[miscVarsI.playerInFocus].getPosition())
-            BuffFocus()
+            BuffPlayer()
             smallMessage(
                 eventPlayer,
                 "   {}  teleported to player".format(
@@ -2802,14 +2913,11 @@ rule " • switch hero":
     @Condition eventPlayer.baseVars[baseVarsI.baseSettledIn] == eventPlayer
     @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
-
-    if (
-        eventPlayer.modeVars[modeVarsI.keyboardMode]
-        or eventPlayer.modeVars[modeVarsI.modMode]
-        or eventPlayer.prefs[prefsI.spectatorMode]
-        or eventPlayer.hasStatusEffect(Status.ASLEEP)
-    ):
-        return
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
+    @Condition not eventPlayer.prefs[prefsI.spectatorMode]
+    @Condition not eventPlayer.statusVars[statusVarsI.isParalyzed]
+    @Condition not eventPlayer.statusVars[statusVarsI.isParalyzedMod]
 
     eventPlayer.progressHUD[progressHUDI.text] = "entering hero picker..."
     eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.prefs[prefsI.baseColor]
@@ -2843,9 +2951,9 @@ rule " • pack base":
     @Condition eventPlayer.baseVars[baseVarsI.baseSettledIn] == eventPlayer
     @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
-
-    if eventPlayer.modeVars[modeVarsI.keyboardMode] or eventPlayer.modeVars[modeVarsI.modMode] or eventPlayer.prefs[prefsI.spectatorMode]:
-        return
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
+    @Condition not eventPlayer.prefs[prefsI.spectatorMode]
 
     eventPlayer.progressHUD[progressHUDI.text] = "preparing to pack base..."
     eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.prefs[prefsI.baseColor]
@@ -2876,10 +2984,8 @@ rule " • arena forfeit":
     @Event eachPlayer
     @Condition eventPlayer.baseVars[baseVarsI.baseSettledIn].prefs[prefsI.baseMode] == baseModesI.arena
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
-
-    # disable forfeit in player's own arena and in moderator mode
-    if eventPlayer.baseVars[baseVarsI.baseSettledIn] == eventPlayer or eventPlayer.modeVars[modeVarsI.modMode]:
-        return
+    @Condition eventPlayer.baseVars[baseVarsI.baseSettledIn] != eventPlayer
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
 
     eventPlayer.progressHUD[progressHUDI.text] = "forfeiting..."
     eventPlayer.progressHUD[progressHUDI.color] = colorsI.red
@@ -2906,28 +3012,27 @@ rule " • fast travel":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.fastTravel]
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
+    @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
+    @Condition not eventPlayer.prefs[prefsI.spectatorMode]
+    @Condition not (
+        eventPlayer.prefs[prefsI.selfParalyze]
+        and eventPlayer.isHoldingButton(Button.CROUCH)
+    )
+    @Condition not (
+        eventPlayer.baseVars[baseVarsI.baseSettledIn] == eventPlayer
+        and eventPlayer.prefs[prefsI.baseLock]
+    )
 
     if not eventPlayer.prefs[prefsI.playerMode]:
         if (
-            (
-                eventPlayer.baseVars[baseVarsI.baseSettledIn] != eventPlayer
-                and eventPlayer.baseVars[baseVarsI.baseSettledIn].prefs[prefsI.baseMode]
-                == baseModesI.arena
-            ) or not eventPlayer.baseVars[baseVarsI.baseSettledIn]
+            eventPlayer.baseVars[baseVarsI.baseSettledIn] != eventPlayer
+            and eventPlayer.baseVars[baseVarsI.baseSettledIn].prefs[prefsI.baseMode]
+            == baseModesI.arena
+            or not eventPlayer.baseVars[baseVarsI.baseSettledIn]
         ):
             return
-
-    if (
-        eventPlayer.modeVars[modeVarsI.modMode]
-        or eventPlayer.modeVars[modeVarsI.keyboardMode]
-        or eventPlayer.prefs[prefsI.spectatorMode]
-        or eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
-        or (
-            eventPlayer.prefs[prefsI.selfSleep]
-            and eventPlayer.isHoldingButton(Button.CROUCH)
-        )
-    ):
-        return
 
     eventPlayer.baseVars[baseVarsI.baseToFastTravelTo] = friendlyBaseInCrosshair()
 
@@ -2959,7 +3064,7 @@ rule " • fast travel":
             or not eventPlayer.baseVars[baseVarsI.baseSettledIn]
             or eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
             or (
-                eventPlayer.prefs[prefsI.selfSleep]
+                eventPlayer.prefs[prefsI.selfParalyze]
                 and eventPlayer.isHoldingButton(Button.CROUCH)
             )
             or eventPlayer.isDead(),
@@ -2991,7 +3096,7 @@ rule " • fast travel":
             and not eventPlayer.baseVars[baseVarsI.baseSettledIn]
         )
         or (
-            eventPlayer.prefs[prefsI.selfSleep]
+            eventPlayer.prefs[prefsI.selfParalyze]
             and eventPlayer.isHoldingButton(Button.CROUCH)
         )
         or not eventPlayer.baseVars[baseVarsI.baseToFastTravelTo].baseVector
@@ -3012,7 +3117,7 @@ rule " • fast travel":
         eventPlayer.teleport(eventPlayer.baseVars[baseVarsI.baseToFastTravelTo].baseVector)
 
     if not (
-        eventPlayer.prefs[prefsI.selfSleep]
+        eventPlayer.prefs[prefsI.selfParalyze]
         and eventPlayer.isHoldingButton(Button.CROUCH)
     ):
         stopChasingVariable(eventPlayer.progress)
@@ -3027,6 +3132,9 @@ rule "preferences":
 rule " • view / hide preferences":
     @Event eachPlayer
     @Condition eventPlayer.baseVars[baseVarsI.baseSettledIn] == eventPlayer
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
+    @Condition not eventPlayer.prefs[prefsI.spectatorMode]
     @Condition distance(
         eventPlayer.getEyePosition()
         + distance(eventPlayer.getEyePosition(), eventPlayer.baseVector)
@@ -3034,28 +3142,22 @@ rule " • view / hide preferences":
         eventPlayer.baseVector
     ) <= CENTER_ORB_RADIUS
 
-    if (
-        eventPlayer.modeVars[modeVarsI.modMode]
-        or eventPlayer.modeVars[modeVarsI.keyboardMode]
-    ):
-        return
-
     eventPlayer.prefsVars[prefsVarsI.isViewingPrefs] = true
     async(UpdateAbilities, AsyncBehavior.RESTART)
     UpdatePrefsHUD()
 
     waitUntil(
-        distance(
+        eventPlayer.baseVars[baseVarsI.baseSettledIn] != eventPlayer
+        or eventPlayer.modeVars[modeVarsI.keyboardMode]
+        or eventPlayer.prefs[prefsI.spectatorMode]
+        or eventPlayer.isCommunicatingEmote()
+        or distance(
             eventPlayer.getEyePosition()
             + distance(eventPlayer.getEyePosition(), eventPlayer.baseVector)
             * eventPlayer.getFacingDirection(),
             eventPlayer.baseVector
         )
-        > CENTER_ORB_RADIUS
-        or eventPlayer.baseVars[baseVarsI.baseSettledIn] != eventPlayer
-        or eventPlayer.modeVars[modeVarsI.keyboardMode]
-        or eventPlayer.prefs[prefsI.spectatorMode]
-        or eventPlayer.isCommunicatingEmote(),
+        > CENTER_ORB_RADIUS,
         99999
     )
 
@@ -3315,9 +3417,15 @@ rule " • no cooldowns • primary fire":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
     @Condition eventPlayer.prefs[prefsI.noCooldowns]
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition (
+        eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+        or eventPlayer.getAbilityCooldown(Button.PRIMARY_FIRE) > 0
+    )
 
-    eventPlayer.setAbilityCooldown(Button.PRIMARY_FIRE, 0)
+    do:
+        eventPlayer.setAbilityCooldown(Button.PRIMARY_FIRE, 0)
+        wait(0.1)
+    while RULE_CONDITION
 
 
 rule " • no cooldowns • primary fire (moira)":
@@ -3334,20 +3442,23 @@ rule " • no cooldowns • secondary fire":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
     @Condition eventPlayer.prefs[prefsI.noCooldowns]
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+    @Condition (
+        eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+        or eventPlayer.getAbilityCooldown(Button.SECONDARY_FIRE) > 0
+    )
 
-    if isCurrOrDupHero(Hero.SIGMA):
-        wait(0.5)
+    do:
+        if isCurrOrDupHero(Hero.SIGMA):
+            wait(0.5)
 
-    eventPlayer.setAbilityCooldown(Button.SECONDARY_FIRE, 0)
+        eventPlayer.setAbilityCooldown(Button.SECONDARY_FIRE, 0)
 
-    switch eventPlayer.getCurrentHero():
-        case Hero.BASTION:
+        if isCurrOrDupHero(Hero.BASTION):
             eventPlayer.cancelPrimaryAction()
 
-    switch eventPlayer.getHeroOfDuplication():
-        case Hero.BASTION:
-            eventPlayer.cancelPrimaryAction()
+        wait(0.1)
+    while RULE_CONDITION
+
 
 rule " • no cooldowns • secondary fire (d.va)":
     @Event eachPlayer
@@ -3363,12 +3474,18 @@ rule " • no cooldowns • ability 1":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
     @Condition eventPlayer.prefs[prefsI.noCooldowns]
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1)
+    @Condition (
+        eventPlayer.isHoldingButton(Button.ABILITY_1)
+        or eventPlayer.getAbilityCooldown(Button.ABILITY_1) > 0
+    )
 
-    if isCurrOrDupHero(Hero.ECHO):
-        wait(0.5)
+    do:
+        if isCurrOrDupHero(Hero.ECHO):
+            wait(0.5)
 
-    eventPlayer.setAbilityCooldown(Button.ABILITY_1, 0)
+        eventPlayer.setAbilityCooldown(Button.ABILITY_1, 0)
+        wait(0.1)
+    while RULE_CONDITION
 
 
 rule " • no cooldowns • ability 1 (tracer, symmetra)":
@@ -3395,62 +3512,73 @@ rule " • no cooldowns • ability 2":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
     @Condition eventPlayer.prefs[prefsI.noCooldowns]
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
+    @Condition (
+        eventPlayer.isHoldingButton(Button.ABILITY_2)
+        or eventPlayer.getAbilityCooldown(Button.ABILITY_2) > 0
+    )
 
-    eventPlayer.setAbilityCooldown(Button.ABILITY_2, 0)
+    do:
+        eventPlayer.setAbilityCooldown(Button.ABILITY_2, 0)
 
-    switch eventPlayer.getCurrentHero():
-        case Hero.MOIRA:
-            waitUntil(
-                eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
-                or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),
-                99999
-            )
-        case Hero.ASHE:
-        case Hero.PHARAH:
-        case Hero.KIRIKO:
-        case Hero.SOJOURN:
-            wait(0.2)
+        switch eventPlayer.getCurrentHero():
+            case Hero.MOIRA:
+                waitUntil(
+                    eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+                    or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),
+                    99999
+                )
+            case Hero.ASHE:
+            case Hero.PHARAH:
+            case Hero.KIRIKO:
+            case Hero.SOJOURN:
+            case Hero.RAMATTRA:
+                wait(0.2)
 
-    switch eventPlayer.getHeroOfDuplication():
-        case Hero.MOIRA:
-            waitUntil(
-                eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
-                or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),
-                99999
-            )
-        case Hero.ASHE:
-        case Hero.PHARAH:
-        case Hero.KIRIKO:
-        case Hero.SOJOURN:
-            wait(0.2)
+        switch eventPlayer.getHeroOfDuplication():
+            case Hero.MOIRA:
+                waitUntil(
+                    eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+                    or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),
+                    99999
+                )
+            case Hero.ASHE:
+            case Hero.PHARAH:
+            case Hero.KIRIKO:
+            case Hero.SOJOURN:
+            case Hero.RAMATTRA:
+                wait(0.2)
 
-    switch eventPlayer.getCurrentHero():
-        case Hero.ANA:
-        case Hero.MCCREE:
-        case Hero.SOLDIER:
-        case Hero.BAPTISTE:
-        case Hero.MOIRA:
-        case Hero.ASHE:
-        case Hero.JUNKRAT:
-        case Hero.PHARAH:
-        case Hero.KIRIKO:
-        case Hero.SOJOURN:
-            eventPlayer.cancelPrimaryAction()
+        switch eventPlayer.getCurrentHero():
+            case Hero.ANA:
+            case Hero.MCCREE:
+            case Hero.SOLDIER:
+            case Hero.BAPTISTE:
+            case Hero.MOIRA:
+            case Hero.ASHE:
+            case Hero.JUNKRAT:
+            case Hero.PHARAH:
+            case Hero.KIRIKO:
+            case Hero.SOJOURN:
+            case Hero.RAMATTRA:
+                eventPlayer.cancelPrimaryAction()
 
-    switch eventPlayer.getHeroOfDuplication():
-        case Hero.ANA:
-        case Hero.MCCREE:
-        case Hero.SOLDIER:
-        case Hero.BAPTISTE:
-        case Hero.MOIRA:
-        case Hero.ASHE:
-        case Hero.JUNKRAT:
-        case Hero.PHARAH:
-        case Hero.KIRIKO:
-        case Hero.SOJOURN:
-            eventPlayer.cancelPrimaryAction()
+        switch eventPlayer.getHeroOfDuplication():
+            case Hero.ANA:
+            case Hero.MCCREE:
+            case Hero.SOLDIER:
+            case Hero.BAPTISTE:
+            case Hero.MOIRA:
+            case Hero.ASHE:
+            case Hero.JUNKRAT:
+            case Hero.PHARAH:
+            case Hero.KIRIKO:
+            case Hero.SOJOURN:
+            case Hero.RAMATTRA:
+                eventPlayer.cancelPrimaryAction()
 
+        wait(0.1)
+    while RULE_CONDITION
+        
 
 rule " • no cooldowns • ability 2 (zarya, reinhardt, brigitte)":
     @Event eachPlayer
@@ -3470,9 +3598,15 @@ rule " • no cooldowns • crouch":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
     @Condition eventPlayer.prefs[prefsI.noCooldowns]
-    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+    @Condition (
+        eventPlayer.isHoldingButton(Button.CROUCH)
+        or eventPlayer.getAbilityCooldown(Button.CROUCH) > 0
+    )
 
-    eventPlayer.setAbilityCooldown(Button.CROUCH, 0)
+    do: 
+        eventPlayer.setAbilityCooldown(Button.CROUCH, 0)
+        wait(0.1)
+    while RULE_CONDITION
 
 
 rule " • no cooldowns • interact":
@@ -3480,9 +3614,15 @@ rule " • no cooldowns • interact":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
     @Condition eventPlayer.prefs[prefsI.noCooldowns]
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition (
+        eventPlayer.isHoldingButton(Button.INTERACT)
+        or eventPlayer.getAbilityCooldown(Button.INTERACT) > 0
+    )
 
-    eventPlayer.setAbilityCooldown(Button.INTERACT, 0)
+    do: 
+        eventPlayer.setAbilityCooldown(Button.INTERACT, 0)
+        wait(0.1)
+    while RULE_CONDITION
 
 
 rule " • no cooldowns • jump":
@@ -3490,9 +3630,15 @@ rule " • no cooldowns • jump":
     @Event eachPlayer
     @Condition eventPlayer.prefs[prefsI.playerMode]
     @Condition eventPlayer.prefs[prefsI.noCooldowns]
-    @Condition eventPlayer.isHoldingButton(Button.JUMP)
+    @Condition (
+        eventPlayer.isHoldingButton(Button.JUMP)
+        or eventPlayer.getAbilityCooldown(Button.JUMP) > 0
+    )
 
-    eventPlayer.setAbilityCooldown(Button.JUMP, 0)
+    do: 
+        eventPlayer.setAbilityCooldown(Button.JUMP, 0)
+        wait(0.1)
+    while RULE_CONDITION
 
 
 rule " • fast reload (clip 0)":
@@ -3522,12 +3668,67 @@ rule " • fast ultimate":
         or eventPlayer.isHoldingButton(Button.ULTIMATE)
     )
 
-    if eventPlayer.prefs[prefsI.infiniteUlt]:
+    do:
+        if eventPlayer.prefs[prefsI.infiniteUlt]:
+            switch eventPlayer.getCurrentHero():
+                case Hero.GENJI:
+                case Hero.MCCREE:
+                case Hero.MERCY:
+                case Hero.MOIRA:
+                case Hero.RAMATTRA:
+                case Hero.REAPER:
+                case Hero.ROADHOG:
+                case Hero.SIGMA:
+                case Hero.SOJOURN:
+                case Hero.SOLDIER:
+                case Hero.TORBJORN:
+                case Hero.WIDOWMAKER:
+                case Hero.WINSTON:
+                case Hero.ZENYATTA:
+                    wait(1)
+                    if RULE_CONDITION:
+                        continue
+
+        if eventPlayer.getUltCharge() < 100 / 3:
+            eventPlayer.setUltCharge(100 / 3)
+
+            wait(1, Wait.ABORT_WHEN_FALSE)
+
+        if eventPlayer.getUltCharge() < 200 / 3:
+            eventPlayer.setUltCharge(200 / 3)
+
+            wait(1, Wait.ABORT_WHEN_FALSE)
+
+        eventPlayer.setUltCharge(100)
+        wait(0.5)
+    while RULE_CONDITION
+
+
+rule " • infinite ultimate":
+    @Event eachPlayer
+    @Condition eventPlayer.prefs[prefsI.playerMode]
+    @Condition eventPlayer.prefs[prefsI.infiniteUlt]
+    @Condition not eventPlayer.isUsingUltimate()
+
+    do:
         switch eventPlayer.getCurrentHero():
+            case Hero.WINSTON:
+                eventPlayer.setUltCharge(100)
+                eventPlayer.forceButtonPress(Button.ULTIMATE)
+
+                wait(1)
+
+                if (
+                    eventPlayer.prefs[prefsI.playerMode]
+                    or eventPlayer.prefs[prefsI.infiniteUlt]
+                ):
+                    goto RULE_START
+                break
             case Hero.GENJI:
             case Hero.MCCREE:
             case Hero.MERCY:
             case Hero.MOIRA:
+            case Hero.RAMATTRA:
             case Hero.REAPER:
             case Hero.ROADHOG:
             case Hero.SIGMA:
@@ -3537,81 +3738,20 @@ rule " • fast ultimate":
             case Hero.WIDOWMAKER:
             case Hero.WINSTON:
             case Hero.ZENYATTA:
+                eventPlayer.setUltCharge(100)
+                eventPlayer.forceButtonPress(Button.ULTIMATE)
                 wait(1)
-
-                if RULE_CONDITION:
-                    goto RULE_START
+                waitUntil(
+                    not eventPlayer.prefs[prefsI.playerMode]
+                    or not eventPlayer.prefs[prefsI.infiniteUlt]
+                    or not eventPlayer.isUsingUltimate(),
+                    99999
+                )
                 break
-
-    if eventPlayer.getUltCharge() < 100 / 3:
-        eventPlayer.setUltCharge(100 / 3)
-
-        wait(1, Wait.ABORT_WHEN_FALSE)
-
-    if eventPlayer.getUltCharge() < 200 / 3:
-        eventPlayer.setUltCharge(200 / 3)
-
-        wait(1, Wait.ABORT_WHEN_FALSE)
-
-    eventPlayer.setUltCharge(100)
-    wait(0.5)
-
-    if RULE_CONDITION:
-        goto RULE_START
-
-
-rule " • infinite ultimate":
-    @Event eachPlayer
-    @Condition eventPlayer.prefs[prefsI.playerMode]
-    @Condition eventPlayer.prefs[prefsI.infiniteUlt]
-    @Condition not eventPlayer.isUsingUltimate()
-
-    switch eventPlayer.getCurrentHero():
-        case Hero.WINSTON:
-            eventPlayer.setUltCharge(100)
-            eventPlayer.forceButtonPress(Button.ULTIMATE)
-
-            wait(1)
-
-            if (
-                eventPlayer.prefs[prefsI.playerMode]
-                or eventPlayer.prefs[prefsI.infiniteUlt]
-            ):
-                goto RULE_START
-            break
-        case Hero.GENJI:
-        case Hero.MCCREE:
-        case Hero.MERCY:
-        case Hero.MOIRA:
-        case Hero.REAPER:
-        case Hero.ROADHOG:
-        case Hero.SIGMA:
-        case Hero.SOJOURN:
-        case Hero.SOLDIER:
-        case Hero.TORBJORN:
-        case Hero.WIDOWMAKER:
-        case Hero.WINSTON:
-        case Hero.ZENYATTA:
-            eventPlayer.setUltCharge(100)
-            eventPlayer.forceButtonPress(Button.ULTIMATE)
-
-            wait(1)
-            waitUntil(
-                not eventPlayer.prefs[prefsI.playerMode]
-                or not eventPlayer.prefs[prefsI.infiniteUlt]
-                or not eventPlayer.isUsingUltimate(),
-                99999
-            )
-
-            if RULE_CONDITION:
-                goto RULE_START
-            break
-        default:
-            wait(1)
-
-            if RULE_CONDITION:
-                goto RULE_START
-            break
+            default:
+                wait(1)
+                break
+    while RULE_CONDITION
 
 
 rule "subroutines":
@@ -3963,6 +4103,7 @@ def UpdateAbilities():
             case Hero.SOJOURN:
             case Hero.MOIRA:
             case Hero.MCCREE:
+            case Hero.RAMATTRA:
                 eventPlayer.setAbility1Enabled(true)
                 break
             case Hero.WINSTON:
@@ -4137,18 +4278,18 @@ def SpectatorCam():
         eventPlayer.startCamera(
             updateEveryTick(
                 raycast(
-                    eventPlayer.miscVars[miscVarsI.playerInFocus].getEyePosition(),
-                    eventPlayer.miscVars[miscVarsI.playerInFocus].getEyePosition()
+                    evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).getEyePosition(),
+                    evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).getEyePosition()
                     + vect(
                         evalOnce(eventPlayer.prefs[prefsI.spectatorCamDist])
                         * (
                             (
-                                eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                                evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                                     prefsI.heroSize
                                 ]
                                 / 100
                             )
-                            if eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                            if evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                                 prefsI.playerMode
                             ]
                             else 1
@@ -4158,12 +4299,12 @@ def SpectatorCam():
                         evalOnce(eventPlayer.prefs[prefsI.spectatorCamDist])
                         * (
                             (
-                                eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                                evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                                     prefsI.heroSize
                                 ]
                                 / 100
                             )
-                            if eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                            if evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                                 prefsI.playerMode
                             ]
                             else 1
@@ -4175,23 +4316,23 @@ def SpectatorCam():
                     false
                 ).getHitPosition()
             ),
-            updateEveryTick(eventPlayer.miscVars[miscVarsI.playerInFocus].getEyePosition()),
-            evalOnce(10 if eventPlayer.prefs[prefsI.smoothSpectatorCam] else 0)
+            updateEveryTick(evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).getEyePosition()),
+            15 if eventPlayer.prefs[prefsI.smoothSpectatorCam] else 0
         )
     else:
         eventPlayer.startCamera(
             updateEveryTick(
-                eventPlayer.miscVars[miscVarsI.playerInFocus].getEyePosition()
+                evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).getEyePosition()
                 + vect(
                     evalOnce(eventPlayer.prefs[prefsI.spectatorCamDist])
                     * (
                         (
-                            eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                            evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                                 prefsI.heroSize
                             ]
                             / 100
                         )
-                        if eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                        if evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                             prefsI.playerMode
                         ]
                         else 1
@@ -4201,12 +4342,12 @@ def SpectatorCam():
                     evalOnce(eventPlayer.prefs[prefsI.spectatorCamDist])
                     * (
                         (
-                            eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                            evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                                 prefsI.heroSize
                             ]
                             / 100
                         )
-                        if eventPlayer.miscVars[miscVarsI.playerInFocus].prefs[
+                        if evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).prefs[
                             prefsI.playerMode
                         ]
                         else 1
@@ -4214,8 +4355,8 @@ def SpectatorCam():
                     * sinDeg(angle)
                 )
             ),
-            updateEveryTick(eventPlayer.miscVars[miscVarsI.playerInFocus].getEyePosition()),
-            evalOnce(10 if eventPlayer.prefs[prefsI.smoothSpectatorCam] else 0)
+            updateEveryTick(evalOnce(eventPlayer.miscVars[miscVarsI.playerInFocus]).getEyePosition()),
+            15 if eventPlayer.prefs[prefsI.smoothSpectatorCam] else 0
         )
 
 
@@ -4409,7 +4550,9 @@ def PrefsInteract():
             break
         case prefsI.switchTeam:
             if getCurrentGamemode() == Gamemode.SKIRMISH:
-                moveToTeam(eventPlayer, getOppositeTeam(eventPlayer.getTeam()), -1)
+                DebuffPlayer()
+                smallMessage(eventPlayer, "   {}  switching teams disabled due to reports of server crashes".format(iconString(Icon.WARNING)))
+                # moveToTeam(eventPlayer, getOppositeTeam(eventPlayer.getTeam()), -1)
             else:
                 DebuffPlayer()
                 smallMessage(eventPlayer, "   {}  gamemode isn't skirmish".format(iconString(Icon.WARNING)))

@@ -1,6 +1,6 @@
 settings {
     "main": {
-        "description": "<FGA5F2F3FF>chill<FGFFFFFFFF> / <FGFF6961FF>kill<FGFFFFFFFF> bases (by shifterest) • <FGFDFD96FF>TSX53<FGFFFFFFFF>\r\n<FGC1E1C1FF>» [v2.12] last updated: 1/13/2023<FGFFFFFFFF>\r\n\r\na chill or kill gamemode designed with AFKing in mind.\r\n\r\nbased on:\r\n» Chill Zone Base Creator by AlaskaWolf • <FGFDFD96FF>ARYD2<FGFFFFFFFF>\r\n» Base Wars by Zezombye • <FGFDFD96FF>14WON<FGFFFFFFFF>",
+        "description": "<FGA5F2F3FF>chill<FGFFFFFFFF> / <FGFF6961FF>kill<FGFFFFFFFF> bases (by shifterest) • <FGFDFD96FF>TSX53<FGFFFFFFFF>\r\n<FGC1E1C1FF>» [v2.13.3] last updated: 1/20/2023<FGFFFFFFFF>\r\n\r\na chill or kill gamemode designed with AFKing in mind.\r\n\r\nbased on:\r\n» Chill Zone Base Creator by AlaskaWolf • <FGFDFD96FF>ARYD2<FGFFFFFFFF>\r\n» Base Wars by Zezombye • <FGFDFD96FF>14WON<FGFFFFFFFF>",
         "modeName": "<FGA5F2F3FF>chill <FGFF6961FF>kill <FGFFFFFFFF>bases"
     },
     "lobby": {
@@ -44,6 +44,9 @@ globalvar banList
 globalvar playerNameList
 globalvar baseVectorList
 globalvar prefsList
+# HUD
+globalvar modListHUD
+globalvar modListHUDI
 # data
 globalvar COLORS
 globalvar KEY_DATA
@@ -84,8 +87,11 @@ playervar afkTimer
 
 
 /* SUBROUTINE NAMES */
+subroutine InitializePlayer
+subroutine UpdateModListHUD
 subroutine UpdateHUD
 subroutine UpdatePrefsHUD
+subroutine UpdateEffect
 subroutine UpdateHero
 subroutine UpdateAbilities
 subroutine UpdateAFKTimer
@@ -124,7 +130,7 @@ subroutine HardReset
 wait(RAINBOW_DURATION)\
 stopChasingVariable(c)
 #!define StopMomentum() eventPlayer.applyImpulse(-eventPlayer.getVelocity(), 0.00001, Relativity.TO_PLAYER, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
-#!define UpdateHeroOutline() eventPlayer.startForcingOutlineFor(getAllPlayers(), true, COLORS[eventPlayer.prefs[prefsI.heroOutlineColor]], OutlineVisibility.DEFAULT)
+#!define UpdateHeroOutline() eventPlayer.startForcingOutlineFor(getAllPlayers(), true, rainbowColor() if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]], OutlineVisibility.DEFAULT)
 #!define UpdateVoicelinePitch() eventPlayer.startModifyingVoicelinePitch(eventPlayer.prefs[prefsI.voicePitch] / 100, false)
 # effects
 #!define ExplodeBase() playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION, rainbowColor() if eventPlayer.prefs[prefsI.baseColor] == colorsI.rainbow else COLORS[eventPlayer.prefs[prefsI.baseColor]], eventPlayer.baseVector, eventPlayer.prefs[prefsI.baseSize] * 2)
@@ -171,6 +177,7 @@ enum statusVarsI:
 
 
 enum miscVarsI:
+    effectID,
     lastPosDir,
     playerInFocus,
     keyboardChar,
@@ -182,6 +189,7 @@ enum prefsI:
     resetPrefs,
     switchTeam,
     fastTravel,
+    remotePackBase,
     thirdPersonMode,
     customMessage,
     customMessageColor,
@@ -194,7 +202,9 @@ enum prefsI:
     clipSpectatorCam,
     spectatorCamDist,
     spectatorSwitchTimer,
-    heroOutlineColor,
+    heroEffectsColor,
+    chillEffect,
+    hideEffectFromSelf,
     flight,
     flightAccel,
     invisibility,
@@ -299,7 +309,23 @@ enum prefsTypeI:
     interactHold, # duration
     interactHoldBoolean, # duration
     customMessage, # duration
-    colorPicker, # includes rainbow
+    colorPicker # includes rainbow
+
+
+enum chillEffectI:
+    sparkles,
+    cloud,
+    lightShaft,
+    goodAura,
+    badAura,
+    ring,
+    sphere
+
+
+enum hideEffectFromSelfI:
+    off,
+    on,
+    firstPerson
 
 
 rule "setup":
@@ -409,6 +435,10 @@ rule " • global initialization":
 rule " • global variables":
     @Condition isGameInProgress()
 
+    # automod and autoban
+    banList = []
+    modList = ["shifterest", "QueenWolf", "aerhysu", "Foos"]
+
     COLORS = [
         Color.WHITE,
         Color.YELLOW,
@@ -457,6 +487,7 @@ rule " • global variables":
             1
         ],
         ["fast travel", "lets you teleport to, from, or between bases", prefsTypeI.boolean],
+        ["remote pack base", "lets you pack your base from outside it", prefsTypeI.boolean],
         ["third-person mode", "toggles the third-person camera", prefsTypeI.boolean],
         [
             "custom message",
@@ -529,9 +560,38 @@ rule " • global variables":
             [3, 180, 1, " seconds"],
         ],
         [
-            "hero outline color",
-            "changes the color of your hero outline",
-            prefsTypeI.colorPicker
+            "hero outline and effects color",
+            "changes the color of your hero outline and chill / zen mode effects",
+            prefsTypeI.colorPicker,
+            true
+        ],
+        [
+            "chill mode effect",
+            "the effect surrounding the hero when in chill / zen mode",
+            prefsTypeI.multipleChoice,
+            [
+                "sparkles",
+                "cloud",
+                "light shaft",
+                "good aura",
+                "bad aura",
+                "ring",
+                "sphere"
+            ],
+            null,
+            true
+        ],
+        [
+            "hide chill effect from self",
+            "hides the chill / zen mode effect from yourself",
+            prefsTypeI.multipleChoice,
+            [
+                "off",
+                "on",
+                "first-person only"
+            ],
+            null,
+            true
         ],
         ["flight", "lets you fly", prefsTypeI.boolean, null, null, true],
         [
@@ -691,77 +751,84 @@ rule " • global variables":
 
     # character, horizontal angle, vertical angle, half-width
     KEY_DATA = [
-        ["~", 26.3, -3],
-        ["!", 23.3, -3],
-        ["@", 19.8, -3],
-        ["#", 17.1, -3],
-        ["$", 16, -3],
-        ["%", 9.1, -3],
-        ["^", 5.5, -3],
-        ["&", 2.1, -3],
-        ["*", -1.1, -3],
-        ["(", -4, -3],
-        [")", -6.7, -3],
-        ["_", -9.8, -3],
-        ["+", -13, -3],
-        ["back", -21.4, -3, 5.5],
-        ["`", 25.2, 0.5],
-        ["1", 22.5, 0.5],
-        ["2", 19.3, 0.5],
-        ["3", 15.9, 0.5],
-        ["4", 12.6, 0.5],
-        ["5", 9.2, 0.5],
-        ["6", 5.8, 0.5],
-        ["7", 2.4, 0.5],
-        ["8", -1, 0.5],
-        ["9", -4.3, 0.5],
-        ["0", -7.7, 0.5],
-        ["-", -10.9, 0.5],
-        ["=", -14, 0.5],
-        ["{", -17.2, 0.5],
-        ["[", -20.1, 0.5],
-        ["|", -23, 0.5],
-        ["q", 20.9, 5.8],
-        ["w", 17, 5.8],
-        ["e", 13.5, 5.8],
-        ["r", 10, 5.8],
-        ["t", 6.7, 5.8],
-        ["y", 3.4, 5.8],
-        ["u", 0, 5.8],
-        ["i", -3.2, 5.8],
-        ["o", -6.3, 5.8],
-        ["p", -9.8, 5.8],
-        ["}", -15.1, 5.8],
-        ["]", -18.1, 5.8],
-        ["\\", -21.1, 5.8],
-        ["a", 19.1, 9.1],
-        ["s", 15.7, 9.1],
-        ["d", 12.3, 9.1],
-        ["f", 9, 9.1],
-        ["g", 5.4, 9.1],
-        ["h", 2, 9.1],
-        ["j", -1.3, 9.1],
-        ["k", -4.6, 9.1],
-        ["l", -8, 9.1],
-        [":", -11, 9.1],
-        [";", -13.6, 9.1],
-        ['"', -16.5, 9.1],
-        ["'", -19.4, 9.1],
-        ["z", 17.3, 12.7],
-        ["x", 13.9, 12.7],
-        ["c", 10.6, 12.7],
-        ["v", 7.1, 12.7],
-        ["b", 3.7, 12.7],
-        ["n", 0.2, 12.7],
-        ["m", -3.4, 12.7],
-        ["<", -7, 12.7],
-        [">", -10.2, 12.7],
-        [",", -13, 12.7],
-        [".", -15.8, 12.7],
-        ["?", -18.7, 12.7],
-        ["/", -21.9, 12.7],
-        [" ", 4.6, 18, 3],
-        ["exit", -5.9, 18, 2.5],
+        ["♥", 12.9, -4.8],
+        ["♡", 8.5, -4.8],
+        ["ツ", 4, -4.8],
+        ["♪", -0.5, -4.8],
+        ["★", -4.5, -4.8],
+        ["▲", -8.7, -4.8],
+        ["▼", -13, -4.8],
+        ["~", 26.3, -1.3],
+        ["!", 23.3, -1.3],
+        ["@", 19.8, -1.3],
+        ["#", 17.1, -1.3],
+        ["$", 16, -1.3],
+        ["%", 9.1, -1.3],
+        ["^", 5.5, -1.3],
+        ["&", 2.1, -1.3],
+        ["*", -1.1, -1.3],
+        ["(", -4, -1.3],
+        [")", -6.7, -1.3],
+        ["_", -9.8, -1.3],
+        ["+", -13, -1.3],
+        ["back", -21.4, -1.3, 5.5],
+        ["`", 25.2, 2.3],
+        ["1", 22.5, 2.3],
+        ["2", 19.3, 2.3],
+        ["3", 15.9, 2.3],
+        ["4", 12.6, 2.3],
+        ["5", 9.2, 2.3],
+        ["6", 5.8, 2.3],
+        ["7", 2.4, 2.3],
+        ["8", -1, 2.3],
+        ["9", -4.3, 2.3],
+        ["0", -7.7, 2.3],
+        ["-", -10.9, 2.3],
+        ["=", -14, 2.3],
+        ["{", -17.2, 2.3],
+        ["[", -20.1, 2.3],
+        ["|", -23, 2.3],
+        ["q", 20.9, 7.5],
+        ["w", 17, 7.5],
+        ["e", 13.5, 7.5],
+        ["r", 10, 7.5],
+        ["t", 6.7, 7.5],
+        ["y", 3.4, 7.5],
+        ["u", 0, 7.5],
+        ["i", -3.2, 7.5],
+        ["o", -6.3, 7.5],
+        ["p", -9.8, 7.5],
+        ["}", -15.1, 7.5],
+        ["]", -18.1, 7.5],
+        ["\\", -21.1, 7.5],
+        ["a", 19.1, 11],
+        ["s", 15.7, 11],
+        ["d", 12.3, 11],
+        ["f", 9, 11],
+        ["g", 5.4, 11],
+        ["h", 2, 11],
+        ["j", -1.3, 11],
+        ["k", -4.6, 11],
+        ["l", -8, 11],
+        [":", -11, 11],
+        [";", -13.6, 11],
+        ['"', -16.5, 11],
+        ["'", -19.4, 11],
+        ["z", 17.3, 14.5],
+        ["x", 13.9, 14.5],
+        ["c", 10.6, 14.5],
+        ["v", 7.1, 14.5],
+        ["b", 3.7, 14.5],
+        ["n", 0.2, 14.5],
+        ["m", -3.4, 14.5],
+        ["<", -7, 14.5],
+        [">", -10.2, 14.5],
+        [",", -13, 14.5],
+        [".", -15.8, 14.5],
+        ["?", -18.7, 14.5],
+        ["/", -21.9, 14.5],
+        [" ", 4.6, 19.8, 3],
+        ["exit", -5.9, 19.8, 2.5],
     ]
 
     BASE_MODE_ICONS = [
@@ -783,9 +850,6 @@ rule " • global variables":
     blue = 255
     chase(angle, -10000, rate = 7, ChaseReeval.NONE)
 
-    banList = []
-    modList = []
-
     defaultPrefs[prefsI.playerMode] = createWorkshopSetting(
         enum["kill", "chill", "zen"],
         "default game preferences",
@@ -795,6 +859,9 @@ rule " • global variables":
     )
     defaultPrefs[prefsI.fastTravel] = createWorkshopSetting(
         bool, "default game preferences", "fast travel", true, prefsI.fastTravel
+    )
+    defaultPrefs[prefsI.remotePackBase] = createWorkshopSetting(
+        bool, "default game preferences", "remote pack base", true, prefsI.remotePackBase
     )
     defaultPrefs[prefsI.thirdPersonMode] = createWorkshopSetting(
         bool,
@@ -860,12 +927,26 @@ rule " • global variables":
         10,
         prefsI.spectatorSwitchTimer
     )
-    defaultPrefs[prefsI.heroOutlineColor] = createWorkshopSetting(
+    defaultPrefs[prefsI.heroEffectsColor] = createWorkshopSetting(
         colorsEnumNoRainbow(),
         "default special hero preferences",
-        "hero outline color",
+        "hero outline and effects color",
         0,
-        prefsI.heroOutlineColor
+        prefsI.heroEffectsColor
+    )
+    defaultPrefs[prefsI.chillEffect] = createWorkshopSetting(
+        enum["sparkles", "cloud", "light shaft", "good aura", "bad aura", "ring", "sphere"],
+        "default game preferences",
+        "chill effect",
+        0,
+        prefsI.chillEffect
+    )
+    defaultPrefs[prefsI.hideEffectFromSelf] = createWorkshopSetting(
+        enum["off", "on", "first-person only"],
+        "default game preferences",
+        "hide chill effect from self",
+        hideEffectFromSelfI.firstPerson,
+        prefsI.hideEffectFromSelf
     )
     defaultPrefs[prefsI.flight] = createWorkshopSetting(
         bool, "default special hero preferences", "flight", false, prefsI.flight
@@ -984,6 +1065,9 @@ rule " • player initialization":
 
     waitUntil(playerInit, 99999)
 
+    if "{}".format(eventPlayer) in modList:
+        async(UpdateModListHUD, AsyncBehavior.RESTART)
+
     if eventPlayer.prefs:
         HardReset()
 
@@ -1019,11 +1103,11 @@ rule " • player initialization":
         if createWorkshopSetting(
             bool,
             "default hero preferences",
-            "randomize hero outline color",
+            "randomize hero outline and effects color",
             true,
-            prefsI.heroOutlineColor
+            prefsI.heroEffectsColor
         ):
-            eventPlayer.prefs[prefsI.heroOutlineColor] = random.randint(
+            eventPlayer.prefs[prefsI.heroEffectsColor] = random.randint(
                 colorsI.yellow, colorsI.black
             )
 
@@ -1038,14 +1122,38 @@ rule " • player initialization":
                 colorsI.yellow, colorsI.black
             )
 
-    async(UpdateHero, AsyncBehavior.RESTART)
-    ResetCam()
-    UpdateVoicelinePitch()
-    UpdateAFKTimer()
+        # loadouts
+        if "{}".format(eventPlayer) == "shifterest":
+            eventPlayer.prefs[prefsI.playerMode] = playerModesI.chill
+            eventPlayer.prefs[prefsI.baseColor] = colorsI.black
+            eventPlayer.prefs[prefsI.heroEffectsColor] = colorsI.rainbow
+            eventPlayer.prefs[prefsI.baseMode] = baseModesI.friendly
+            eventPlayer.prefs[prefsI.customMessage] = "i come in peace"
+            eventPlayer.prefs[prefsI.customMessageColor] = colorsI.rainbow
+            eventPlayer.prefs[prefsI.flight] = true
+            eventPlayer.prefs[prefsI.inBaseGravity] = 500
+            eventPlayer.prefs[prefsI.inBaseMovementSpeed] = 500
+            eventPlayer.prefs[prefsI.movementSpeed] = 200
+            eventPlayer.prefs[prefsI.spectateOnAFK] = 1
+            eventPlayer.prefs[prefsI.knockback] = 500
+            eventPlayer.prefs[prefsI.projectileGravity] = 0
+            eventPlayer.prefs[prefsI.projectileSpeed] = 500
+            eventPlayer.prefs[prefsI.chillEffect] = chillEffectI.goodAura
+            eventPlayer.prefs[prefsI.hideEffectFromSelf] = hideEffectFromSelfI.off
+        if "{}".format(eventPlayer) == "Foos":
+            eventPlayer.prefs[prefsI.customMessage] = "bark"
+            eventPlayer.prefs[prefsI.customMessageColor] = colorsI.white
+        if "{}".format(eventPlayer) == "QueenWolf":
+            eventPlayer.prefs[prefsI.customMessage] = "♡ R O Y A L T Y ♡"
+            eventPlayer.prefs[prefsI.playerMode] = playerModesI.chill
+            eventPlayer.prefs[prefsI.customMessageColor] = random.choice(
+                [colorsI.rose, colorsI.rainbow]
+            )
+            eventPlayer.prefs[prefsI.heroEffectsColor] = colorsI.rainbow
+        if "{}".format(eventPlayer) == "DJBASTION":
+            eventPlayer.setAllowedHeroes(Hero.BASTION)
 
-    waitUntil(eventPlayer.hasSpawned(), 99999)
-
-    UpdateHeroOutline()
+    InitializePlayer()
 
     wait(0.25)
     if playerNameList.index("{}".format(eventPlayer)) < 0:
@@ -1061,6 +1169,13 @@ rule " • player initialization":
         bigMessage(eventPlayer, "welcome back!")
 
 
+rule " • player left":
+    @Event playerLeft
+
+    if "{}".format(eventPlayer) in modList:
+        async(UpdateModListHUD, AsyncBehavior.RESTART)
+
+
 rule " • global HUD":
     @Condition isGameInProgress()
 
@@ -1069,13 +1184,14 @@ rule " • global HUD":
         null
         if localPlayer.prefs[prefsI.spectatorMode]
         else localPlayer,
-        "lobby up for {} • hosted by {} {}\n".format(
+        "lobby up for {} • hosted by {} {}{}\n".format(
             "{} minute{}".format(
                 floor(getTotalTimeElapsed() / 60),
                 "" if floor(getTotalTimeElapsed() / 60) == 1 else "s"
             ),
             heroIcon(hostPlayer.getCurrentHero()),
-            hostPlayer
+            hostPlayer,
+            modListHUD
         ),
         HudPosition.LEFT,
         0,
@@ -1089,7 +1205,7 @@ rule " • global HUD":
     hudSubheader(
         null
         if localPlayer.prefs[prefsI.spectatorMode]
-        else modList.concat(hostPlayer),
+        else [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer),
         "{} current • {} mean • {} peak".format(
             getServerLoad(), getAverageServerLoad(), getPeakServerLoad(), localPlayer.prefs[prefsI.infiniteUlt]
         ),
@@ -1100,7 +1216,7 @@ rule " • global HUD":
         SpecVisibility.NEVER
     )
     hudSubheader(
-        modList.concat(hostPlayer)
+        [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer)
         if localPlayer.modeVars[modeVarsI.modMode]
         and not localPlayer.prefs[prefsI.spectatorMode]
         else null,
@@ -1117,7 +1233,7 @@ rule " • global HUD":
     hudSubheader(
         null
         if localPlayer.prefs[prefsI.spectatorMode]
-        else modList.concat(hostPlayer),
+        else [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer),
         "{} + {} • toggle moderator mode".format(
             buttonString(Button.CROUCH), buttonString(Button.RELOAD)
         ),
@@ -1129,7 +1245,7 @@ rule " • global HUD":
     )
     # padding
     hudSubheader(
-        modList.concat(hostPlayer),
+        [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer),
         " ",
         HudPosition.TOP,
         2,
@@ -1163,7 +1279,7 @@ rule " • global HUD":
             " (host)"
             if localPlayer.miscVars[miscVarsI.playerInFocus] == hostPlayer
             else " (moderator)"
-            if localPlayer.miscVars[miscVarsI.playerInFocus] in modList
+            if localPlayer.miscVars[miscVarsI.playerInFocus] in [player for player in getAllPlayers() if "{}".format(player) in modList]
             else "",
             PREFS_DATA[prefsI.playerMode][prefsDataI.parameters][
                 localPlayer.miscVars[miscVarsI.playerInFocus].prefs[
@@ -1322,6 +1438,25 @@ rule " • global HUD":
         HudReeval.VISIBILITY_AND_STRING,
         SpecVisibility.NEVER
     )
+    # remote pack base hotkeys
+    hudSubheader(
+        null
+        if localPlayer.modeVars[modeVarsI.modMode]
+        or localPlayer.modeVars[modeVarsI.keyboardMode]
+        or localPlayer.baseVars[baseVarsI.baseSettledIn] == localPlayer
+        or localPlayer.prefs[prefsI.spectatorMode]
+        or not localPlayer.prefs[prefsI.remotePackBase]
+        or not localPlayer.baseVector
+        else localPlayer,
+        "hold {} + {} • pack base".format(
+            buttonString(Button.CROUCH), buttonString(Button.INTERACT)
+        ),
+        HudPosition.TOP,
+        4,
+        Color.WHITE,
+        HudReeval.VISIBILITY_AND_STRING,
+        SpecVisibility.NEVER
+    )
     # padding
     hudSubheader(
         localPlayer,
@@ -1370,7 +1505,7 @@ rule " • global HUD":
     # game info
     hudSubheader(
         localPlayer,
-        "chill / kill bases • workshop.codes/TSX53",
+        "chill / kill bases • tinyurl.com/djkween • TSX53",
         HudPosition.RIGHT,
         0,
         rainbowColor(),
@@ -1422,13 +1557,26 @@ rule " • global HUD":
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
     # keyboard
+    # createInWorldText(
+    #     localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
+    #     "{} | {}".format(
+    #         angleDifference(horizontalAngleOfDirection(localPlayer.miscVars[miscVarsI.lastPosDir][1]), localPlayer.getHorizontalFacingAngle()),
+    #         angleDifference(verticalAngleOfDirection(localPlayer.miscVars[miscVarsI.lastPosDir][1]), localPlayer.getVerticalFacingAngle())
+    #     ),
+    #     keyboardVect(0.35),
+    #     1,
+    #     Clip.NONE,
+    #     WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
+    #     Color.WHITE,
+    #     SpecVisibility.NEVER
+    # )
     createInWorldText(
         localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
         "{}{}".format(
             localPlayer.prefs[prefsI.customMessage],
             "|" if getTotalTimeElapsed() % 1 <= 0.5 else " "
         ),
-        keyboardVect(0.25),
+        keyboardVect(0.3),
         2.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -1437,8 +1585,18 @@ rule " • global HUD":
     )
     createInWorldText(
         localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
+        "♥     ♡     ツ     ♪     ★     ▲     ▼",
+        keyboardVect(0.15),
+        2.5,
+        Clip.NONE,
+        WorldTextReeval.VISIBILITY_AND_POSITION,
+        Color.WHITE,
+        SpecVisibility.NEVER
+    )
+    createInWorldText(
+        localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
         "~     !     @     #     $     %     ^     &     *     (     )     _     +     backspace",
-        keyboardVect(0.1),
+        keyboardVect(0.05),
         2.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
@@ -1448,7 +1606,7 @@ rule " • global HUD":
     createInWorldText(
         localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
         "`     1     2     3     4     5     6     7     8     9     0     -     =     {     [     |     ",
-        keyboardVect(0),
+        keyboardVect(-0.05),
         2.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
@@ -1458,7 +1616,7 @@ rule " • global HUD":
     createInWorldText(
         localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
         "q     w     e     r     t     y     u     i     o     p          }     ]     \\",
-        keyboardVect(-0.15),
+        keyboardVect(-0.2),
         2.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
@@ -1468,7 +1626,7 @@ rule " • global HUD":
     createInWorldText(
         localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
         "a     s     d     f     g     h     j     k     l     :     ;     \"     '",
-        keyboardVect(-0.25),
+        keyboardVect(-0.3),
         2.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
@@ -1478,7 +1636,7 @@ rule " • global HUD":
     createInWorldText(
         localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
         "          z     x     c     v     b     n     m     <     >     ,     .     ?     /",
-        keyboardVect(-0.35),
+        keyboardVect(-0.4),
         2.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
@@ -1488,7 +1646,7 @@ rule " • global HUD":
     createInWorldText(
         localPlayer if localPlayer.modeVars[modeVarsI.keyboardMode] else null,
         "space     •     exit",
-        keyboardVect(-0.5),
+        keyboardVect(-0.55),
         2.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
@@ -1711,7 +1869,7 @@ rule " • global HUD":
         and localPlayer.prefsVars[prefsVarsI.isViewingPrefs]
         and not localPlayer.prefs[prefsI.playerMode]
         else null,
-        "chill or zen mode required",
+        "chill / zen mode required",
         localPlayer.baseVector,
         1,
         Clip.NONE,
@@ -1724,32 +1882,6 @@ rule " • global HUD":
 rule " • player HUD":
     @Event eachPlayer
 
-    # chill mode indicator
-    createEffect(
-        null
-        if eventPlayer.statusVars[statusVarsI.isInvisible]
-        or not eventPlayer.prefs[prefsI.playerMode]
-        or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
-        else getAllPlayers().exclude(eventPlayer),
-        Effect.SPARKLES,
-        COLORS[eventPlayer.prefs[prefsI.heroOutlineColor]],
-        eventPlayer,
-        (eventPlayer.prefs[prefsI.heroSize] / 200) if eventPlayer.prefs[prefsI.playerMode] else 0.5,
-        EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
-    )
-    # spectator mode indicator
-    createEffect(
-        null
-        if not eventPlayer.prefs[prefsI.spectatorMode]
-        or eventPlayer.statusVars[statusVarsI.isInvisible]
-        or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
-        else getAllPlayers().exclude(eventPlayer),
-        Effect.CLOUD,
-        COLORS[eventPlayer.prefs[prefsI.heroOutlineColor]],
-        eventPlayer,
-        (eventPlayer.prefs[prefsI.heroSize] / 200) if eventPlayer.prefs[prefsI.playerMode] else 0.5,
-        EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
-    )
     # custom message
     createInWorldText(
         null
@@ -1988,6 +2120,7 @@ rule " • auto-spectate on AFK":
         eventPlayer.modeVars[modeVarsI.modMode]
         or eventPlayer.modeVars[modeVarsI.keyboardMode]
         or eventPlayer.prefs[prefsI.spectatorMode]
+        or eventPlayer.prefs[prefsI.infiniteUlt]
     ):
         return
 
@@ -2187,7 +2320,7 @@ rule " • self-paralyze":
     else:
         eventPlayer.progressHUD[progressHUDI.text] = "paralyzing..."
 
-    eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.prefs[prefsI.heroOutlineColor]
+    eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.prefs[prefsI.heroEffectsColor]
     chase(eventPlayer.progress, 100, duration = 0.6, ChaseReeval.NONE)
 
     waitUntil(
@@ -2223,6 +2356,41 @@ rule " • self-paralyze":
 
     stopChasingVariable(eventPlayer.progress)
     eventPlayer.progress = 0
+
+
+rule " • remote pack base":
+    @Event eachPlayer
+    @Condition eventPlayer.baseVector
+    @Condition eventPlayer.prefs[prefsI.remotePackBase]
+    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.baseVars[baseVarsI.baseSettledIn] != eventPlayer
+    @Condition not eventPlayer.modeVars[modeVarsI.modMode]
+    @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
+    @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
+
+    eventPlayer.progressHUD[progressHUDI.text] = "preparing to pack base..."
+    eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.prefs[prefsI.baseColor]
+    chase(eventPlayer.progress, 100, duration = 1, ChaseReeval.NONE)
+
+    waitUntil(
+        eventPlayer.progress == 100
+        or not eventPlayer.isHoldingButton(Button.CROUCH)
+        or not eventPlayer.isHoldingButton(Button.INTERACT)
+        or eventPlayer.baseVars[baseVarsI.baseSettledIn] == eventPlayer
+        or eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
+        or eventPlayer.modeVars[modeVarsI.modMode],
+        1
+    )
+
+    if eventPlayer.progress == 100:
+        eventPlayer.baseVector = null
+        async(UpdateHero, AsyncBehavior.RESTART)
+        async(BackupPlayer, AsyncBehavior.NOOP)
+
+    stopChasingVariable(eventPlayer.progress)
+    eventPlayer.progress = 0
+    wait(0.1)
 
 
 rule " • keep paralysis inflicted (knock down)":
@@ -2314,7 +2482,7 @@ rule " • toggle moderator mode":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
-    @Condition eventPlayer in modList.concat(hostPlayer)
+    @Condition eventPlayer in [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer)
     @Condition not eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
     @Condition not eventPlayer.modeVars[modeVarsI.createMode]
     @Condition not eventPlayer.modeVars[modeVarsI.keyboardMode]
@@ -2332,7 +2500,7 @@ rule " • toggle moderator mode":
     )
 
     waitUntil(
-        not eventPlayer in modList.concat(hostPlayer)
+        not eventPlayer in [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer)
         or eventPlayer.isHoldingButton(Button.CROUCH)
         and eventPlayer.isHoldingButton(Button.RELOAD),
         99999
@@ -2378,7 +2546,7 @@ rule " • paralyze / unparalyze player":
 
     if (
         eventPlayer.miscVars[miscVarsI.playerInFocus]
-        in modList.concat(hostPlayer).exclude(eventPlayer)
+        in [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer).exclude(eventPlayer)
         or eventPlayer.miscVars[miscVarsI.playerInFocus].isDead()
         or not eventPlayer.miscVars[miscVarsI.playerInFocus].hasSpawned()
     ):
@@ -2449,7 +2617,7 @@ rule " • teleport player to you":
 
     if eventPlayer.miscVars[miscVarsI.playerInFocus] == eventPlayer or eventPlayer.miscVars[
         miscVarsI.playerInFocus
-    ] in modList.concat(hostPlayer):
+    ] in [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer):
         DebuffPlayerOnFocus()
         smallMessage(
             eventPlayer,
@@ -2462,7 +2630,7 @@ rule " • teleport player to you":
         )
         eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.miscVars[
             miscVarsI.playerInFocus
-        ].prefs[prefsI.heroOutlineColor]
+        ].prefs[prefsI.heroEffectsColor]
         chase(eventPlayer.progress, 100, duration=0.6, ChaseReeval.NONE)
 
         waitUntil(
@@ -2518,7 +2686,7 @@ rule " • teleport to player":
         )
         eventPlayer.progressHUD[progressHUDI.color] = eventPlayer.miscVars[
             miscVarsI.playerInFocus
-        ].prefs[prefsI.heroOutlineColor]
+        ].prefs[prefsI.heroEffectsColor]
         chase(eventPlayer.progress, 100, duration=0.6, ChaseReeval.NONE)
 
         waitUntil(
@@ -2551,7 +2719,7 @@ rule " • kill player":
 
     if (
         eventPlayer.miscVars[miscVarsI.playerInFocus]
-        in modList.concat(hostPlayer).exclude(eventPlayer)
+        in [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer).exclude(eventPlayer)
         or eventPlayer.miscVars[miscVarsI.playerInFocus].isDead()
         or not eventPlayer.miscVars[miscVarsI.playerInFocus].hasSpawned()
     ):
@@ -2595,7 +2763,7 @@ rule " • delete base":
     @Condition not eventPlayer.isHoldingButton(Button.MELEE)
     @Condition not eventPlayer.isHoldingButton(Button.ULTIMATE)
 
-    if eventPlayer.miscVars[miscVarsI.playerInFocus] in modList.concat(hostPlayer).exclude(
+    if eventPlayer.miscVars[miscVarsI.playerInFocus] in [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer).exclude(
         eventPlayer
     ):
         DebuffPlayerOnFocus()
@@ -2655,7 +2823,7 @@ rule " • ban player":
     @Condition not eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition not eventPlayer.isHoldingButton(Button.ULTIMATE)
 
-    if eventPlayer.miscVars[miscVarsI.playerInFocus] in modList.concat(hostPlayer):
+    if eventPlayer.miscVars[miscVarsI.playerInFocus] in [player for player in getAllPlayers() if "{}".format(player) in modList].concat(hostPlayer):
         DebuffPlayerOnFocus()
         smallMessage(
             eventPlayer,
@@ -2703,15 +2871,15 @@ rule " • promote / demote player":
             eventPlayer,
             "   {}  you can't promote / demote yourself".format(iconString(Icon.WARNING))
         )
-    elif eventPlayer.miscVars[miscVarsI.playerInFocus] in modList:
-        modList.remove(eventPlayer.miscVars[miscVarsI.playerInFocus])
+    elif eventPlayer.miscVars[miscVarsI.playerInFocus] in [player for player in getAllPlayers() if "{}".format(player) in modList]:
+        modList.remove("{}".format(eventPlayer.miscVars[miscVarsI.playerInFocus]))
         DebuffFocus()
         smallMessage(
             eventPlayer, "   {}  player demoted".format(iconString(Icon.ARROW_DOWN))
         )
         bigMessage(eventPlayer.miscVars[miscVarsI.playerInFocus], "you were demoted.")
     else:
-        modList.append(eventPlayer.miscVars[miscVarsI.playerInFocus])
+        modList.append("{}".format(eventPlayer.miscVars[miscVarsI.playerInFocus]))
         BuffFocus()
         smallMessage(
             eventPlayer, "   {}  player promoted to moderator".format(iconString(Icon.BOLT))
@@ -2720,6 +2888,8 @@ rule " • promote / demote player":
             eventPlayer.miscVars[miscVarsI.playerInFocus], "you were promoted to moderator!"
         )
 
+    async(UpdateModListHUD, AsyncBehavior.RESTART)
+    
     wait(0.5)
 
 
@@ -2940,7 +3110,10 @@ rule " • switch hero":
         eventPlayer.setAllowedHeroes(
             getAllHeroes().exclude(eventPlayer.getCurrentHero())
         )
-        eventPlayer.resetHeroAvailability()
+        if "{}".format(eventPlayer) == "DJBASTION":
+            eventPlayer.setAllowedHeroes(Hero.BASTION)
+        else:
+            eventPlayer.resetHeroAvailability()
     stopChasingVariable(eventPlayer.progress)
     eventPlayer.progress = 0
     wait(0.1)
@@ -3165,21 +3338,36 @@ rule " • view / hide preferences":
     async(UpdateAbilities, AsyncBehavior.RESTART)
 
 
-rule " • jump preferences":
+rule " • jump to preferences":
     @Event eachPlayer
     @Condition eventPlayer.prefsVars[prefsVarsI.isViewingPrefs]
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
-    if eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.spectatorMode:
-        eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.spectatorMode
-    elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.heroOutlineColor:
-        eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.heroOutlineColor
-    elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.heroSize:
-        eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.heroSize
-    elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.baseMode:
-        eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.baseMode
+    if eventPlayer.isHoldingButton(Button.CROUCH):
+        if (
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] > prefsI.baseMode
+            or eventPlayer.prefsVars[prefsVarsI.prefsPage] == 0
+        ):
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.baseMode
+        elif eventPlayer.prefsVars[prefsVarsI.prefsPage] > prefsI.heroSize:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.heroSize
+        elif eventPlayer.prefsVars[prefsVarsI.prefsPage] > prefsI.heroEffectsColor:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.heroEffectsColor
+        elif eventPlayer.prefsVars[prefsVarsI.prefsPage] > prefsI.spectatorMode:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.spectatorMode
+        else:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = 0
     else:
-        eventPlayer.prefsVars[prefsVarsI.prefsPage] = 0
+        if eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.spectatorMode:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.spectatorMode
+        elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.heroEffectsColor:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.heroEffectsColor
+        elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.heroSize:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.heroSize
+        elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.baseMode:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = prefsI.baseMode
+        else:
+            eventPlayer.prefsVars[prefsVarsI.prefsPage] = 0
 
     ExplodeBase()
     BuffPlayer()
@@ -3411,6 +3599,16 @@ rule " • toggle option / interact":
 rule "hero":
     @Delimiter
     @Disabled
+
+
+rule " • rainbow hero outline":
+    @Event eachPlayer
+    @Condition eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+
+    do:
+        UpdateHeroOutline()
+        wait(0.1)
+    while RULE_CONDITION
 
 
 rule " • no cooldowns • primary fire":
@@ -3759,6 +3957,39 @@ rule "subroutines":
     @Disabled
 
 
+def InitializePlayer():
+    @Name " • initialize player"
+
+    async(UpdateHero, AsyncBehavior.RESTART)
+    async(UpdateEffect, AsyncBehavior.RESTART)
+    ResetCam()
+    UpdateVoicelinePitch()
+    UpdateAFKTimer()
+
+    waitUntil(eventPlayer.hasSpawned(), 99999)
+
+    UpdateHeroOutline()
+
+
+def UpdateModListHUD():
+    @Name " • update moderator list HUD"
+
+    modListHUD = ""
+
+    for modListHUDI in range(len(modList)):
+        if not modList[modListHUDI] in ["{}".format(player) for player in getAllPlayers()]:
+            continue
+        if modList[modListHUDI]:
+            modListHUD = "{}{} • {}".format(
+                modListHUD,
+                "\n" if strLen(modListHUD) > 0 else "",
+                modList[modListHUDI]
+            )
+
+    if strLen(modListHUD) > 0:
+        modListHUD = "\n\nmoderators:\n{}".format(modListHUD)
+
+
 def UpdateHUD():
     @Name " • update HUD"
 
@@ -3772,7 +4003,7 @@ def UpdateHUD():
     ):
         eventPlayer.onScreenHUD[
             onScreenHUDI.mainInfo
-        ] = "you're in an arena; death is your only escape"
+        ] = "you're in an arena, death is your only escape"
     else:
         eventPlayer.onScreenHUD[
             onScreenHUDI.mainInfo
@@ -3841,7 +4072,7 @@ def UpdatePrefsHUD():
     if eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.spectatorMode:
         eventPlayer.prefsHUD[prefsHUDI.category] = "spectator"
         eventPlayer.prefsHUD[prefsHUDI.categoryColor] = colorsI.aqua
-    elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.heroOutlineColor:
+    elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.heroEffectsColor:
         eventPlayer.prefsHUD[prefsHUDI.category] = "special hero"
         eventPlayer.prefsHUD[prefsHUDI.categoryColor] = colorsI.turquoise
     elif eventPlayer.prefsVars[prefsVarsI.prefsPage] < prefsI.heroSize:
@@ -3925,6 +4156,156 @@ def UpdatePrefsHUD():
         ]
     else:
         eventPlayer.prefsHUD[prefsHUDI.description] = PREFS_DATA[eventPlayer.prefsVars[prefsVarsI.prefsPage]][prefsDataI.descriptions]
+
+
+def UpdateEffect():
+    @Name " • update effect"
+
+    destroyEffect(eventPlayer.miscVars[miscVarsI.effectID])
+
+    switch eventPlayer.prefs[prefsI.chillEffect]:
+        case chillEffectI.sparkles:
+            createEffect(
+                null
+                if not eventPlayer.prefs[prefsI.playerMode]
+                or eventPlayer.statusVars[statusVarsI.isInvisible]
+                or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
+                else getAllPlayers()
+                if not eventPlayer.prefs[prefsI.hideEffectFromSelf]
+                or eventPlayer.prefs[prefsI.hideEffectFromSelf] == hideEffectFromSelfI.firstPerson
+                and eventPlayer.prefs[prefsI.thirdPersonMode]
+                else getAllPlayers().exclude(eventPlayer),
+                Effect.SPARKLES,
+                rainbowColor()
+                if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+                else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]],
+                eventPlayer,
+                (eventPlayer.prefs[prefsI.heroSize] / 100) if eventPlayer.prefs[prefsI.playerMode] else 1,
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            break
+        case chillEffectI.cloud:
+            createEffect(
+                null
+                if not eventPlayer.prefs[prefsI.playerMode]
+                or eventPlayer.statusVars[statusVarsI.isInvisible]
+                or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
+                else getAllPlayers()
+                if not eventPlayer.prefs[prefsI.hideEffectFromSelf]
+                or eventPlayer.prefs[prefsI.hideEffectFromSelf] == hideEffectFromSelfI.firstPerson
+                and eventPlayer.prefs[prefsI.thirdPersonMode]
+                else getAllPlayers().exclude(eventPlayer),
+                Effect.CLOUD,
+                rainbowColor()
+                if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+                else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]],
+                eventPlayer,
+                (eventPlayer.prefs[prefsI.heroSize] / 100) if eventPlayer.prefs[prefsI.playerMode] else 1,
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            break
+        case chillEffectI.lightShaft:
+            createEffect(
+                null
+                if not eventPlayer.prefs[prefsI.playerMode]
+                or eventPlayer.statusVars[statusVarsI.isInvisible]
+                or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
+                else getAllPlayers()
+                if not eventPlayer.prefs[prefsI.hideEffectFromSelf]
+                or eventPlayer.prefs[prefsI.hideEffectFromSelf] == hideEffectFromSelfI.firstPerson
+                and eventPlayer.prefs[prefsI.thirdPersonMode]
+                else getAllPlayers().exclude(eventPlayer),
+                Effect.LIGHT_SHAFT,
+                rainbowColor()
+                if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+                else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]],
+                updateEveryTick(eventPlayer.getPosition()),
+                (eventPlayer.prefs[prefsI.heroSize] * 3 / 200) if eventPlayer.prefs[prefsI.playerMode] else 1.5,
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            break
+        case chillEffectI.goodAura:
+            createEffect(
+                null
+                if not eventPlayer.prefs[prefsI.playerMode]
+                or eventPlayer.statusVars[statusVarsI.isInvisible]
+                or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
+                else getAllPlayers()
+                if not eventPlayer.prefs[prefsI.hideEffectFromSelf]
+                or eventPlayer.prefs[prefsI.hideEffectFromSelf] == hideEffectFromSelfI.firstPerson
+                and eventPlayer.prefs[prefsI.thirdPersonMode]
+                else getAllPlayers().exclude(eventPlayer),
+                Effect.GOOD_AURA,
+                rainbowColor()
+                if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+                else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]],
+                eventPlayer,
+                (eventPlayer.prefs[prefsI.heroSize] / 100) if eventPlayer.prefs[prefsI.playerMode] else 1,
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            break
+        case chillEffectI.badAura:
+            createEffect(
+                null
+                if not eventPlayer.prefs[prefsI.playerMode]
+                or eventPlayer.statusVars[statusVarsI.isInvisible]
+                or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
+                else getAllPlayers()
+                if not eventPlayer.prefs[prefsI.hideEffectFromSelf]
+                or eventPlayer.prefs[prefsI.hideEffectFromSelf] == hideEffectFromSelfI.firstPerson
+                and eventPlayer.prefs[prefsI.thirdPersonMode]
+                else getAllPlayers().exclude(eventPlayer),
+                Effect.BAD_AURA,
+                rainbowColor()
+                if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+                else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]],
+                eventPlayer,
+                (eventPlayer.prefs[prefsI.heroSize] / 100) if eventPlayer.prefs[prefsI.playerMode] else 1,
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            break
+        case chillEffectI.ring:
+            createEffect(
+                null
+                if not eventPlayer.prefs[prefsI.playerMode]
+                or eventPlayer.statusVars[statusVarsI.isInvisible]
+                or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
+                else getAllPlayers()
+                if not eventPlayer.prefs[prefsI.hideEffectFromSelf]
+                or eventPlayer.prefs[prefsI.hideEffectFromSelf] == hideEffectFromSelfI.firstPerson
+                and eventPlayer.prefs[prefsI.thirdPersonMode]
+                else getAllPlayers().exclude(eventPlayer),
+                Effect.RING,
+                rainbowColor()
+                if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+                else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]],
+                updateEveryTick(eventPlayer),
+                (eventPlayer.prefs[prefsI.heroSize] * 3 / 200) if eventPlayer.prefs[prefsI.playerMode] else 1.5,
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            break
+        case chillEffectI.sphere:
+            createEffect(
+                null
+                if not eventPlayer.prefs[prefsI.playerMode]
+                or eventPlayer.statusVars[statusVarsI.isInvisible]
+                or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1())
+                else getAllPlayers()
+                if not eventPlayer.prefs[prefsI.hideEffectFromSelf]
+                or eventPlayer.prefs[prefsI.hideEffectFromSelf] == hideEffectFromSelfI.firstPerson
+                and eventPlayer.prefs[prefsI.thirdPersonMode]
+                else getAllPlayers().exclude(eventPlayer),
+                Effect.SPHERE,
+                rainbowColor()
+                if eventPlayer.prefs[prefsI.heroEffectsColor] == colorsI.rainbow
+                else COLORS[eventPlayer.prefs[prefsI.heroEffectsColor]],
+                updateEveryTick(eventPlayer),
+                (eventPlayer.prefs[prefsI.heroSize] * 3 / 200) if eventPlayer.prefs[prefsI.playerMode] else 1.5,
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            break
+
+    eventPlayer.miscVars[miscVarsI.effectID] = getLastCreatedEntity()
 
 
 def UpdateHero():
@@ -4154,7 +4535,7 @@ def UpdateAFKTimer():
     else:
         stopChasingVariable(eventPlayer.afkTimer)
         eventPlayer.miscVars[miscVarsI.facingDirPrev] = null
-
+        
 
 def DisableAbilities():
     @Name " • disable abilities"
@@ -4532,6 +4913,9 @@ def PrefsInteract():
         case prefsI.inBaseMovementSpeed:
             async(UpdateHero, AsyncBehavior.RESTART)
             break
+        case prefsI.chillEffect:
+            async(UpdateEffect, AsyncBehavior.RESTART)
+            break
         case prefsI.resetPrefs:
             eventPlayer.prefs = defaultPrefs
             eventPlayer.prefs[
@@ -4540,11 +4924,7 @@ def PrefsInteract():
             eventPlayer.prefs[
                 prefsI.baseGapSize
             ] = eventPlayer.baseVars[baseVarsI.baseGapSizePrev]
-            async(UpdateHero, AsyncBehavior.RESTART)
-            ResetCam()
-            UpdateHeroOutline()
-            UpdateVoicelinePitch()
-            UpdateAFKTimer()
+            InitializePlayer()
             BuffPlayer()
             smallMessage(eventPlayer, "   {}  preferences reset".format(iconString(Icon.CHECKMARK)))
             break
@@ -4587,7 +4967,7 @@ def PrefsInteract():
             )
             async(UpdateAbilities, AsyncBehavior.RESTART)
             break
-        case prefsI.heroOutlineColor:
+        case prefsI.heroEffectsColor:
             UpdateHeroOutline()
             break
         case prefsI.voicePitch:
@@ -4671,3 +5051,4 @@ def HardReset():
     eventPlayer.baseProgress = null
     eventPlayer.interactProgress = null
     eventPlayer.afkTimer = null
+

@@ -34,7 +34,7 @@ rule "— Prepare base":
             UpdateCamera()
             async(UpdateAbilities, AsyncBehavior.RESTART)
         else:
-            # stopChasingVariable(eventPlayer.progress)
+            stopChasingVariable(eventPlayer.progress)
             chase(eventPlayer.progress, 0, duration = 0.25, ChaseReeval.NONE)
     wait(0.5)
 
@@ -246,7 +246,7 @@ rule "— Switch hero":
         stopChasingVariable(eventPlayer.progress)
         eventPlayer.progress = 0
     else:
-        # stopChasingVariable(eventPlayer.progress)
+        stopChasingVariable(eventPlayer.progress)
         chase(eventPlayer.progress, 0, duration = 0.15, ChaseReeval.NONE)
     wait(0.5)
 
@@ -282,7 +282,7 @@ rule "— Pack base":
         eventPlayer.progress = 0
         PackBase()
     else:
-        # stopChasingVariable(eventPlayer.progress)
+        stopChasingVariable(eventPlayer.progress)
         chase(eventPlayer.progress, 0, duration = 0.15, ChaseReeval.NONE)
     wait(0.5)
 
@@ -315,7 +315,7 @@ rule "— Pack base remotely":
         eventPlayer.progress = 0
         PackBase()
     else:
-        # stopChasingVariable(eventPlayer.progress)
+        stopChasingVariable(eventPlayer.progress)
         chase(eventPlayer.progress, 0, duration = 0.25, ChaseReeval.NONE)
 
     wait(0.5)
@@ -382,8 +382,9 @@ rule "— Fast travel":
             eventPlayer.progress = 0
             BuffPlayer()
         else:
-            # stopChasingVariable(eventPlayer.progress)
+            stopChasingVariable(eventPlayer.progress)
             chase(eventPlayer.progress, 0, duration = 0.15, ChaseReeval.NONE)
+        wait(0.5)
         return
     else:
         return
@@ -414,8 +415,9 @@ rule "— Fast travel":
         stopMomentum()
         eventPlayer.teleport(eventPlayer.base_to_fast_travel_owner.base_vector)
     else:
-        # stopChasingVariable(eventPlayer.progress)
+        stopChasingVariable(eventPlayer.progress)
         chase(eventPlayer.progress, 0, duration = 0.15, ChaseReeval.NONE)
+    wait(0.5)
 
 def Confine():
     @Name "— Confine"

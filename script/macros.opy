@@ -1,0 +1,28 @@
+# constants
+#!define center_orb_radius() 0.4
+#!define orb_vector(y) localPlayer.base_vector + (y * Vector.UP * distance(localPlayer.base_vector, raycast(localPlayer.getEyePosition(), localPlayer.getEyePosition() + (Vector.UP * (localPlayer.hero_preferences[Hero.SIZE] / 100) + localPlayer.getFacingDirection() * (localPlayer.hero_preferences[Hero.SIZE] / -20) if localPlayer.main_preferences[Main.PLAYER_MODE] else Vector.UP + localPlayer.getFacingDirection() * -5), null, localPlayer, false).getHitPosition() if localPlayer.game_preferences[Game.THIRD_PERSON] else localPlayer.getEyePosition()) / 2.5)
+#!define menu_vector(x, y) localPlayer.getEyePosition() + vect(x * cosDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1])) + sinDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1])), y, -x * sinDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1])) + cosDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1])))
+#!define rainbow_rgb() rgb(rainbow_red, rainbow_green, rainbow_blue)
+#!define friendly_base_in_crosshair(player) [p for p in getAllPlayers().exclude(player).exclude(player.base_within_owner) if p.base_vector and p.main_preferences[Main.BASE_MODE] == BaseMode.FRIENDLY and distance(player.getEyePosition() + distance(player.getEyePosition(), p.base_vector) * player.getFacingDirection(), p.base_vector) <= p.base_preferences[Base.SIZE]][0]
+# conditions
+#!define isOverlappingBase(vector, size, gap_size) any([p != eventPlayer and p.base_vector and distance(vector, p.base_vector) <= p.base_preferences[Base.SIZE] + size + max(p.base_preferences[Base.GAP_SIZE], gap_size) for p in getAllPlayers()])
+#!define isInMountingRange(player) distance(player.getPlayerClosestToReticle(Team.ALL), player.getPosition()) <= ((player.hero_preferences[Hero.SIZE] * (3 / 200) if player.main_preferences[Main.PLAYER_MODE] else 1.5) + (player.getPlayerClosestToReticle(Team.ALL).hero_preferences[Hero.SIZE] * (3 / 200) if player.getPlayerClosestToReticle(Team.ALL).main_preferences[Main.PLAYER_MODE] else 1.5)) and distance(player.getPlayerClosestToReticle(Team.ALL), player.getPosition()) > 0
+#!define isInDiffBase() [p for p in getAllPlayers() if p.base_vector and eventPlayer in getPlayersInRadius(p.base_vector, p.base_preferences[Base.SIZE], Team.ALL, LosCheck.OFF)][0] != eventPlayer.base_within_owner
+#!define isConfined() eventPlayer.base_settled_owner and eventPlayer.base_settled_owner.base_vector and eventPlayer.base_vector and eventPlayer.base_settled_owner == eventPlayer and eventPlayer.base_preferences[Base.BASE_LOCK]
+#!define isActive() eventPlayer.getThrottle() != vect(0, 0, 0) or eventPlayer.getFacingDirection() != eventPlayer.previous_facing_direction
+# functions
+#!define waitLoad() wait(getAverageServerLoad() / 150)
+#!define iconMessage(visibility, icon, message) smallMessage(visibility, "   {}  {}".format(icon, message))
+#!define stopMomentum() eventPlayer.applyImpulse(-eventPlayer.getVelocity(), 0.00001, Relativity.TO_PLAYER, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+#!define updateHeroOutline() eventPlayer.startForcingOutlineFor(getAllPlayers(), true, rainbow_rgb() if eventPlayer.hero_preferences[Hero.OUTLINE_COLOR] == Colors.RAINBOW else colors_data[eventPlayer.hero_preferences[Hero.OUTLINE_COLOR]], OutlineVisibility.DEFAULT)
+#!define updatePitch() eventPlayer.startModifyingVoicelinePitch(eventPlayer.hero_preferences[Hero.VOICE_PITCH] / 100, false)
+# effects
+#!define RainbowColor(color) rainbow_rgb() if color == Colors.RAINBOW else colors_data[color]
+#!define Aura(effect, pos) createEffect(null if not eventPlayer.main_preferences[Main.PLAYER_MODE] or eventPlayer.isInvisible or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1()) else getAllPlayers(), effect, rainbow_rgb() if eventPlayer.effects_preferences[Effects.AURA_COLOR] == Colors.RAINBOW else colors_data[eventPlayer.effects_preferences[Effects.AURA_COLOR]], pos, eventPlayer.effects_preferences[Effects.AURA_SIZE] / 100, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+#!define AuraHidden(effect, pos) createEffect(null if not eventPlayer.main_preferences[Main.PLAYER_MODE] or eventPlayer.isInvisible or (eventPlayer.getCurrentHero() == Hero.SOMBRA and eventPlayer.isUsingAbility1()) else getAllPlayers().exclude(eventPlayer), effect, rainbow_rgb() if eventPlayer.effects_preferences[Effects.AURA_COLOR] == Colors.RAINBOW else colors_data[eventPlayer.effects_preferences[Effects.AURA_COLOR]], pos, eventPlayer.effects_preferences[Effects.AURA_SIZE] / 100, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+#!define ExplodeBase() playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION, rainbow_rgb() if eventPlayer.base_preferences[Base.COLOR] == Colors.RAINBOW else colors_data[eventPlayer.base_preferences[Base.COLOR]], eventPlayer.base_vector, eventPlayer.base_preferences[Base.SIZE] * 2)
+#!define DebuffPlayerOnFocus() playEffect(eventPlayer, DynamicEffect.DEBUFF_IMPACT_SOUND, null, eventPlayer.focused_player.getPosition(), 100)
+#!define BuffFocus() playEffect([eventPlayer, eventPlayer.focused_player], DynamicEffect.BUFF_IMPACT_SOUND, null, eventPlayer.focused_player.getPosition(), 100)
+#!define DebuffFocus() playEffect([eventPlayer, eventPlayer.focused_player], DynamicEffect.DEBUFF_IMPACT_SOUND, null, eventPlayer.focused_player.getPosition(), 100)
+#!define BuffPlayer() playEffect(eventPlayer, DynamicEffect.BUFF_IMPACT_SOUND, null, eventPlayer.getPosition(), 100)
+#!define DebuffPlayer() playEffect(eventPlayer, DynamicEffect.DEBUFF_IMPACT_SOUND, null, eventPlayer.getPosition(), 100)

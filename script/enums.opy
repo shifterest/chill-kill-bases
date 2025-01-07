@@ -1,0 +1,242 @@
+# preferences indices
+enum Preference:
+    TITLE,
+    DESCRIPTIONS,
+    TYPE,
+    PARAMETERS,
+    COLORS,
+    CHILL_UNBOUND
+
+
+enum PreferenceType:
+    SUB_PREFERENCE,
+    MULTIPLE_CHOICE,
+    BOOLEAN,
+    NUMERIC,
+    INTERACT, # duration
+    INTERACT_MULTIPLE_CHOICE,
+    INTERACT_BOOLEAN, # duration
+    KEYBOARD, # duration
+    COLOR_PICKER
+
+
+enum Numeric:
+    MIN,
+    MAX,
+    STEP,
+    SUFFIX
+
+
+enum Main:
+    PLAYER_MODE,
+    BASE_MODE,
+    GAME,
+    EFFECTS,
+    HERO,
+    UNBOUND,
+    SPECIAL,
+    BASE,
+    DREAM
+
+
+enum Game:
+    THIRD_PERSON,
+    SHOW_HOTKEYS,
+    SELF_PARALYSIS,
+    PARALYSIS_MODE,
+    FAST_TRAVEL,
+    FAST_TRAVEL_TO_OBJECTIVE,
+    INSTANT_RESPAWN,
+    REMOTE_PACK_BASE,
+    SWITCH_TEAM,
+    RESET
+
+
+enum Effects:
+    CUSTOM_MESSAGE,
+    CUSTOM_MESSAGE_COLOR,
+    AURA,
+    AURA_EFFECT,
+    AURA_COLOR,
+    AURA_SIZE,
+    HIDE_AURA_IN_FIRST_PERSON
+
+
+enum Unbound:
+    DAMAGE,
+    HEALING,
+    HEALTH,
+    REPULSIVE,
+    ATTRACTIVE,
+    SLEEPING,
+    BURNING,
+    FREEZING,
+    HACKING,
+    KNOCKING,
+    STUNNING
+
+enum Hero:
+    OUTLINE_COLOR,
+    FLIGHT,
+    FLIGHT_ACCELERATION,
+    KNOCKBACK,
+    SIZE,
+    GRAVITY,
+    SPEED,
+    JUMP_SPEED,
+    PROJECTILE_SPEED,
+    PROJECTILE_GRAVITY,
+    VOICE_PITCH
+
+
+enum Special:
+    NOCLIP,
+    INVISIBILITY,
+    FAST_RELOAD,
+    ALLOW_MOUNTING,
+    MOUNTING_MODE,
+    ABILITY_MODE,
+    ABILITY_SPAM_DELAY,
+    ULTIMATE_MODE,
+    ULTIMATE_SPAM_DELAY
+
+
+enum Base:
+    COLOR,
+    SIZE,
+    GAP_SIZE,
+    BASE_LOCK,
+    NOCLIP,
+    GRAVITY,
+    SPEED,
+    JUMP_SPEED
+
+
+enum Dream:
+    DREAM_MODE,
+    AFK_TIMER,
+    SWITCH_TIMER,
+    CLIP_CAMERA
+
+
+# other enums
+enum Mode:
+    DEFAULT,
+    MUSIC,
+    SHIFTEREST
+
+
+enum Key:
+    CHAR,
+    ANGLE_HORIZONTAL,
+    ANGLE_VERTICAL,
+    HALF_WIDTH
+
+
+enum ProgressHUD:
+    TEXT,
+    COLOR
+
+
+enum InWorldHUD:
+    BASE_MODE_ICON,
+    BASE_SUMMARY
+
+
+enum PreferencesHUD:
+    ACCENT_COLOR,
+    TITLE,
+    CURRENT_PREFERENCE,
+    TOTAL_PREFERENCES,
+    TYPE,
+    PARAMETER,
+    PARAMETER_COLOR,
+    CURRENT_TOTAL_PARAMETERS,
+    DESCRIPTION,
+    CHILL_UNBOUND
+
+
+enum OnScreenHUD:
+    MAIN,
+    SETTLEMENT
+
+
+enum Colors:
+    WHITE,
+    YELLOW,
+    GREEN,
+    PURPLE,
+    RED,
+    BLUE,
+    AQUA,
+    ORANGE,
+    SKY_BLUE,
+    TURQUOISE,
+    LIME_GREEN,
+    GRAY,
+    VIOLET,
+    ROSE,
+    BLACK,
+    RAINBOW
+
+
+enum PlayerMode:
+    KILL,
+    CHILL,
+    ZEN
+
+
+enum BaseMode:
+    PASSIVE,
+    FRIENDLY,
+    EXCLUSIVE
+
+
+enum Paralysis:
+    KNOCKED_DOWN,
+    STUNNED,
+    ASLEEP,
+    FROZEN
+
+
+enum ChillEffect:
+    SPARKLES,
+    CLOUD,
+    LIGHT_SHAFT,
+    GOOD_AURA,
+    BAD_AURA,
+    RING,
+    SPHERE
+
+
+enum AbilityMode:
+    NORMAL,
+    NO_COOLDOWN,
+    HOLD_TO_SPAM
+
+
+enum UltimateMode:
+    NORMAL,
+    NO_COOLDOWN,
+    INFINITE,
+    HOLD_TO_SPAM
+
+
+enum MountingMode:
+    STACK,
+    INTERSECT,
+    FRONT,
+    BACK,
+    LEFT,
+    RIGHT
+
+
+enum ChillUnbound:
+    NONE,
+    CHILL,
+    UNBOUND
+
+    
+enum SpecialChar:
+    BACKSPACE = 1,
+    EXIT

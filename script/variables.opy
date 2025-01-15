@@ -44,8 +44,8 @@ globalvar rainbow_red
 globalvar rainbow_green
 globalvar rainbow_blue
 # miscellaneous
+globalvar orb_radius
 globalvar mode
-globalvar unbound
 globalvar optimize
 globalvar isInitialized
 globalvar isOverloaded
@@ -108,8 +108,10 @@ playervar icon_effect_id
 playervar description_effect_id
 playervar message_effect_id
 # miscellaneous
+playervar cubic_bezier
 playervar focused_player
 playervar previous_position
 playervar previous_position_direction
 playervar keyboard_input_character
 playervar previous_facing_direction
+playervar last_hero

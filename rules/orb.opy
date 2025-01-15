@@ -66,65 +66,13 @@ rule "— Draw preferences HUD":
         updateEveryTick(
             localPlayer.getEyePosition()
             + vect(
-                min(
-                    43.5,
-                    max(
-                        -43.5,
-                        angleDifference(
-                            horizontalAngleOfDirection(
-                                localPlayer.previous_position_direction[1]
-                            ),
-                            localPlayer.getHorizontalFacingAngle()
-                        )
-                    )
-                )
-                / 35
-                * cosDeg(
-                    horizontalAngleOfDirection(
-                        localPlayer.previous_position_direction[1]
-                    )
-                )
-                + sinDeg(
-                    horizontalAngleOfDirection(
-                        localPlayer.previous_position_direction[1]
-                    )
-                ),
-                -min(
-                    27,
-                    max(
-                        -21.7,
-                        angleDifference(
-                            verticalAngleOfDirection(
-                                localPlayer.previous_position_direction[1]
-                            ),
-                            localPlayer.getVerticalFacingAngle()
-                        )
-                    )
-                )
-                / 35,
-                -min(
-                    43.5,
-                    max(
-                        -43.5,
-                        angleDifference(
-                            horizontalAngleOfDirection(
-                                localPlayer.previous_position_direction[1]
-                            ),
-                            localPlayer.getHorizontalFacingAngle()
-                        )
-                    )
-                )
-                / 35
-                * sinDeg(
-                    horizontalAngleOfDirection(
-                        localPlayer.previous_position_direction[1]
-                    )
-                )
-                + cosDeg(
-                    horizontalAngleOfDirection(
-                        localPlayer.previous_position_direction[1]
-                    )
-                )
+                min(43.5, max(-43.5, angleDifference(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()))) / 35
+                * cosDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
+                + sinDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1])),
+                -min(27, max(-21.7, angleDifference(verticalAngleOfDirection( localPlayer.previous_position_direction[1]), localPlayer.getVerticalFacingAngle()))) / 35,
+                -min(43.5, max(-43.5, angleDifference(horizontalAngleOfDirection( localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()))) / 35
+                * sinDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
+                + cosDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
             )
         ),
         2,
@@ -366,15 +314,14 @@ rule "— Draw preferences HUD":
         if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND]
         and localPlayer.isViewingPreferences
         else null,
-        "unbound required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.UNBOUND
-        else "unbound / zen mode required" if unbound and localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.CHILL
-        else "chill / zen mode required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.CHILL
+        "unbound required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.UNBOUND and localPlayer.main_preferences[Main.PLAYER_MODE] != PlayerMode.UNBOUND
+        else "chill / unbound / zen required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.CHILL and not localPlayer.main_preferences[Main.PLAYER_MODE]
         else "",
         localPlayer.base_vector,
         0.9,
         Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        Color.PURPLE if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.UNBOUND or unbound else Color.SKY_BLUE,
+        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
+        Color.ORANGE,
         SpecVisibility.NEVER
     )
 
@@ -458,7 +405,7 @@ rule "— View / hide preferences":
         + distance(eventPlayer.getEyePosition(), eventPlayer.base_vector)
         * eventPlayer.getFacingDirection(),
         eventPlayer.base_vector
-    ) <= center_orb_radius()
+    ) <= orb_radius
 
     eventPlayer.isViewingPreferences = true
     async(UpdateAbilities, AsyncBehavior.RESTART)
@@ -475,7 +422,7 @@ rule "— View / hide preferences":
             * eventPlayer.getFacingDirection(),
             eventPlayer.base_vector
         )
-        > center_orb_radius(),
+        > orb_radius,
         99999
     )
 
@@ -796,6 +743,27 @@ rule "— Go to next / increase parameter":
                             eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = 0
                         async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
                         break
+                    case PreferenceType.NUMERIC:
+                        if eventPlayer.isHoldingButton(Button.CROUCH):
+                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_data[
+                                eventPlayer.main_preferences[Main.GAME]
+                            ][Preference.PARAMETERS][1]
+                            async(InteractWithPreferences, AsyncBehavior.RESTART)
+                            ExplodeBase()
+                            BuffPlayer()
+                        elif (
+                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]]
+                            < game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][1]
+                        ):
+                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] += game_preferences_data[
+                                eventPlayer.main_preferences[Main.GAME]
+                            ][Preference.PARAMETERS][2]
+                            async(InteractWithPreferences, AsyncBehavior.RESTART)
+                        else:
+                            ExplodeBase()
+                            BuffPlayer()
+                            return
+                        break
                 break
             case Main.EFFECTS:
                 switch effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.TYPE]:
@@ -1048,6 +1016,27 @@ rule "— Go to previous / decrease parameter":
                             ) - 1
                         async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
                         break
+                    case PreferenceType.NUMERIC:
+                        if eventPlayer.isHoldingButton(Button.CROUCH):
+                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_data[
+                                eventPlayer.main_preferences[Main.GAME]
+                            ][Preference.PARAMETERS][0]
+                            async(InteractWithPreferences, AsyncBehavior.RESTART)
+                            ExplodeBase()
+                            BuffPlayer()
+                        elif (
+                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]]
+                            > game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][0]
+                        ):
+                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] -= game_preferences_data[
+                                eventPlayer.main_preferences[Main.GAME]
+                            ][Preference.PARAMETERS][2]
+                            async(InteractWithPreferences, AsyncBehavior.RESTART)
+                        else:
+                            ExplodeBase()
+                            BuffPlayer()
+                            return
+                        break
                 break
             case Main.EFFECTS:
                 switch effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.TYPE]:
@@ -1273,13 +1262,19 @@ rule "— Reset preference":
                         ExplodeBase()
                         BuffPlayer()
                         break
+                    case PreferenceType.NUMERIC:
+                        eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_default[eventPlayer.main_preferences[Main.GAME]]
+                        async(InteractWithPreferences, AsyncBehavior.RESTART)
+                        ExplodeBase()
+                        BuffPlayer()
+                        break
                 break
             case Main.EFFECTS:
                 switch effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.TYPE]:
                     case PreferenceType.MULTIPLE_CHOICE:
                     case PreferenceType.COLOR_PICKER:
                     case PreferenceType.NUMERIC:
-                        eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = effects_preferences_default[eventPlayer.main_preferences[Main.EFFECTS]]
+                        eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_default[eventPlayer.main_preferences[Main.GAME]]
                         async(InteractWithPreferences, AsyncBehavior.RESTART)
                         ExplodeBase()
                         BuffPlayer()
@@ -1352,13 +1347,14 @@ def InteractWithPreferences():
                             BuffPlayer()
                         elif not eventPlayer.main_preferences[Main.PLAYER_MODE]:
                             DebuffPlayer()
-                            iconMessage(eventPlayer, iconString(Icon.WARNING), "chill / zen mode required")
+                            iconMessage(eventPlayer, iconString(Icon.WARNING), "can't fast travel in kill mode")
                         else:
                             DebuffPlayer()
                             iconMessage(eventPlayer, iconString(Icon.WARNING), "objective doesn't exist")
                         break
                     case Game.THIRD_PERSON:
-                        UpdateCamera()
+                    case Game.THIRD_PERSON_DISTANCE:
+                        async(UpdateCamera, AsyncBehavior.RESTART)
                         break
                     case Game.SWITCH_TEAM:
                         if getCurrentGamemode() == Gamemode.SKIRMISH:
@@ -1367,7 +1363,7 @@ def InteractWithPreferences():
                             # moveToTeam(eventPlayer, getOppositeTeam(eventPlayer.getTeam()), -1)
                         else:
                             DebuffPlayer()
-                            iconMessage(eventPlayer, iconString(Icon.WARNING), "gamemode isn't skirmish")
+                            iconMessage(eventPlayer, iconString(Icon.WARNING), "gamemode is FFA")
                         break
                     case Game.RESET:
                         PackBase()
@@ -1437,6 +1433,9 @@ def InteractWithPreferences():
                 break
             case Main.SPECIAL:
                 switch eventPlayer.main_preferences[Main.SPECIAL]:
+                    case Special.AMMO_OVERLOAD:
+                        UpdateAmmo()
+                        break
                     case Special.NOCLIP:
                         UpdateSizeNoclip()
                         break

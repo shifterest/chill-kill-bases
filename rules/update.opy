@@ -8,7 +8,7 @@ def InitializePlayer():
 
     UpdateHero()
     UpdateAura()
-    UpdateCamera()
+    async(UpdateCamera, AsyncBehavior.RESTART)
     updatePitch()
     UpdateAFKTimer()
     waitUntil(eventPlayer.hasSpawned(), 99999)
@@ -19,24 +19,30 @@ def InitializePlayer():
 def UpdateHero():
     @Name "— Update hero"
 
-    if eventPlayer.main_preferences[Main.PLAYER_MODE]:
-        if eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.CHILL and unbound:
-            eventPlayer.setDamageDealt(max(eventPlayer.unbound_preferences[Unbound.DAMAGE], 0.1))
+    switch eventPlayer.main_preferences[Main.PLAYER_MODE]:
+        case PlayerMode.KILL:
+            eventPlayer.setDamageDealt(100)
             eventPlayer.setDamageReceived(100)
-            eventPlayer.setHealingDealt(eventPlayer.unbound_preferences[Unbound.HEALING])
-            eventPlayer.setMaxHealth(eventPlayer.unbound_preferences[Unbound.HEALTH])
-            eventPlayer.setHealth(999999999)
-        else:
+            eventPlayer.setHealingDealt(100)
+            eventPlayer.setMaxHealth(100)
+            eventPlayer.setUltCharge(0)
+            break
+        case PlayerMode.CHILL:
+        case PlayerMode.ZEN:
             eventPlayer.setDamageDealt(0)
             eventPlayer.setDamageReceived(0)
             eventPlayer.setHealingDealt(0)
             eventPlayer.setMaxHealth(100)
             eventPlayer.setHealth(eventPlayer.getMaxHealth())
-    else:
-        eventPlayer.setDamageDealt(100)
-        eventPlayer.setDamageReceived(100)
-        eventPlayer.setHealingDealt(100)
-        eventPlayer.setMaxHealth(100)
+            break
+        case PlayerMode.UNBOUND:
+            eventPlayer.setDamageDealt(max(eventPlayer.unbound_preferences[Unbound.DAMAGE], 0.1))
+            eventPlayer.setDamageReceived(100)
+            eventPlayer.setHealingDealt(max(eventPlayer.unbound_preferences[Unbound.HEALING], 0.1))
+            eventPlayer.setMaxHealth(eventPlayer.unbound_preferences[Unbound.HEALTH])
+            eventPlayer.setHealth(999999999)
+            break
+
     UpdateAbilities()
     UpdatePhase()
     UpdateHoT()
@@ -48,6 +54,7 @@ def UpdateHero():
     UpdateProjectiles()
     UpdateRider()
     UpdateHUD()
+    UpdateAmmo()
 
 
 def Transition():
@@ -80,10 +87,7 @@ def UpdateAbilities():
         EnableAbilities()
 
     if (
-        (
-            eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN
-            or eventPlayer.base_settled_owner
-        )
+        (eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN or eventPlayer.base_settled_owner)
         and not (
             eventPlayer.isDuplicatingAHero()
             or eventPlayer.isInModeratorMode
@@ -196,10 +200,10 @@ def UpdateKnockback():
 
     if eventPlayer.main_preferences[Main.PLAYER_MODE]:
         eventPlayer.setKnockbackDealt(eventPlayer.hero_preferences[Hero.KNOCKBACK])
-        if unbound or eventPlayer.hero_preferences[Hero.KNOCKBACK] > 100:
+        if eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.UNBOUND or eventPlayer.hero_preferences[Hero.KNOCKBACK] > 100:
             eventPlayer.setKnockbackReceived(100)
         else:
-            eventPlayer.setKnockbackReceived(1)
+            eventPlayer.setKnockbackReceived(5)
     else:
         eventPlayer.setKnockbackDealt(100)
         eventPlayer.setKnockbackReceived(100)
@@ -214,7 +218,7 @@ def UpdateSizeNoclip():
         eventPlayer.stopScalingSize()
 
     if eventPlayer.base_within_owner:
-        if eventPlayer.base_preferences[Base.NOCLIP]:
+        if eventPlayer.base_within_owner.base_preferences[Base.NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()
@@ -291,3 +295,23 @@ def UpdateHoT():
         eventPlayer.startHoT(eventPlayer, 99999, 500)
     else:
         eventPlayer.stopAllHoT()
+
+def UpdateAmmo():
+    @Name "— Update ammo"
+
+    if eventPlayer.main_preferences[Main.PLAYER_MODE] and eventPlayer.special_preferences[Special.AMMO_OVERLOAD]:
+        eventPlayer.setMaxAmmo(0, 1000)
+        eventPlayer.setAmmo(0, 1000)
+        eventPlayer.setMaxAmmo(1, 1000)
+        eventPlayer.setAmmo(1, 1000)
+    else:
+        eventPlayer.last_hero = eventPlayer.getCurrentHero()
+        eventPlayer.previous_position_direction = [eventPlayer.getPosition(), eventPlayer.getFacingDirection()]
+        eventPlayer.setAllowedHeroes(getAllHeroes().exclude(eventPlayer.last_hero))
+        wait()
+        eventPlayer.startForcingHero(eventPlayer.last_hero)
+        wait()
+        eventPlayer.stopForcingCurrentHero()
+        iconMessage(eventPlayer, iconString(Icon.HAPPY), "Ammo reset")
+        # eventPlayer.setAmmo(0, eventPlayer.getMaxAmmo(0))
+        # eventPlayer.setAmmo(1, eventPlayer.getMaxAmmo(1))

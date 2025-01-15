@@ -271,28 +271,28 @@ rule "— Ability mode • Hold to spam • Jump (Hanzo, Lifeweaver)":
     while RULE_CONDITION
 
 
-rule "— Fast reload (clip 0)":
+rule "— Ammo overload (clip 0)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.FAST_RELOAD]
-    @Condition eventPlayer.getAmmo(0) <= 3
+    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
+    @Condition eventPlayer.getAmmo(0) <= 50
 
-    eventPlayer.setAmmo(0, eventPlayer.getMaxAmmo(0))
+    eventPlayer.setAmmo(0, 1000)
 
 
-rule "— Fast reload (clip 1)":
+rule "— Ammo overload (clip 1)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.FAST_RELOAD]
-    @Condition eventPlayer.getAmmo(1) <= 3
+    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
+    @Condition eventPlayer.getAmmo(1) <= 50
 
-    eventPlayer.setAmmo(1, eventPlayer.getMaxAmmo(1))
+    eventPlayer.setAmmo(1, 1000)
 
 
-rule "— Fast reload (Orisa)":
+rule "— Ammo overload (Orisa)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.FAST_RELOAD]
+    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
     @Condition eventPlayer.getCurrentHero() == Hero.ORISA
 
     do:
@@ -301,10 +301,10 @@ rule "— Fast reload (Orisa)":
     while RULE_CONDITION
 
 
-rule "— Fast reload (D.Va, Hazard)":
+rule "— Ammo overload (D.Va, Hazard)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.FAST_RELOAD]
+    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
     @Condition (
         eventPlayer.getCurrentHero() == Hero.DVA
         or eventPlayer.getCurrentHero() == Hero.HAZARD
@@ -314,20 +314,20 @@ rule "— Fast reload (D.Va, Hazard)":
     eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 100)
 
 
-rule "— Fast reload (Moira)":
+rule "— Ammo overload (Moira)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.FAST_RELOAD]
+    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
     @Condition eventPlayer.getCurrentHero() == Hero.MOIRA
     @Condition eventPlayer.getAbilityResource(Button.PRIMARY_FIRE) < 50
 
     eventPlayer.setAbilityResource(Button.PRIMARY_FIRE, 100)
 
 
-rule "— Fast reload (Illari)":
+rule "— Ammo overload (Illari)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.FAST_RELOAD]
+    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
     @Condition eventPlayer.getCurrentHero() == Hero.ILLARI
     @Condition eventPlayer.getAbilityResource(Button.SECONDARY_FIRE) > 50
 

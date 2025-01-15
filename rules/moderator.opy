@@ -39,7 +39,7 @@ rule "— Toggle moderator mode":
 
     eventPlayer.isInModeratorMode = false
     eventPlayer.focused_player = null
-    UpdateCamera()
+    async(UpdateCamera, AsyncBehavior.RESTART)
     UpdateAbilities()
 
 
@@ -141,12 +141,12 @@ rule "— Kill / resurrect player":
                 iconMessage(eventPlayer.focused_player, iconString(Icon.SKULL), "resurrected by moderator")
             iconMessage(eventPlayer, iconString(Icon.SKULL), "{} resurrected".format(eventPlayer.focused_player))
         else:
-            if eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE]:
+            if eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(100)
             if eventPlayer.focused_player.hasStatusEffect(Status.PHASED_OUT):
                 eventPlayer.focused_player.clearStatusEffect(Status.PHASED_OUT)
             kill(eventPlayer.focused_player, null)
-            if eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE]:
+            if eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(0)
             DebuffFocus()
             if eventPlayer.focused_player != eventPlayer:

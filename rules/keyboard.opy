@@ -131,7 +131,7 @@ rule "— Input key":
                 UpdateMessage()
                 UpdateInvisibility()
                 UpdateAbilities()
-                UpdateCamera()
+                async(UpdateCamera, AsyncBehavior.RESTART)
                 eventPlayer.previous_position_direction = null
                 break
             default:

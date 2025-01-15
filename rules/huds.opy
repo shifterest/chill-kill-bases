@@ -158,7 +158,7 @@ rule "— Draw global HUD":
                 (localPlayer.main_preferences[Main.PLAYER_MODE] or localPlayer.base_settled_owner)
                 and localPlayer.game_preferences[Game.FAST_TRAVEL]
                 and not localPlayer.mount
-                and localPlayer.base_settled_owner == localPlayer
+                # and localPlayer.base_settled_owner == localPlayer
             )
             else "",
             "hold {} • switch hero\nhold {} • pack base\n".format(
@@ -205,6 +205,7 @@ rule "— Draw global HUD":
             and localPlayer.getPlayerClosestToReticle(Team.ALL) != localPlayer.rider
             and localPlayer.getPlayerClosestToReticle(Team.ALL).special_preferences[Special.ALLOW_MOUNTING]
             and isInMountingRange(localPlayer)
+            and not localPlayer.mount
             else ""
         )
         if localPlayer.game_preferences[Game.SHOW_HOTKEYS] and not (
@@ -275,6 +276,17 @@ rule "— Draw global HUD":
                 SpecVisibility.DEFAULT
             )
             break
+        case Mode.SLEEP:
+            hudSubheader(
+                localPlayer,
+                "chill / kill bases • sleep tight • TSX53",
+                HudPosition.RIGHT,
+                0,
+                rainbow_rgb(),
+                HudReeval.VISIBILITY_AND_COLOR,
+                SpecVisibility.DEFAULT
+            )
+            break
         case Mode.SHIFTEREST:
             hudSubheader(
                 localPlayer,
@@ -332,13 +344,30 @@ rule "— Draw global HUD":
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
         or localPlayer.dream_preferences[Dream.DREAM_MODE]
+        or localPlayer.cubic_bezier > 0.3
         else localPlayer,
         Effect.ORB,
         rainbow_rgb()
         if localPlayer.base_preferences[Base.COLOR] == Colors.RAINBOW
         else colors_data[localPlayer.base_preferences[Base.COLOR]],
         localPlayer.base_vector,
-        center_orb_radius(),
+        orb_radius,
+        EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+    )
+    createEffect(
+        null
+        if localPlayer.base_settled_owner != localPlayer
+        or localPlayer.isInModeratorMode
+        or localPlayer.isUsingKeyboard
+        or localPlayer.dream_preferences[Dream.DREAM_MODE]
+        or localPlayer.cubic_bezier <= 0.3
+        else localPlayer,
+        Effect.SPHERE,
+        rainbow_rgb()
+        if localPlayer.base_preferences[Base.COLOR] == Colors.RAINBOW
+        else colors_data[localPlayer.base_preferences[Base.COLOR]],
+        localPlayer.base_vector,
+        orb_radius + ((localPlayer.base_preferences[Base.SIZE] - orb_radius) * (localPlayer.cubic_bezier ** 3)),
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
 
@@ -350,7 +379,7 @@ def UpdateHUD():
         eventPlayer.onscreen_hud[OnScreenHUD.MAIN] = "look at the center orb to change your preferences"
     else:
         eventPlayer.onscreen_hud[OnScreenHUD.MAIN] = "you are currently{} in {} mode".format(
-            " {} invisible".format(abilityIconString(Hero.SOMBRA, Button.ABILITY_1))
+            " invisible"
             if eventPlayer.main_preferences[Main.PLAYER_MODE]
             and eventPlayer.special_preferences[Special.INVISIBILITY]
             else "",
@@ -415,7 +444,7 @@ def CreateBaseEffects():
             rainbow_rgb()
             if eventPlayer.base_preferences[Base.COLOR] == Colors.RAINBOW
             else colors_data[eventPlayer.base_preferences[Base.COLOR]],
-            eventPlayer.getPosition(),
+            updateEveryTick(eventPlayer.getPosition()),
             eventPlayer.base_preferences[Base.SIZE],
             EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
         )
@@ -574,3 +603,4 @@ def UpdateAura():
                     break
 
         eventPlayer.chill_effect_id = getLastCreatedEntity()
+

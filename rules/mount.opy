@@ -40,7 +40,7 @@ def UpdateRider():
     if eventPlayer.rider:
         switch eventPlayer.special_preferences[Special.MOUNTING_MODE]:
             case MountingMode.STACK:
-                eventPlayer.rider.attachTo(eventPlayer, vect(0, 1.5 * (eventPlayer.hero_preferences[Hero.SIZE] / 100) if eventPlayer.main_preferences[Main.PLAYER_MODE] else 1.5, 0))
+                eventPlayer.rider.attachTo(eventPlayer, vect(0, distance(eventPlayer.rider.getPosition(), eventPlayer.rider.getEyePosition()), 0))
                 break
             case MountingMode.INTERSECT:
                 eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 0))

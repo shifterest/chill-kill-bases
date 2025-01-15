@@ -26,8 +26,7 @@ rule "— Avoid server crashes":
 
 
 rule "— Populate global variables":
-    mode = createWorkshopSetting(enum["default", "music", "shifterest"], "game preferences", "lobby mode", 0, 0)
-    unbound = createWorkshopSetting(bool, "game preferences", "unbound mode", true, 0)
+    mode = createWorkshopSetting(enum["default", "music", "sleep", "shifterest"], "game preferences", "lobby mode", 0, 0)
     optimize = createWorkshopSetting(bool, "game preferences", "optimize server load", false, 2)
 
     switch mode:
@@ -59,38 +58,23 @@ rule "— Populate global variables":
         "rainbow"
     ]
 
-    if unbound:
-        main_preferences_data[Main.PLAYER_MODE] = [
-            "player mode",
-            [
-                "Play as usual with all weapons and abilities active.",
-                "Gain access to exclusive unbound features.",
-                "Immune to most crowd control, but no weapons or abilities allowed."
-            ],
-            PreferenceType.MULTIPLE_CHOICE,
-            [
-                "{} kill".format(iconString(Icon.SKULL)),
-                "{} unbound".format(abilityIconString(Hero.HAZARD, Button.ABILITY_2)),
-                "{} zen".format(abilityIconString(Hero.ZENYATTA, Button.ULTIMATE))
-            ],
-            [Colors.RED, Colors.PURPLE, Colors.GREEN]
-        ]
-    else:
-        main_preferences_data[Main.PLAYER_MODE] = [
-            "player mode",
-            [
-                "Play as usual with all weapons and abilities active.",
-                "Relax and vibe. No damage dealt, but access to exclusive chill features.",
-                "Immune to most crowd control, but no weapons or abilities allowed."
-            ],
-            PreferenceType.MULTIPLE_CHOICE,
-            [
-                "{} kill".format(iconString(Icon.SKULL)),
-                "{} chill".format(abilityIconString(Hero.MEI, Button.ULTIMATE)),
-                "{} zen".format(abilityIconString(Hero.ZENYATTA, Button.ULTIMATE))
-            ],
-            [Colors.RED, Colors.SKY_BLUE, Colors.GREEN]
-        ]
+    main_preferences_data[Main.PLAYER_MODE] = [
+        "player mode",
+        [
+            "Play as usual with all weapons and abilities active.",
+            "Relax and vibe. No damage dealt, but access to exclusive chill features.",
+            "Chill and kill mode combined, plus gain access to unbound features.",
+            "Immune to most crowd control, but no weapons or abilities allowed."
+        ],
+        PreferenceType.MULTIPLE_CHOICE,
+        [
+            "{} kill".format(iconString(Icon.SKULL)),
+            "{} chill".format(abilityIconString(Hero.MEI, Button.ULTIMATE)),
+            "{} unbound".format(abilityIconString(Hero.HAZARD, Button.ABILITY_2)),
+            "{} zen".format(abilityIconString(Hero.ZENYATTA, Button.ULTIMATE))
+        ],
+        [Colors.RED, Colors.SKY_BLUE, Colors.PURPLE, Colors.GREEN]
+    ]
 
     main_preferences_data[Main.BASE_MODE] = [
         "base mode",
@@ -115,7 +99,8 @@ rule "— Populate global variables":
     main_preferences_data[Main.BASE] = ["base preferences", "Modify the appearance and functionality of your base.", PreferenceType.SUB_PREFERENCE, null, Colors.ROSE]
     main_preferences_data[Main.DREAM] = ["dream preferences", "Fine-tune the dream mode experience.", PreferenceType.SUB_PREFERENCE, null, Colors.AQUA]
 
-    game_preferences_data[Game.THIRD_PERSON] = ["third-person mode", "Switch to a third-person camera angle.", PreferenceType.BOOLEAN]
+    game_preferences_data[Game.THIRD_PERSON] = ["third-person camera", "Switch to a third-person camera angle.", PreferenceType.BOOLEAN]
+    game_preferences_data[Game.THIRD_PERSON_DISTANCE] = ["third-person camera distance", "The distance of the third-person camera from the player.", PreferenceType.NUMERIC, [10, 1000, 10, "%"]]
     game_preferences_data[Game.SHOW_HOTKEYS] = ["show hotkeys", "Display helpful shortcuts during gameplay.", PreferenceType.BOOLEAN]
     game_preferences_data[Game.SELF_PARALYSIS] = ["self-paralysis", "Immobilize yourself in place to take a break.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
     game_preferences_data[Game.PARALYSIS_MODE] = [
@@ -129,7 +114,7 @@ rule "— Populate global variables":
     game_preferences_data[Game.FAST_TRAVEL] = ["fast travel", "Teleport between bases and key locations.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
     game_preferences_data[Game.FAST_TRAVEL_TO_OBJECTIVE] = [
         "fast travel to objective",
-        "Jump directly to objectives in control maps.",
+        "Jump directly to objectives. Useful in control maps.",
         PreferenceType.INTERACT_MULTIPLE_CHOICE,
         [1, ["first", "second", "third"]],
         null,
@@ -169,17 +154,25 @@ rule "— Populate global variables":
         ChillUnbound.CHILL
     ]
 
-    unbound_preferences_data[Unbound.DAMAGE] = ["damage", "Adjust damage output.", PreferenceType.NUMERIC, [0, 1000, 50, "%"], null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.HEALING] = ["healing", "Control how much healing you do.", PreferenceType.NUMERIC, [0, 1000, 50, "%"], null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.HEALTH] = ["health", "Adjust your health pool.", PreferenceType.NUMERIC, [10, 1000, 10, "%"], null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.REPULSIVE] = ["repulsive shots", "Dealing damage knocks against you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.ATTRACTIVE] = ["attractive shots", "Dealing damage knocks towards you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.SLEEPING] = ["sleeping shots", "Dealing damage inflicts sleep.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.BURNING] = ["burning shots", "Dealing damage burns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.FREEZING] = ["freezing shots", "Dealing damage freezes.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.HACKING] = ["hacking shots", "Dealing damage hacks.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.KNOCKING] = ["knocking shots", "Dealing damage knocks down.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.STUNNING] = ["stunning shots", "Dealing damage stuns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.DAMAGE] = ["damage", "Adjust damage output.", PreferenceType.NUMERIC, [0, 5000, 50, "%"], null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.HEALING] = ["healing", "Control how much healing you do.", PreferenceType.NUMERIC, [0, 5000, 50, "%"], null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.HEALTH] = ["health", "Adjust your health pool.", PreferenceType.NUMERIC, [10, 5000, 10, "%"], null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.REPULSIVE_SHOTS] = ["repulsive shots", "Dealing damage knocks against you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.ATTRACTIVE_SHOTS] = ["attractive shots", "Dealing damage knocks towards you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.SLEEPING_SHOTS] = ["sleeping shots", "Dealing damage inflicts sleep.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.BURNING_SHOTS] = ["burning shots", "Dealing damage burns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.FREEZING_SHOTS] = ["freezing shots", "Dealing damage freezes.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.HACKING_SHOTS] = ["hacking shots", "Dealing damage hacks.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.KNOCKING_SHOTS] = ["knocking shots", "Dealing damage knocks down.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.STUNNING_SHOTS] = ["stunning shots", "Dealing damage stuns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.REPULSIVE_HEALS] = ["repulsive heals", "Healing knocks against you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.ATTRACTIVE_HEALS] = ["attractive heals", "Healing knocks towards you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.SLEEPING_HEALS] = ["sleeping heals", "Healing inflicts sleep.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.BURNING_HEALS] = ["burning heals", "Healing burns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.FREEZING_HEALS] = ["freezing heals", "Healing freezes.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.HACKING_HEALS] = ["hacking heals", "Healing hacks.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.KNOCKING_HEALS] = ["knocking heals", "Healing knocks down.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.STUNNING_HEALS] = ["stunning heals", "Healing stuns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
 
 
     hero_preferences_data[Hero.OUTLINE_COLOR] = ["outline color", "Pick an outline color.", PreferenceType.COLOR_PICKER, true]
@@ -196,14 +189,15 @@ rule "— Populate global variables":
     hero_preferences_data[Hero.SIZE] = ["size", "A Monsters vs. Aliens simulator.", PreferenceType.NUMERIC, [10, 500, 10, "%"], null, ChillUnbound.CHILL]
     hero_preferences_data[Hero.GRAVITY] = ["gravity", "Just like KFC, but for physics.", PreferenceType.NUMERIC, [0, 500, 10, "%"], null, ChillUnbound.CHILL]
     hero_preferences_data[Hero.SPEED] = ["speed", "The Flash experience.", PreferenceType.NUMERIC, [10, 1000, 10, "%"], null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.JUMP_SPEED] = ["jump speed", "Trampoline simulator.", PreferenceType.NUMERIC, [10, 1000, 10, "%"], null, ChillUnbound.CHILL]
+    hero_preferences_data[Hero.JUMP_SPEED] = ["jump speed", "Jump higher.", PreferenceType.NUMERIC, [10, 1000, 10, "%"], null, ChillUnbound.CHILL]
     hero_preferences_data[Hero.PROJECTILE_SPEED] = ["projectile speed", "The Matrix... almost.", PreferenceType.NUMERIC, [0, 1000, 10, "%"], null, ChillUnbound.CHILL]
     hero_preferences_data[Hero.PROJECTILE_GRAVITY] = ["projectile gravity", "Gravity for your projectiles. No simulator jokes here.", PreferenceType.NUMERIC, [0, 1000, 10, "%"], null, ChillUnbound.CHILL]
     hero_preferences_data[Hero.VOICE_PITCH] = ["voice pitch", "From helium to Corpse Husband.", PreferenceType.NUMERIC, [50, 150, 10, "%"]]
     
     special_preferences_data[Special.NOCLIP] = ["noclip", "Phase through walls. Time to haunt someone.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
     special_preferences_data[Special.INVISIBILITY] = ["invisibility", "Be the ghost you always wanted to be.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
-    special_preferences_data[Special.FAST_RELOAD] = ["fast reload", "Faster than McCassidy.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
+    special_preferences_data[Special.AMMO_OVERLOAD] = ["ammo overload", "Get all the munitions you'll ever need.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
+    special_preferences_data[Special.TRAMPOLINE] = ["trampoline mode", "Jump as soon as you land on the ground. Hold crouch to stop.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
     special_preferences_data[Special.ABILITY_MODE] = [
         "ability mode",
         [
@@ -281,6 +275,7 @@ rule "— Populate global variables":
     main_preferences_default[Main.BASE_MODE] = BaseMode.PASSIVE
 
     game_preferences_default[Game.THIRD_PERSON] = false
+    game_preferences_default[Game.THIRD_PERSON_DISTANCE] = 100
     game_preferences_default[Game.SHOW_HOTKEYS] = true
     game_preferences_default[Game.SELF_PARALYSIS] = true
     game_preferences_default[Game.PARALYSIS_MODE] = Paralysis.KNOCKED_DOWN
@@ -311,18 +306,19 @@ rule "— Populate global variables":
     unbound_preferences_default[Unbound.DAMAGE] = 100
     unbound_preferences_default[Unbound.HEALING] = 100
     unbound_preferences_default[Unbound.HEALTH] = 100
-    unbound_preferences_default[Unbound.BURNING] = false
-    unbound_preferences_default[Unbound.FREEZING] = false
-    unbound_preferences_default[Unbound.HACKING] = false
-    unbound_preferences_default[Unbound.KNOCKING] = false
-    unbound_preferences_default[Unbound.SLEEPING] = false
-    unbound_preferences_default[Unbound.STUNNING] = false
-    unbound_preferences_default[Unbound.REPULSIVE] = false
-    unbound_preferences_default[Unbound.ATTRACTIVE] = false
+    unbound_preferences_default[Unbound.BURNING_SHOTS] = false
+    unbound_preferences_default[Unbound.FREEZING_SHOTS] = false
+    unbound_preferences_default[Unbound.HACKING_SHOTS] = false
+    unbound_preferences_default[Unbound.KNOCKING_SHOTS] = false
+    unbound_preferences_default[Unbound.SLEEPING_SHOTS] = false
+    unbound_preferences_default[Unbound.STUNNING_SHOTS] = false
+    unbound_preferences_default[Unbound.REPULSIVE_SHOTS] = false
+    unbound_preferences_default[Unbound.ATTRACTIVE_SHOTS] = false
 
     special_preferences_default[Special.NOCLIP] = false
     special_preferences_default[Special.INVISIBILITY] = false
-    special_preferences_default[Special.FAST_RELOAD] = true
+    special_preferences_default[Special.TRAMPOLINE] = false
+    special_preferences_default[Special.AMMO_OVERLOAD] = true
     special_preferences_default[Special.ABILITY_MODE] = AbilityMode.NO_COOLDOWN
     special_preferences_default[Special.ABILITY_SPAM_DELAY] = 0.01
     special_preferences_default[Special.ULTIMATE_MODE] = UltimateMode.NO_COOLDOWN
@@ -350,6 +346,8 @@ rule "— Populate global variables":
     rainbow_red = 0
     rainbow_green = 0
     rainbow_blue = 255
+    
+    orb_radius = 0.4
 
 
 rule "— Initialize game":
@@ -368,6 +366,8 @@ rule "— Initialize player":
     @Event eachPlayer
     @Condition isInitialized
 
+    eventPlayer.cubic_bezier = 1
+
     eventPlayer.disableGamemodeHud()
     if not createWorkshopSetting(bool, "match preferences", "enable scoreboard", true, 2):
         eventPlayer.disableScoreboard()
@@ -376,7 +376,7 @@ rule "— Initialize player":
     if "{}".format(eventPlayer) in moderator_list:
         async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
     if player_names_backups.index("{}".format(eventPlayer)) >= 0:
-        if not isOverlappingBase(
+        if base_vectors_backups[player_names_backups.index("{}".format(eventPlayer))] and not isOverlappingBase(
             base_vectors_backups[player_names_backups.index("{}".format(eventPlayer))],
             base_preferences_backups[player_names_backups.index("{}".format(eventPlayer))][Base.SIZE],
             base_preferences_backups[player_names_backups.index("{}".format(eventPlayer))][Base.GAP_SIZE]
@@ -398,26 +398,24 @@ rule "— Initialize player":
         # loadouts
         switch "{}".format(eventPlayer):
             case "shifterest":
-                eventPlayer.main_preferences[Main.PLAYER_MODE] = PlayerMode.CHILL
+                eventPlayer.main_preferences[Main.PLAYER_MODE] = PlayerMode.UNBOUND
                 eventPlayer.main_preferences[Main.BASE_MODE] = BaseMode.FRIENDLY
-                eventPlayer.hero_preferences[Hero.OUTLINE_COLOR] = Colors.BLACK
                 eventPlayer.hero_preferences[Hero.FLIGHT] = true
-                eventPlayer.hero_preferences[Hero.SPEED] = 150
+                eventPlayer.hero_preferences[Hero.SPEED] = 200
                 eventPlayer.hero_preferences[Hero.JUMP_SPEED] = 150
                 eventPlayer.hero_preferences[Hero.KNOCKBACK] = 100
-                eventPlayer.hero_preferences[Hero.PROJECTILE_GRAVITY] = 0
+                eventPlayer.hero_preferences[Hero.PROJECTILE_GRAVITY] = 100
                 eventPlayer.hero_preferences[Hero.PROJECTILE_SPEED] = 100
-                eventPlayer.unbound_preferences[Unbound.DAMAGE] = 1000
+                eventPlayer.unbound_preferences[Unbound.DAMAGE] = 0
                 eventPlayer.unbound_preferences[Unbound.HEALING] = 1000
                 eventPlayer.unbound_preferences[Unbound.HEALTH] = 1000
-                eventPlayer.unbound_preferences[Unbound.STUNNING] = true
-                eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE] = ":-)"
+                eventPlayer.unbound_preferences[Unbound.STUNNING_SHOTS] = true
+                eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE] = "hey there!"
                 eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE_COLOR] = Colors.RAINBOW
-                eventPlayer.effects_preferences[Effects.AURA_EFFECT] = ChillEffect.GOOD_AURA
-                eventPlayer.effects_preferences[Effects.AURA_COLOR] = Colors.BLACK
-                eventPlayer.base_preferences[Base.SPEED] = 150
-                eventPlayer.base_preferences[Base.JUMP_SPEED] = 150
-                eventPlayer.base_preferences[Base.NOCLIP] = true
+                eventPlayer.effects_preferences[Effects.AURA_EFFECT] = ChillEffect.SPARKLES
+                eventPlayer.effects_preferences[Effects.AURA_COLOR] = Colors.RAINBOW
+                eventPlayer.base_preferences[Base.SPEED] = 200
+                eventPlayer.base_preferences[Base.JUMP_SPEED] = 500
                 eventPlayer.dream_preferences[Dream.AFK_TIMER] = 1
                 break
             case "QueenWolf":
@@ -439,12 +437,13 @@ rule "— Initialize player":
     if player_names_backups.index("{}".format(eventPlayer)) < 0:
         bigMessage(eventPlayer, "welcome to chill / kill bases!")
 
-        wait(3)
+        wait(4)
 
         bigMessage(eventPlayer, "to get started, hold {} to create a base.".format(buttonString(Button.INTERACT)))
         switch mode:
             case Mode.MUSIC:
-                wait(3)
+            case Mode.SLEEP:
+                wait(4)
 
                 bigMessage(eventPlayer, "then, join match voice chat for some music!".format(buttonString(Button.INTERACT)))
                 break
@@ -548,3 +547,4 @@ def HardReset():
     eventPlayer.previous_position_direction = null
     eventPlayer.keyboard_input_character = null
     eventPlayer.previous_facing_direction = null
+    eventPlayer.last_hero = null

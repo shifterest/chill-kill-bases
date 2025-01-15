@@ -1,4 +1,5 @@
 subroutine BackupPlayer
+subroutine BaseCreationCamera
 subroutine BaseCreationHint
 subroutine Confine
 subroutine CreateBaseEffects
@@ -15,6 +16,7 @@ subroutine PackBase
 subroutine Repel
 subroutine SettleInFriendlyBase
 subroutine SettleInOwnBase
+subroutine StopCamera
 subroutine ThirdPersonCamera
 subroutine ThirdPersonSpectatorCamera
 subroutine Transition
@@ -23,6 +25,7 @@ subroutine UnmountPlayer
 subroutine Unparalyze
 subroutine UpdateAbilities
 subroutine UpdateAFKTimer
+subroutine UpdateAmmo
 subroutine UpdateAura
 subroutine UpdateBaseEffects
 subroutine UpdateBaseWithinOwner

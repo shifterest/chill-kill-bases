@@ -41,15 +41,19 @@ rule "— Player spawned":
         wait(0.5)
         eventPlayer.stopForcingPosition()
 
+    if eventPlayer.main_preferences[Main.PLAYER_MODE] and eventPlayer.special_preferences[Special.AMMO_OVERLOAD]:
+        UpdateAmmo()
+
 
 rule "— Player died":
     @Event playerDied
 
     eventPlayer.base_within_owner = null
     eventPlayer.base_settled_owner = null
+    eventPlayer.cubic_bezier = 1
 
-    if eventPlayer.death_throttle > 10:
-        iconMessage(eventPlayer, iconString(Icon.WARNING), "your base probably wasn't supposed to be there")
+    if eventPlayer.death_throttle > 6:
+        bigMessage(eventPlayer, "Your base probably wasn't supposed to be there.")
         PackBase()
     if eventPlayer.base_vector and eventPlayer.game_preferences[Game.INSTANT_RESPAWN]:
         eventPlayer.death_throttle += 1

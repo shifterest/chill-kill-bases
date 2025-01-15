@@ -13,6 +13,7 @@ rule "— Prepare base":
     if eventPlayer.isInBaseCreationMode:
         eventPlayer.isInBaseCreationMode = false
         DestroyBaseEffects()
+        async(UpdateCamera, AsyncBehavior.RESTART)
     else:
         eventPlayer.progress_hud[ProgressHUD.TEXT] = "preparing base..."
         eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_preferences[Base.COLOR]
@@ -31,7 +32,7 @@ rule "— Prepare base":
             stopChasingVariable(eventPlayer.progress)
             eventPlayer.progress = 0
             CreateBaseEffects()
-            UpdateCamera()
+            async(UpdateCamera, AsyncBehavior.RESTART)
             async(UpdateAbilities, AsyncBehavior.RESTART)
         else:
             stopChasingVariable(eventPlayer.progress)
@@ -42,8 +43,13 @@ rule "— Prepare base":
 rule "— Create base":
     @Event eachPlayer
     @Condition eventPlayer.isInBaseCreationMode
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isDead()
 
+    if eventPlayer.isDead():
+        eventPlayer.isInBaseCreationMode = false
+        DestroyBaseEffects()
+        return
+        
     if isOverlappingBase(
         eventPlayer.getPosition(),
         eventPlayer.base_preferences[Base.SIZE],
@@ -57,12 +63,13 @@ rule "— Create base":
         eventPlayer.base_vector = eventPlayer.getPosition()
         if not eventPlayer.has_created_base_once:
             async(BaseCreationHint, AsyncBehavior.NOOP)
+        else:
+            async(UpdateCamera, AsyncBehavior.RESTART)
         eventPlayer.has_created_base_once = true
         eventPlayer.settle_immediately = true
         eventPlayer.isInBaseCreationMode = false
         DestroyBaseEffects()
         CreateBaseEffects()
-        UpdateCamera()
         BackupPlayer()
         iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "base created successfully")
 
@@ -70,11 +77,87 @@ rule "— Create base":
 def BaseCreationHint():
     @Name "— Base creation hint"
 
-    bigMessage(eventPlayer, "Awesome! Now, look at the orb at the center of your base.")
+    # camera
+    eventPlayer.startCamera(
+        eventPlayer.getEyePosition(), 
+        raycast(
+            eventPlayer.getEyePosition(),
+            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            null,
+            eventPlayer,
+            false
+        ).getHitPosition(),
+        1
+    )
+    wait()
+    eventPlayer.startCamera(
+        raycast(
+            eventPlayer.base_vector,
+            eventPlayer.base_vector + (Vector.UP * eventPlayer.base_preferences[Base.SIZE] * 2) + (Vector.BACKWARD / 2),
+            null,
+            eventPlayer,
+            false
+        ).getHitPosition(),
+        eventPlayer.base_vector,
+        30
+    )
+
+    # force position and facing
+    eventPlayer.startForcingPosition(
+        raycast(
+            eventPlayer.base_vector,
+            eventPlayer.base_vector + Vector.BACKWARD * min(1, eventPlayer.base_preferences[Base.SIZE]),
+            null,
+            eventPlayer,
+            false
+        ).getHitPosition(),
+        false
+    )
+    eventPlayer.startFacing(
+        directionTowards(eventPlayer.base_vector, eventPlayer.getEyePosition()),
+        360,
+        Relativity.TO_WORLD,
+        FacingReeval.DIRECTION_AND_TURN_RATE
+    )
+
+    eventPlayer.disableHeroHUD()
+    eventPlayer.setInvisibility(Invis.ALL)
+
+    bigMessage(eventPlayer, "Awesome! Now, check out the orb at the center of your base.")
     wait(4)
-    bigMessage(eventPlayer, "You'll be able to customize your gameplay experience from there.")
+
+    # look at the orb
+    eventPlayer.startFacing(
+        directionTowards(eventPlayer.getEyePosition(), eventPlayer.base_vector),
+        360,
+        Relativity.TO_WORLD,
+        FacingReeval.DIRECTION_AND_TURN_RATE
+    )
+    wait()
+    eventPlayer.startCamera(eventPlayer.getEyePosition(), eventPlayer.base_vector, 30)
+
+    bigMessage(eventPlayer, "You'll be able to adjust your settings here.")
     wait(4)
-    bigMessage(eventPlayer, "Happy chilling, {}!".format(eventPlayer))
+
+    bigMessage(eventPlayer, "Try switching things up!")
+    wait(4)
+
+    switch mode:
+        case Mode.SLEEP:
+            bigMessage(eventPlayer, "Sweet dreams, {}!".format(eventPlayer))
+            break
+        case Mode.MUSIC:
+            bigMessage(eventPlayer, "Enjoy the music, {}!".format(eventPlayer))
+            break
+        default:
+            bigMessage(eventPlayer, "Happy chilling, {}!".format(eventPlayer))
+            break
+
+    eventPlayer.stopForcingPosition()
+    eventPlayer.stopFacing()
+    eventPlayer.enableHeroHud()
+    UpdateCamera()
+    UpdateInvisibility()
 
 
 rule "— Detect base / confine":
@@ -134,6 +217,7 @@ rule "— Settle in base / update base mode":
                 break
 
     eventPlayer.base_settled_owner = null
+    eventPlayer.cubic_bezier = 1
 
 
 rule "— Update base preferences":
@@ -177,6 +261,7 @@ def SettleInOwnBase():
     if eventPlayer.base_progress == 100 or eventPlayer.settle_immediately:
         eventPlayer.base_settled_owner = eventPlayer.base_within_owner
         eventPlayer.settle_immediately = false
+        chase(eventPlayer.cubic_bezier, 0, duration=0.4, ChaseReeval.NONE)
         Transition()
         BuffPlayer()
 
@@ -202,6 +287,7 @@ def SettleInFriendlyBase():
     if eventPlayer.base_progress == 100 or eventPlayer.settle_immediately:
         eventPlayer.base_settled_owner = eventPlayer.base_within_owner
         eventPlayer.settle_immediately = false
+        chase(eventPlayer.cubic_bezier, 0, duration=0.4, ChaseReeval.NONE)
         Transition()
         BuffPlayer()
 
@@ -278,6 +364,7 @@ rule "— Pack base":
         eventPlayer.base_within_owner = null
         eventPlayer.base_settled_owner = null
         eventPlayer.base_vector = null
+        eventPlayer.cubic_bezier = 1
         stopChasingVariable(eventPlayer.progress)
         eventPlayer.progress = 0
         PackBase()

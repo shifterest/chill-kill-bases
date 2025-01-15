@@ -16,7 +16,7 @@ def DreamMode():
     eventPlayer.dream_preferences[Dream.DREAM_MODE] = false
     eventPlayer.enableHeroHud()
     UpdatePhase()
-    UpdateCamera()
+    async(UpdateCamera, AsyncBehavior.RESTART)
     eventPlayer.focused_player = null
 
 

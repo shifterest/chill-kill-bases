@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 # preferences indices
 enum Preference:
     TITLE,

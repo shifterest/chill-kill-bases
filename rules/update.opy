@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "Update":
     @Disabled
     @Delimiter
@@ -150,6 +152,13 @@ def UpdateAbilities():
                 eventPlayer.setAbility1Enabled(true)
                 eventPlayer.setAbility2Enabled(true)
                 eventPlayer.disallowButton(Button.CROUCH)
+                break
+            case Hero.FREJA:
+                eventPlayer.setAbility1Enabled(true)
+                eventPlayer.setAbility2Enabled(true)
+                eventPlayer.setSecondaryFireEnabled(true)
+                eventPlayer.allowButton(Button.SECONDARY_FIRE)
+                break
 
 
 def DisableAbilities():

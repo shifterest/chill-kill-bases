@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 subroutine BackupPlayer
 subroutine BaseCreationCamera
 subroutine BaseCreationHint

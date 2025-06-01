@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 # GLOBAL VARIABLES
 # player lists
 globalvar god_list

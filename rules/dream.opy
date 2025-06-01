@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "Dream":
     @Disabled
     @Delimiter

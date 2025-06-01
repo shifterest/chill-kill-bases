@@ -5,10 +5,30 @@ settings {
         "description": "Chill / Kill Bases Testing (by shifterest)\r\n\r\nCode: TSX53\r\n» Use the code to play the production version!",
         "modeName": "★ CKB Testing ★"
     },
-    "lobby": {"allowPlayersInQueue": true, "enableMatchVoiceChat": true, "team1Slots": 6, "team2Slots": 6, "spectatorSlots": 12, "returnToLobby": "never"},
+    "lobby": {
+        "allowPlayersInQueue": true,
+        "enableMatchVoiceChat": true,
+        "team1Slots": 6,
+        "team2Slots": 6,
+        "spectatorSlots": 12,
+        "returnToLobby": "never"
+    },
     "gamemodes": {
-        "ffa": {"enabledMaps": ["workshopExpanseNight"], "scoreToWin": 5000},
-        "general": {"gamemodeStartTrigger": "immediately", "heroLimit": "off", "respawnTime%": 50, "spawnHealthPacks": "enabled"}
+        "ffa": {
+            "enablePerks": true,
+            "enabledMaps": ["workshopExpanseNight"],
+            "scoreToWin": 5000
+        },
+        "skirmish": {
+            "enablePerks": true,
+            "enabledMaps": ["workshopExpanseNight"]
+        },
+        "general": {
+            "gamemodeStartTrigger": "immediately",
+            "heroLimit": "off",
+            "respawnTime%": 50,
+            "spawnHealthPacks": "enabled"
+        }
     }
 }
 
@@ -34,3 +54,19 @@ settings {
 #!include "rules/paralysis.opy"
 #!include "rules/mount.opy"
 #!include "rules/special.opy"
+
+rule "— Debug HUD":
+    @Disabled
+    @Condition isInitialized
+
+    hudSubtext(
+        localPlayer,
+        "Variables: \n{}".format(
+            localPlayer.getAmmo(1)
+        ),
+        HudPosition.LEFT,
+        1,
+        Color.WHITE,
+        HudReeval.VISIBILITY_AND_STRING,
+        SpecVisibility.DEFAULT
+    )

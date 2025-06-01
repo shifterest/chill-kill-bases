@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "Abilities":
     @Disabled
     @Delimiter
@@ -137,21 +139,28 @@ rule "— Ability mode • Hold to spam • Ability 1":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Recharge ability 1 (Tracer, Symmetra)":
+rule "— Ability mode • No cooldown • Recharge ability 1 (Tracer, Symmetrax)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition eventPlayer.getCurrentHero() == Hero.TRACER or eventPlayer.getCurrentHero() == Hero.SYMMETRA
+    @Condition (
+        eventPlayer.getCurrentHero() == Hero.TRACER
+        or eventPlayer.getCurrentHero() == Hero.SYMMETRA
+    )
     @Condition eventPlayer.getAbilityCharge(Button.ABILITY_1) < 3
 
     eventPlayer.setAbilityCharge(Button.ABILITY_1, 3)
 
 
-rule "— Ability mode • No cooldown • Recharge ability 1 (Zarya, Junkrat)":
+rule "— Ability mode • No cooldown • Recharge ability 1 (Zarya, Junkrat, Freja)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition eventPlayer.getCurrentHero() == Hero.ZARYA or eventPlayer.getCurrentHero() == Hero.JUNKRAT
+    @Condition (
+        eventPlayer.getCurrentHero() == Hero.ZARYA
+        or eventPlayer.getCurrentHero() == Hero.JUNKRAT
+        or eventPlayer.getCurrentHero() == Hero.FREJA
+    )
     @Condition eventPlayer.getAbilityCharge(Button.ABILITY_1) < 2
 
     eventPlayer.setAbilityCharge(Button.ABILITY_1, 2)
@@ -333,6 +342,14 @@ rule "— Ammo overload (Illari)":
 
     eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 0)
 
+rule "— Ammo overload (Freja)":
+    @Event eachPlayer
+    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
+    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
+    @Condition eventPlayer.getCurrentHero() == Hero.FREJA
+    @Condition eventPlayer.getAmmo(1) == 0
+
+    eventPlayer.setAmmo(1, 1000)
 
 rule "— Ultimate mode • No cooldown":
     @Event eachPlayer

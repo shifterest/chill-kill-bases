@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "Initialization":
     @Delimiter
     @Disabled
@@ -398,6 +400,7 @@ rule "— Initialize player":
         # loadouts
         switch "{}".format(eventPlayer):
             case "shifterest":
+                eventPlayer.has_created_base_once = true
                 eventPlayer.main_preferences[Main.PLAYER_MODE] = PlayerMode.UNBOUND
                 eventPlayer.main_preferences[Main.BASE_MODE] = BaseMode.FRIENDLY
                 eventPlayer.hero_preferences[Hero.FLIGHT] = true
@@ -419,6 +422,7 @@ rule "— Initialize player":
                 eventPlayer.dream_preferences[Dream.AFK_TIMER] = 1
                 break
             case "QueenWolf":
+                eventPlayer.has_created_base_once = true
                 eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE] = "♡ R O Y A L T Y ♡"
                 eventPlayer.main_preferences[Main.PLAYER_MODE] = PlayerMode.CHILL
                 eventPlayer.hero_preferences[Hero.OUTLINE_COLOR] = Colors.RAINBOW

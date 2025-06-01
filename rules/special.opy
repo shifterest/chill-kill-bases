@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "Special":
     @Disabled
     @Delimiter

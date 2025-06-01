@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "Mount":
     @Disabled
     @Delimiter
@@ -11,13 +13,13 @@ rule "— Mount to player":
     @Condition not eventPlayer.isHoldingButton(Button.ABILITY_1)
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
-    @Condition eventPlayer.getPlayerClosestToReticle(Team.ALL).hasSpawned()
-    @Condition not eventPlayer.getPlayerClosestToReticle(Team.ALL).rider
-    @Condition eventPlayer.getPlayerClosestToReticle(Team.ALL) != eventPlayer.rider
-    @Condition eventPlayer.getPlayerClosestToReticle(Team.ALL).special_preferences[Special.ALLOW_MOUNTING]
+    @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL).hasSpawned()
+    @Condition not eventPlayer.getRealPlayerClosestToReticle(Team.ALL).rider
+    @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL) != eventPlayer.rider
+    @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL).special_preferences[Special.ALLOW_MOUNTING]
     @Condition isInMountingRange(eventPlayer)
 
-    eventPlayer.mount = eventPlayer.getPlayerClosestToReticle(Team.ALL)
+    eventPlayer.mount = eventPlayer.getRealPlayerClosestToReticle(Team.ALL)
     eventPlayer.mount.rider = eventPlayer
     iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "mounted to {}".format(eventPlayer.mount))
     BuffPlayer()

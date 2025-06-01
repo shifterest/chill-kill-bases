@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "Moderator":
     @Disabled
     @Delimiter
@@ -26,7 +28,7 @@ rule "— Toggle moderator mode":
     )
 
     eventPlayer.isInModeratorMode = true
-    eventPlayer.focused_player = eventPlayer.getPlayerClosestToReticle(Team.ALL)
+    eventPlayer.focused_player = eventPlayer.getRealPlayerClosestToReticle(Team.ALL)
     ThirdPersonSpectatorCamera()
     UpdateAbilities()
 

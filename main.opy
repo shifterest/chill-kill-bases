@@ -2,14 +2,43 @@
 
 settings {
     "main": {
-        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.2.1] Last updated: 1/16/2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
+        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.3] Last updated: 6/2/2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
         "modeName": "★ Chill n' Friendly Bases ★"
     },
-    "lobby": {"allowPlayersInQueue": true, "enableMatchVoiceChat": true, "team1Slots": 6, "team2Slots": 6, "spectatorSlots": 12, "returnToLobby": "never"},
+    "lobby": {
+        "allowPlayersInQueue": true,
+        "enableMatchVoiceChat": true,
+        "team1Slots": 6,
+        "team2Slots": 6,
+        "spectatorSlots": 12,
+        "returnToLobby": "never"
+    },
     "gamemodes": {
-        "ffa": {"disabledMaps": ["workshopChamber", "workshopGreenScreen", "workshopIsland"], "scoreToWin": 5000},
-        "skirmish": {"disabledMaps": ["workshopExpanse", "workshopChamber", "workshopGreenScreen", "workshopIsland"]},
-        "general": {"gamemodeStartTrigger": "immediately", "heroLimit": "off", "respawnTime%": 50, "spawnHealthPacks": "enabled"}
+        "ffa": {
+            "enablePerks": true,
+            "disabledMaps": [
+                "workshopChamber",
+                "workshopGreenScreen",
+                "workshopIsland",
+                "workshopIslandNight"
+            ],
+            "scoreToWin": 5000
+        },
+        "skirmish": {
+            "enablePerks": true,
+            "disabledMaps": [
+                "workshopChamber",
+                "workshopGreenScreen",
+                "workshopIsland",
+                "workshopIslandNight"
+            ]
+        },
+        "general": {
+            "gamemodeStartTrigger": "immediately",
+            "heroLimit": "off",
+            "respawnTime%": 50,
+            "spawnHealthPacks": "enabled"
+        }
     }
 }
 

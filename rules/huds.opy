@@ -1,3 +1,5 @@
+#!mainFile "../main.opy"
+
 rule "HUDs":
     @Disabled
     @Delimiter
@@ -115,8 +117,8 @@ rule "— Draw global HUD":
             if localPlayer == hostPlayer else "",
             buttonString(Button.ULTIMATE),
             buttonString(Button.INTERACT),
-            buttonString(Button.CROUCH),
             buttonString(Button.ABILITY_1),
+            buttonString(Button.CROUCH),
             buttonString(Button.MELEE)
         )
         if localPlayer.isInModeratorMode else
@@ -196,14 +198,14 @@ rule "— Draw global HUD":
             if localPlayer.mount
             else "{} • ride {} {}".format(
                 buttonString(Button.INTERACT),
-                heroIcon(localPlayer.getPlayerClosestToReticle(Team.ALL).getCurrentHero()),
-                localPlayer.getPlayerClosestToReticle(Team.ALL)
+                heroIcon(localPlayer.getRealPlayerClosestToReticle(Team.ALL).getCurrentHero()),
+                localPlayer.getRealPlayerClosestToReticle(Team.ALL)
             )
             if localPlayer.main_preferences[Main.PLAYER_MODE]
-            and localPlayer.getPlayerClosestToReticle(Team.ALL).hasSpawned()
-            and not localPlayer.getPlayerClosestToReticle(Team.ALL).rider
-            and localPlayer.getPlayerClosestToReticle(Team.ALL) != localPlayer.rider
-            and localPlayer.getPlayerClosestToReticle(Team.ALL).special_preferences[Special.ALLOW_MOUNTING]
+            and localPlayer.getRealPlayerClosestToReticle(Team.ALL).hasSpawned()
+            and not localPlayer.getRealPlayerClosestToReticle(Team.ALL).rider
+            and localPlayer.getRealPlayerClosestToReticle(Team.ALL) != localPlayer.rider
+            and localPlayer.getRealPlayerClosestToReticle(Team.ALL).special_preferences[Special.ALLOW_MOUNTING]
             and isInMountingRange(localPlayer)
             and not localPlayer.mount
             else ""

@@ -1,4 +1,4 @@
-#!mainFile "../orb.opy"
+#!mainFile "../main.opy"
 
 #!define UpdateSubPreferencesHUD(subpreference, data, preferences)\
 eventPlayer.preferences_hud[PreferencesHUD.TITLE] = data[eventPlayer.main_preferences[subpreference]][Preference.TITLE]\
@@ -845,6 +845,16 @@ rule "— Go to next / increase parameter":
                 break
             case Main.UNBOUND:
                 switch unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.TYPE]:
+                    case PreferenceType.MULTIPLE_CHOICE:
+                        if (
+                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]]
+                            < len(unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.PARAMETERS]) - 1
+                        ):
+                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] += 1
+                        else:
+                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = 0
+                        async(InteractWithPreferences, AsyncBehavior.RESTART)
+                        break
                     case PreferenceType.NUMERIC:
                         if eventPlayer.isHoldingButton(Button.CROUCH):
                             eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = unbound_preferences_data[
@@ -1111,6 +1121,15 @@ rule "— Go to previous / decrease parameter":
                 break
             case Main.UNBOUND:
                 switch unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.TYPE]:
+                    case PreferenceType.MULTIPLE_CHOICE:
+                        if eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] > 0:
+                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] -= 1
+                        else:
+                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = len(
+                                unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.PARAMETERS]
+                            ) - 1
+                        async(InteractWithPreferences, AsyncBehavior.RESTART)
+                        break
                     case PreferenceType.NUMERIC:
                         if eventPlayer.isHoldingButton(Button.CROUCH):
                             eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = unbound_preferences_data[

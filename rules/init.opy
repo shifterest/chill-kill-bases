@@ -63,10 +63,10 @@ rule "— Populate global variables":
     main_preferences_data[Main.PLAYER_MODE] = [
         "player mode",
         [
-            "Play as usual with all weapons and abilities active.",
-            "Relax and vibe. No damage dealt, but access to exclusive chill features.",
-            "Chill and kill mode combined, plus gain access to unbound features.",
-            "Immune to most crowd control, but no weapons or abilities allowed."
+            "No special features, kill or be killed.",
+            "Enable chill features and protection, but no damage.",
+            "Enable unbound features. Be as harmless or lethal as you want.",
+            "Enable invulnerability, disable most abilities."
         ],
         PreferenceType.MULTIPLE_CHOICE,
         [
@@ -81,67 +81,178 @@ rule "— Populate global variables":
     main_preferences_data[Main.BASE_MODE] = [
         "base mode",
         [
-            "Base protection for you only, ignores other players.",
-            "Base protection and teleportation point for all players.",
-            "Base protection for you only, actively repels other players.",
+            "Provides protection exclusively for the player, disregarding other players.",
+            "Provides protection to other players and serves as a fast travel point for all players.",
+            "Provides protection exclusively for the player while actively repelling other players."
         ],
         PreferenceType.MULTIPLE_CHOICE,
         [
             "{} passive".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)),
             "{} friendly".format(abilityIconString(Hero.ZARYA, Button.ABILITY_1)),
-            "{} exclusive".format(iconString(Icon.NO)),
+            "{} exclusive".format(iconString(Icon.NO))
         ],
         [Colors.WHITE, Colors.BLUE, Colors.ORANGE]
     ]
-    main_preferences_data[Main.GAME] = ["game preferences", "Customize your gameplay experience.", PreferenceType.SUB_PREFERENCE, null, Colors.GREEN]
-    main_preferences_data[Main.EFFECTS] = ["effects preferences", "Tweak certain visual effects.", PreferenceType.SUB_PREFERENCE, null, Colors.VIOLET]
-    main_preferences_data[Main.HERO] = ["hero preferences", "Adjust hero attributes and mechanics.", PreferenceType.SUB_PREFERENCE, null, Colors.YELLOW]
-    main_preferences_data[Main.UNBOUND] = ["unbound preferences", "Use unbound-exclusive features.", PreferenceType.SUB_PREFERENCE, null, Colors.PURPLE, ChillUnbound.UNBOUND]
-    main_preferences_data[Main.SPECIAL] = ["special preferences", "Enable or disable special features.", PreferenceType.SUB_PREFERENCE, null, Colors.TURQUOISE]
-    main_preferences_data[Main.BASE] = ["base preferences", "Modify the appearance and functionality of your base.", PreferenceType.SUB_PREFERENCE, null, Colors.ROSE]
-    main_preferences_data[Main.DREAM] = ["dream preferences", "Fine-tune the dream mode experience.", PreferenceType.SUB_PREFERENCE, null, Colors.AQUA]
+    main_preferences_data[Main.GAME] = [
+        "game preferences",
+        "Customize various gameplay settings.",
+        PreferenceType.SUB_PREFERENCE,
+        null,
+        Colors.GREEN
+    ]
+    main_preferences_data[Main.EFFECTS] = [
+        "effects preferences",
+        "Adjust various visual effect settings.",
+        PreferenceType.SUB_PREFERENCE,
+        null,
+        Colors.VIOLET
+    ]
+    main_preferences_data[Main.HERO] = [
+        "hero preferences",
+        "Modify hero attributes and mechanics.",
+        PreferenceType.SUB_PREFERENCE,
+        null,
+        Colors.YELLOW
+    ]
+    main_preferences_data[Main.UNBOUND] = [
+        "unbound preferences",
+        "Configure features exclusive to unbound mode.",
+        PreferenceType.SUB_PREFERENCE,
+        null,
+        Colors.PURPLE,
+        ChillUnbound.UNBOUND
+    ]
+    main_preferences_data[Main.SPECIAL] = [
+        "special preferences",
+        "Control special gameplay features.",
+        PreferenceType.SUB_PREFERENCE,
+        null,
+        Colors.TURQUOISE
+    ]
+    main_preferences_data[Main.BASE] = [
+        "base preferences",
+        "Customize base appearance and functionality.",
+        PreferenceType.SUB_PREFERENCE,
+        null,
+        Colors.ROSE
+    ]
+    main_preferences_data[Main.DREAM] = [
+        "dream preferences",
+        "Adjust the dream mode settings.",
+        PreferenceType.SUB_PREFERENCE,
+        null,
+        Colors.AQUA
+    ]
 
-    game_preferences_data[Game.THIRD_PERSON] = ["third-person camera", "Switch to a third-person camera angle.", PreferenceType.BOOLEAN]
-    game_preferences_data[Game.THIRD_PERSON_DISTANCE] = ["third-person camera distance", "The distance of the third-person camera from the player.", PreferenceType.NUMERIC, [10, 1000, 10, "%"]]
-    game_preferences_data[Game.SHOW_HOTKEYS] = ["show hotkeys", "Display helpful shortcuts during gameplay.", PreferenceType.BOOLEAN]
-    game_preferences_data[Game.SELF_PARALYSIS] = ["self-paralysis", "Immobilize yourself in place to take a break.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
+    game_preferences_data[Game.THIRD_PERSON] = [
+        "third-person camera",
+        "Enable a third-person camera perspective.",
+        PreferenceType.BOOLEAN
+    ]
+    game_preferences_data[Game.THIRD_PERSON_DISTANCE] = [
+        "third-person camera distance",
+        "Specify the distance of the camera in third-person view.",
+        PreferenceType.NUMERIC,
+        [10, 1000, 10, "%"]
+    ]
+    game_preferences_data[Game.SHOW_HOTKEYS] = [
+        "show hotkeys",
+        "Enable the display of gameplay hotkeys.",
+        PreferenceType.BOOLEAN
+    ]
+    game_preferences_data[Game.SELF_PARALYSIS] = [
+        "self-paralysis",
+        "Temporarily immobilize yourself.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
     game_preferences_data[Game.PARALYSIS_MODE] = [
         "paralysis mode",
-        "the status effect to inflict if paralyzed",
+        "Select the status effect to apply during paralysis.",
         PreferenceType.MULTIPLE_CHOICE,
         ["knock down", "stun", "sleep", "freeze"],
         null,
         ChillUnbound.CHILL
     ]
-    game_preferences_data[Game.FAST_TRAVEL] = ["fast travel", "Teleport between bases and key locations.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
+    game_preferences_data[Game.FAST_TRAVEL] = [
+        "fast travel",
+        "Enable teleportation between bases and key locations.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
     game_preferences_data[Game.FAST_TRAVEL_TO_OBJECTIVE] = [
         "fast travel to objective",
-        "Jump directly to objectives. Useful in control maps.",
+        "Quickly jump to objectives.",
         PreferenceType.INTERACT_MULTIPLE_CHOICE,
         [1, ["first", "second", "third"]],
         null,
         ChillUnbound.CHILL
     ]
-    game_preferences_data[Game.REMOTE_PACK_BASE] = ["remote pack base", "Pack your base remotely.", PreferenceType.BOOLEAN]
-    game_preferences_data[Game.INSTANT_RESPAWN] = ["instant respawn", "Respawn at your base immediately after death.", PreferenceType.BOOLEAN]
-    game_preferences_data[Game.SWITCH_TEAM] = ["switch team", "Change teams in skirmish maps.", PreferenceType.INTERACT, 1]
-    game_preferences_data[Game.RESET] = ["reset", "Restart from scratch.", PreferenceType.INTERACT, 1]
+    game_preferences_data[Game.REMOTE_PACK_BASE] = [
+        "remote pack base",
+        "Enable remote removal of your base.",
+        PreferenceType.BOOLEAN
+    ]
+    game_preferences_data[Game.INSTANT_RESPAWN] = [
+        "instant respawn",
+        "Initiate immediate respawn at the base after death.",
+        PreferenceType.BOOLEAN
+    ]
+    game_preferences_data[Game.SWITCH_TEAM] = [
+        "switch team",
+        "Switch teams in skirmish maps.",
+        PreferenceType.INTERACT,
+        1
+    ]
+    game_preferences_data[Game.RESET] = [
+        "reset",
+        "Reset all your settings.",
+        PreferenceType.INTERACT,
+        1
+    ]
 
-    effects_preferences_data[Effects.CUSTOM_MESSAGE] = ["custom message", "Write a personal message to float above you.", PreferenceType.KEYBOARD]
-    effects_preferences_data[Effects.CUSTOM_MESSAGE_COLOR] = ["custom message color", "Pick a color for your floating message.", PreferenceType.COLOR_PICKER, true]
-    effects_preferences_data[Effects.AURA] = ["aura", "Surround yourself with a glowing effect.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
+    effects_preferences_data[Effects.CUSTOM_MESSAGE] = [
+        "custom message",
+        "Enter a personal message to be displayed above the player.",
+        PreferenceType.KEYBOARD
+    ]
+    effects_preferences_data[Effects.CUSTOM_MESSAGE_COLOR] = [
+        "custom message color",
+        "Select a color for the displayed message.",
+        PreferenceType.COLOR_PICKER,
+        true
+    ]
+    effects_preferences_data[Effects.AURA] = [
+        "aura",
+        "Enable or disable a surrounding glowing effect.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
     effects_preferences_data[Effects.AURA_EFFECT] = [
         "aura effect",
-        "Choose the shape of your aura.",
+        "Select the shape of the aura effect.",
         PreferenceType.MULTIPLE_CHOICE,
         ["sparkles", "cloud", "light shaft", "good aura", "bad aura", "ring", "sphere"],
         null,
         ChillUnbound.CHILL
     ]
-    effects_preferences_data[Effects.AURA_COLOR] = ["aura color", "Customize the color of your aura.", PreferenceType.COLOR_PICKER, true, null, ChillUnbound.CHILL]
+    effects_preferences_data[Effects.AURA_COLOR] = [
+        "aura color",
+        "Select a color for the aura effect.",
+        PreferenceType.COLOR_PICKER,
+        true,
+        null,
+        ChillUnbound.CHILL
+    ]
     effects_preferences_data[Effects.AURA_SIZE] = [
         "aura size",
-        "Adjust the size of your aura.",
+        "Specify the size of the aura effect.",
         PreferenceType.NUMERIC,
         [10, 1000, 10, "m"],
         null,
@@ -149,63 +260,193 @@ rule "— Populate global variables":
     ]
     effects_preferences_data[Effects.HIDE_AURA_IN_FIRST_PERSON] = [
         "hide aura in first-person",
-        "Disable the aura effect in first-person view.",
+        "Disable the aura effect when in first-person view.",
         PreferenceType.BOOLEAN,
         null,
         null,
         ChillUnbound.CHILL
     ]
 
-    unbound_preferences_data[Unbound.DAMAGE] = ["damage", "Adjust damage output.", PreferenceType.NUMERIC, [0, 5000, 50, "%"], null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.HEALING] = ["healing", "Control how much healing you do.", PreferenceType.NUMERIC, [0, 5000, 50, "%"], null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.HEALTH] = ["health", "Adjust your health pool.", PreferenceType.NUMERIC, [10, 5000, 10, "%"], null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.REPULSIVE_SHOTS] = ["repulsive shots", "Dealing damage knocks against you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.ATTRACTIVE_SHOTS] = ["attractive shots", "Dealing damage knocks towards you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.SLEEPING_SHOTS] = ["sleeping shots", "Dealing damage inflicts sleep.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.BURNING_SHOTS] = ["burning shots", "Dealing damage burns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.FREEZING_SHOTS] = ["freezing shots", "Dealing damage freezes.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.HACKING_SHOTS] = ["hacking shots", "Dealing damage hacks.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.KNOCKING_SHOTS] = ["knocking shots", "Dealing damage knocks down.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.STUNNING_SHOTS] = ["stunning shots", "Dealing damage stuns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.REPULSIVE_HEALS] = ["repulsive heals", "Healing knocks against you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.ATTRACTIVE_HEALS] = ["attractive heals", "Healing knocks towards you.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.SLEEPING_HEALS] = ["sleeping heals", "Healing inflicts sleep.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.BURNING_HEALS] = ["burning heals", "Healing burns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.FREEZING_HEALS] = ["freezing heals", "Healing freezes.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.HACKING_HEALS] = ["hacking heals", "Healing hacks.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.KNOCKING_HEALS] = ["knocking heals", "Healing knocks down.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
-    unbound_preferences_data[Unbound.STUNNING_HEALS] = ["stunning heals", "Healing stuns.", PreferenceType.BOOLEAN, null, null, ChillUnbound.UNBOUND]
+    unbound_preferences_data[Unbound.DAMAGE] = [
+        "damage",
+        "Set the damage output value.",
+        PreferenceType.NUMERIC,
+        [0, 5000, 50, "%"],
+        null,
+        ChillUnbound.UNBOUND
+    ]
+    unbound_preferences_data[Unbound.THORNS] = [
+        "thorns",
+        "Set the damage reflection value.",
+        PreferenceType.NUMERIC,
+        [0, 5000, 50, "%"],
+        null,
+        ChillUnbound.UNBOUND
+    ]
+    unbound_preferences_data[Unbound.HEALING] = [
+        "healing",
+        "Set the healing output value.",
+        PreferenceType.NUMERIC,
+        [0, 5000, 50, "%"],
+        null,
+        ChillUnbound.UNBOUND
+    ]
+    unbound_preferences_data[Unbound.HEALTH] = [
+        "health",
+        "Set the health pool value.",
+        PreferenceType.NUMERIC,
+        [10, 5000, 10, "%"],
+        null,
+        ChillUnbound.UNBOUND
+    ]
+    unbound_preferences_data[Unbound.DAMAGE_EFFECT] = [
+        "damage effect",
+        "Select the effect applied upon dealing damage.",
+        PreferenceType.MULTIPLE_CHOICE,
+        ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
+        null,
+        ChillUnbound.UNBOUND
+    ]
+    unbound_preferences_data[Unbound.THORNS_EFFECT] = [
+        "thorns effect",
+        "Select the effect applied when reflecting damage.",
+        PreferenceType.MULTIPLE_CHOICE,
+        ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
+        null,
+        ChillUnbound.UNBOUND
+    ]
+    unbound_preferences_data[Unbound.HEALING_EFFECT] = [
+        "healing effect",
+        "Select the effect applied during healing.",
+        PreferenceType.MULTIPLE_CHOICE,
+        ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
+        null,
+        ChillUnbound.UNBOUND
+    ]
 
-
-    hero_preferences_data[Hero.OUTLINE_COLOR] = ["outline color", "Pick an outline color.", PreferenceType.COLOR_PICKER, true]
-    hero_preferences_data[Hero.FLIGHT] = ["flight", "Take flight.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.FLIGHT_ACCELERATION] = ["flight acceleration", "Surprise! You can actually fly faster.", PreferenceType.NUMERIC, [5, 100, 5], null, ChillUnbound.CHILL]
+    hero_preferences_data[Hero.OUTLINE_COLOR] = [
+        "outline color",
+        "Select an outline color.",
+        PreferenceType.COLOR_PICKER,
+        true
+    ]
+    hero_preferences_data[Hero.FLIGHT] = [
+        "flight",
+        "Enable or disable flight capability.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
+    hero_preferences_data[Hero.FLIGHT_ACCELERATION] = [
+        "flight acceleration",
+        "Set the acceleration for flight.",
+        PreferenceType.NUMERIC,
+        [5, 100, 5],
+        null,
+        ChillUnbound.CHILL
+    ]
     hero_preferences_data[Hero.KNOCKBACK] = [
         "knockback",
-        "Make flight.",
+        "Adjust the force of the knockback effect.",
         PreferenceType.NUMERIC,
         [10, 1000, 10, "%"],
         null,
         ChillUnbound.CHILL
     ]
-    hero_preferences_data[Hero.SIZE] = ["size", "A Monsters vs. Aliens simulator.", PreferenceType.NUMERIC, [10, 500, 10, "%"], null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.GRAVITY] = ["gravity", "Just like KFC, but for physics.", PreferenceType.NUMERIC, [0, 500, 10, "%"], null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.SPEED] = ["speed", "The Flash experience.", PreferenceType.NUMERIC, [10, 1000, 10, "%"], null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.JUMP_SPEED] = ["jump speed", "Jump higher.", PreferenceType.NUMERIC, [10, 1000, 10, "%"], null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.PROJECTILE_SPEED] = ["projectile speed", "The Matrix... almost.", PreferenceType.NUMERIC, [0, 1000, 10, "%"], null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.PROJECTILE_GRAVITY] = ["projectile gravity", "Gravity for your projectiles. No simulator jokes here.", PreferenceType.NUMERIC, [0, 1000, 10, "%"], null, ChillUnbound.CHILL]
-    hero_preferences_data[Hero.VOICE_PITCH] = ["voice pitch", "From helium to Corpse Husband.", PreferenceType.NUMERIC, [50, 150, 10, "%"]]
+    hero_preferences_data[Hero.SIZE] = [
+        "size",
+        "Adjust the size attribute of the hero.",
+        PreferenceType.NUMERIC,
+        [10, 500, 10, "%"],
+        null,
+        ChillUnbound.CHILL
+    ]
+    hero_preferences_data[Hero.GRAVITY] = [
+        "gravity",
+        "Set the gravitational effect on the hero.",
+        PreferenceType.NUMERIC,
+        [0, 500, 10, "%"],
+        null,
+        ChillUnbound.CHILL
+    ]
+    hero_preferences_data[Hero.SPEED] = [
+        "speed",
+        "Define the movement speed of the hero.",
+        PreferenceType.NUMERIC,
+        [10, 1000, 10, "%"],
+        null,
+        ChillUnbound.CHILL
+    ]
+    hero_preferences_data[Hero.JUMP_SPEED] = [
+        "jump speed",
+        "Adjust the jump speed of the hero.",
+        PreferenceType.NUMERIC,
+        [10, 1000, 10, "%"],
+        null,
+        ChillUnbound.CHILL
+    ]
+    hero_preferences_data[Hero.PROJECTILE_SPEED] = [
+        "projectile speed",
+        "Specify the speed of projectiles.",
+        PreferenceType.NUMERIC,
+        [0, 1000, 10, "%"],
+        null,
+        ChillUnbound.CHILL
+    ]
+    hero_preferences_data[Hero.PROJECTILE_GRAVITY] = [
+        "projectile gravity",
+        "Set the gravitational effect on projectiles.",
+        PreferenceType.NUMERIC,
+        [0, 1000, 10, "%"],
+        null,
+        ChillUnbound.CHILL
+    ]
+    hero_preferences_data[Hero.VOICE_PITCH] = [
+        "voice pitch",
+        "Adjust the pitch of the hero's voice.",
+        PreferenceType.NUMERIC,
+        [50, 150, 10, "%"]
+    ]
     
-    special_preferences_data[Special.NOCLIP] = ["noclip", "Phase through walls. Time to haunt someone.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
-    special_preferences_data[Special.INVISIBILITY] = ["invisibility", "Be the ghost you always wanted to be.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
-    special_preferences_data[Special.AMMO_OVERLOAD] = ["ammo overload", "Get all the munitions you'll ever need.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
-    special_preferences_data[Special.TRAMPOLINE] = ["trampoline mode", "Jump as soon as you land on the ground. Hold crouch to stop.", PreferenceType.BOOLEAN, null, null, ChillUnbound.CHILL]
+    special_preferences_data[Special.NOCLIP] = [
+        "noclip",
+        "Enable or disable the ability to move through walls.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
+    special_preferences_data[Special.INVISIBILITY] = [
+        "invisibility",
+        "Enable or disable invisibility.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
+    special_preferences_data[Special.AMMO_OVERLOAD] = [
+        "ammo overload",
+        "Enable unlimited ammo and increased ammo clips.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
+    special_preferences_data[Special.TRAMPOLINE] = [
+        "trampoline mode",
+        "Enable automatic jump upon landing. Hold crouch to stop.",
+        PreferenceType.BOOLEAN,
+        null,
+        null,
+        ChillUnbound.CHILL
+    ]
     special_preferences_data[Special.ABILITY_MODE] = [
         "ability mode",
         [
-            "No cooldown changes.",
+            "Standard ability cooldowns.",
             "Reduced ability cooldowns.",
-            "Hold to spam abilities."
+            "Hold for repeated use."
         ],
         PreferenceType.MULTIPLE_CHOICE,
         ["normal", "no cooldown"] if optimize else ["normal", "no cooldown", "hold to spam"],
@@ -214,7 +455,7 @@ rule "— Populate global variables":
     ]
     special_preferences_data[Special.ABILITY_SPAM_DELAY] = [
         "ability spam delay",
-        "Disabled on this server." if optimize else "Delay between ability spam.",
+        "Ability spam is disabled on this server." if optimize else "Set the delay between successive ability activations.",
         PreferenceType.NUMERIC,
         [0.01, 1, 0.01, " second(s)"],
         Colors.GRAY if optimize else Colors.WHITE,
@@ -223,10 +464,10 @@ rule "— Populate global variables":
     special_preferences_data[Special.ULTIMATE_MODE] = [
         "ultimate mode",
         [
-            "No cooldown changes.",
+            "Standard ultimate cooldowns.",
             "Reduced ultimate cooldowns.",
             "Instant ultimate recasts.",
-            "Hold to spam ultimates."
+            "Hold for repeated use."
         ],
         PreferenceType.MULTIPLE_CHOICE,
         ["normal", "no cooldown", "infinite"] if optimize else ["normal", "no cooldown", "infinite", "hold to spam"],
@@ -235,43 +476,94 @@ rule "— Populate global variables":
     ]
     special_preferences_data[Special.ULTIMATE_SPAM_DELAY] = [
         "ultimate spam delay",
-        "Disabled on this server." if optimize else "Delay between ultimate spam.",
+        "Ultimate spam is disabled on this server." if optimize else "Set the delay between successive ultimate activations.",
         PreferenceType.NUMERIC,
         [0.01, 1, 0.01, " second(s)"],
         Colors.GRAY if optimize else Colors.WHITE,
         ChillUnbound.CHILL
     ]
-    special_preferences_data[Special.ALLOW_MOUNTING] = ["allow mounting", "Get saddled like it's Minecraft.", PreferenceType.BOOLEAN]
+    special_preferences_data[Special.ALLOW_MOUNTING] = [
+        "allow mounting",
+        "Enable or disable mounting.",
+        PreferenceType.BOOLEAN
+    ]
     special_preferences_data[Special.MOUNTING_MODE] = [
         "mounting mode",
-        "Choose how players saddle you.",
+        "Select the preferred arrangement for mounting.",
         PreferenceType.MULTIPLE_CHOICE,
         ["stack", "intersect", "front", "back", "left", "right"]
     ]
 
-    base_preferences_data[Base.COLOR] = ["base color", "Add some flair to your base.", PreferenceType.COLOR_PICKER, true]
-    base_preferences_data[Base.SIZE] = ["base size", "Adjust your personal space.", PreferenceType.NUMERIC, [1, 15, 0.5, "m"]]
-    base_preferences_data[Base.GAP_SIZE] = ["base gap size", "Minimum distance from other bases.", PreferenceType.NUMERIC, [0, 8, 0.5, "m"]]
-    base_preferences_data[Base.BASE_LOCK] = ["base lock", "Lock yourself in. The introvert option.", PreferenceType.BOOLEAN]
-    base_preferences_data[Base.NOCLIP] = ["in-base noclip", "Walls are optional.", PreferenceType.BOOLEAN]
-    base_preferences_data[Base.GRAVITY] = ["in-base gravity", "Adjust gravity in your base.", PreferenceType.NUMERIC, [0, 500, 10, "%"]]
-    base_preferences_data[Base.SPEED] = ["in-base speed", "Control movement speed inside your base.", PreferenceType.NUMERIC, [10, 500, 10, "%"]]
-    base_preferences_data[Base.JUMP_SPEED] = ["in-base jump speed", "Jump height in your base.", PreferenceType.NUMERIC, [10, 500, 10, "%"]]
+    base_preferences_data[Base.COLOR] = [
+        "base color",
+        "Select a color for the base.",
+        PreferenceType.COLOR_PICKER,
+        true
+    ]
+    base_preferences_data[Base.SIZE] = [
+        "base size",
+        "Specify the size of the base.",
+        PreferenceType.NUMERIC,
+        [1, 15, 0.5, "m"]
+    ]
+    base_preferences_data[Base.GAP_SIZE] = [
+        "base gap size",
+        "Define the minimum distance between bases.",
+        PreferenceType.NUMERIC,
+        [0, 8, 0.5, "m"]
+    ]
+    base_preferences_data[Base.BASE_LOCK] = [
+        "base lock",
+        "Enable or disable base locking for security.",
+        PreferenceType.BOOLEAN
+    ]
+    base_preferences_data[Base.NOCLIP] = [
+        "in-base noclip",
+        "Enable or disable noclip within the base.",
+        PreferenceType.BOOLEAN
+    ]
+    base_preferences_data[Base.GRAVITY] = [
+        "in-base gravity",
+        "Specify the gravity setting within the base.",
+        PreferenceType.NUMERIC,
+        [0, 500, 10, "%"]
+    ]
+    base_preferences_data[Base.SPEED] = [
+        "in-base speed",
+        "Specify the movement speed within the base.",
+        PreferenceType.NUMERIC,
+        [10, 500, 10, "%"]
+    ]
+    base_preferences_data[Base.JUMP_SPEED] = [
+        "in-base jump speed",
+        "Specify the jump speed within the base.",
+        PreferenceType.NUMERIC,
+        [10, 500, 10, "%"]
+    ]
     
-    dream_preferences_data[Dream.DREAM_MODE] = ["enable dream mode", "Spectate and relax. Zen mode activated.", PreferenceType.INTERACT_BOOLEAN, 0.6]
+    dream_preferences_data[Dream.DREAM_MODE] = [
+        "enable dream mode",
+        "Activate dream mode to allow spectator view.",
+        PreferenceType.INTERACT_BOOLEAN,
+        0.6
+    ]
     dream_preferences_data[Dream.AFK_TIMER] = [
         "AFK timer",
-        "Activates dream mode after being idle for this many minutes.",
+        "Set the idle time (in minutes) after which dream mode is activated.",
         PreferenceType.NUMERIC,
         [0, 60, 0.5, " minute(s)"]
     ]
     dream_preferences_data[Dream.SWITCH_TIMER] = [
         "player switch timer",
-        "Time it takes to switch players in dream mode.",
+        "Define the duration for switching players in dream mode.",
         PreferenceType.NUMERIC,
         [3, 180, 1, " seconds"]
     ]
-    dream_preferences_data[Dream.CLIP_CAMERA] = ["clip camera", "Set camera collision behavior.", PreferenceType.BOOLEAN]
+    dream_preferences_data[Dream.CLIP_CAMERA] = [
+        "clip camera",
+        "Enable or disable camera collision in dream mode.",
+        PreferenceType.BOOLEAN
+    ]
 
     main_preferences_default[Main.PLAYER_MODE] = PlayerMode.KILL
     main_preferences_default[Main.BASE_MODE] = BaseMode.PASSIVE
@@ -306,16 +598,12 @@ rule "— Populate global variables":
     hero_preferences_default[Hero.VOICE_PITCH] = 100
 
     unbound_preferences_default[Unbound.DAMAGE] = 100
+    unbound_preferences_default[Unbound.THORNS] = 100
     unbound_preferences_default[Unbound.HEALING] = 100
     unbound_preferences_default[Unbound.HEALTH] = 100
-    unbound_preferences_default[Unbound.BURNING_SHOTS] = false
-    unbound_preferences_default[Unbound.FREEZING_SHOTS] = false
-    unbound_preferences_default[Unbound.HACKING_SHOTS] = false
-    unbound_preferences_default[Unbound.KNOCKING_SHOTS] = false
-    unbound_preferences_default[Unbound.SLEEPING_SHOTS] = false
-    unbound_preferences_default[Unbound.STUNNING_SHOTS] = false
-    unbound_preferences_default[Unbound.REPULSIVE_SHOTS] = false
-    unbound_preferences_default[Unbound.ATTRACTIVE_SHOTS] = false
+    unbound_preferences_default[Unbound.DAMAGE_EFFECT] = UnboundEffect.NONE
+    unbound_preferences_default[Unbound.THORNS_EFFECT] = UnboundEffect.NONE
+    unbound_preferences_default[Unbound.HEALING_EFFECT] = UnboundEffect.NONE
 
     special_preferences_default[Special.NOCLIP] = false
     special_preferences_default[Special.INVISIBILITY] = false
@@ -408,11 +696,11 @@ rule "— Initialize player":
                 eventPlayer.hero_preferences[Hero.JUMP_SPEED] = 150
                 eventPlayer.hero_preferences[Hero.KNOCKBACK] = 100
                 eventPlayer.hero_preferences[Hero.PROJECTILE_GRAVITY] = 100
-                eventPlayer.hero_preferences[Hero.PROJECTILE_SPEED] = 100
+                eventPlayer.hero_preferences[Hero.PROJECTILE_SPEED] = 1000
                 eventPlayer.unbound_preferences[Unbound.DAMAGE] = 0
-                eventPlayer.unbound_preferences[Unbound.HEALING] = 1000
                 eventPlayer.unbound_preferences[Unbound.HEALTH] = 1000
-                eventPlayer.unbound_preferences[Unbound.STUNNING_SHOTS] = true
+                eventPlayer.unbound_preferences[Unbound.DAMAGE_EFFECT] = UnboundEffect.SLEEP
+                eventPlayer.unbound_preferences[Unbound.THORNS_EFFECT] = UnboundEffect.SLEEP
                 eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE] = "hey there!"
                 eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE_COLOR] = Colors.RAINBOW
                 eventPlayer.effects_preferences[Effects.AURA_EFFECT] = ChillEffect.SPARKLES

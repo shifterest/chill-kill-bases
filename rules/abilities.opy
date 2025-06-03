@@ -17,7 +17,7 @@ rule "— Ability mode • No cooldown • Primary fire":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Recharge primary fire (Moira)":
+rule "— Ability mode • No cooldown • Primary fire (Moira)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
@@ -52,22 +52,21 @@ rule "— Ability mode • Hold to spam • Primary fire (Brigitte)":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Reset secondary fire CD":
+rule "— Ability mode • No cooldown • Secondary fire":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE] == AbilityMode.NO_COOLDOWN
-    @Condition eventPlayer.getAbilityCooldown(Button.SECONDARY_FIRE) > 0
+    @Condition eventPlayer.getAbilityCooldown(Button.SECONDARY_FIRE) > 0 or (
+        eventPlayer.getAbilityCooldown(Button.SECONDARY_FIRE) == 0 and eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+    )
 
     do:
         eventPlayer.setAbilityCooldown(Button.SECONDARY_FIRE, 0)
-        if optimize:
-            wait(0.5)
-        else:
-            waitLoad()
+        waitLoad()
     while RULE_CONDITION
 
 
-rule "— Ability mode • Hold to spam • Secondary fire (not Reinhardt, Brigitte)":
+rule "— Ability mode • Hold to spam • Secondary fire":
     @Event eachPlayer
     @Condition not optimize
     @Condition not isOverloaded
@@ -94,7 +93,7 @@ rule "— Ability mode • Hold to spam • Secondary fire (not Reinhardt, Brigi
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Recharge secondary fire (Illari)":
+rule "— Ability mode • No cooldown • Secondary fire (Illari)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
@@ -108,7 +107,9 @@ rule "— Ability mode • No cooldown • Ability 1":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE] == AbilityMode.NO_COOLDOWN
-    @Condition eventPlayer.getAbilityCooldown(Button.ABILITY_1) > 0
+    @Condition eventPlayer.getAbilityCooldown(Button.ABILITY_1) > 0 or (
+        eventPlayer.getAbilityCooldown(Button.ABILITY_1) == 0 and eventPlayer.isHoldingButton(Button.ABILITY_1)
+    )
 
     do:
         eventPlayer.setAbilityCooldown(Button.ABILITY_1, 0)
@@ -139,38 +140,23 @@ rule "— Ability mode • Hold to spam • Ability 1":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Recharge ability 1 (Tracer, Symmetrax)":
+rule "— Ability mode • No cooldown • Ability 1 (Tracer, Junkrat)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition (
-        eventPlayer.getCurrentHero() == Hero.TRACER
-        or eventPlayer.getCurrentHero() == Hero.SYMMETRA
-    )
-    @Condition eventPlayer.getAbilityCharge(Button.ABILITY_1) < 3
-
-    eventPlayer.setAbilityCharge(Button.ABILITY_1, 3)
-
-
-rule "— Ability mode • No cooldown • Recharge ability 1 (Zarya, Junkrat, Freja)":
-    @Event eachPlayer
-    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition (
-        eventPlayer.getCurrentHero() == Hero.ZARYA
-        or eventPlayer.getCurrentHero() == Hero.JUNKRAT
-        or eventPlayer.getCurrentHero() == Hero.FREJA
-    )
+    @Condition eventPlayer.getCurrentHero() == Hero.TRACER or eventPlayer.getCurrentHero() == Hero.JUNKRAT
     @Condition eventPlayer.getAbilityCharge(Button.ABILITY_1) < 2
 
-    eventPlayer.setAbilityCharge(Button.ABILITY_1, 2)
+    eventPlayer.setAbilityCharge(Button.ABILITY_1, 3)
 
 
 rule "— Ability mode • No cooldown • Ability 2":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE] == AbilityMode.NO_COOLDOWN
-    @Condition eventPlayer.getAbilityCooldown(Button.ABILITY_2) > 0
+    @Condition eventPlayer.getAbilityCooldown(Button.ABILITY_2) > 0 or (
+        eventPlayer.getAbilityCooldown(Button.ABILITY_2) == 0 and eventPlayer.isHoldingButton(Button.ABILITY_2)
+    )
 
     do:
         eventPlayer.setAbilityCooldown(Button.ABILITY_2, 0)
@@ -203,15 +189,11 @@ rule "— Ability mode • Hold to spam • Ability 2":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Recharge ability 2 (Zarya, Reinhardt, Brigitte)":
+rule "— Ability mode • No cooldown • Ability 2 (Brigitte)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition (
-        eventPlayer.getCurrentHero() == Hero.ZARYA
-        or eventPlayer.getCurrentHero() == Hero.REINHARDT
-        or eventPlayer.getCurrentHero() == Hero.BRIGITTE
-    )
+    @Condition eventPlayer.getCurrentHero() == Hero.BRIGITTE
     @Condition eventPlayer.getAbilityCharge(Button.ABILITY_2) < 2
 
     eventPlayer.setAbilityCharge(Button.ABILITY_2, 2)
@@ -221,7 +203,9 @@ rule "— Ability mode • No cooldown • Crouch":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition eventPlayer.getAbilityCooldown(Button.CROUCH) > 0
+    @Condition eventPlayer.getAbilityCooldown(Button.CROUCH) > 0 or (
+        eventPlayer.getAbilityCooldown(Button.CROUCH) == 0 and eventPlayer.isHoldingButton(Button.CROUCH)
+    )
 
     do:
         eventPlayer.setAbilityCooldown(Button.CROUCH, 0)
@@ -234,7 +218,9 @@ rule "— Ability mode • No cooldown • Interact":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition eventPlayer.getAbilityCooldown(Button.INTERACT) > 0
+    @Condition eventPlayer.getAbilityCooldown(Button.INTERACT) > 0 or (
+        eventPlayer.getAbilityCooldown(Button.INTERACT) == 0 and eventPlayer.isHoldingButton(Button.INTERACT)
+    )
 
     do:
         eventPlayer.setAbilityCooldown(Button.INTERACT, 0)
@@ -243,11 +229,12 @@ rule "— Ability mode • No cooldown • Interact":
 
 
 rule "— Ability mode • No cooldown • Jump":
-    @Disabled
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.ABILITY_MODE]
-    @Condition eventPlayer.getAbilityCooldown(Button.JUMP) > 0
+    @Condition eventPlayer.isHoldingButton(Button.JUMP) or (
+        eventPlayer.getAbilityCooldown(Button.JUMP) == 0 and eventPlayer.isHoldingButton(Button.JUMP)
+    )
 
     do:
         eventPlayer.setAbilityCooldown(Button.JUMP, 0)
@@ -310,14 +297,11 @@ rule "— Ammo overload (Orisa)":
     while RULE_CONDITION
 
 
-rule "— Ammo overload (D.Va, Hazard)":
+rule "— Ammo overload (D.Va)":
     @Event eachPlayer
     @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
     @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
-    @Condition (
-        eventPlayer.getCurrentHero() == Hero.DVA
-        or eventPlayer.getCurrentHero() == Hero.HAZARD
-    )
+    @Condition eventPlayer.getCurrentHero() == Hero.DVA
     @Condition eventPlayer.getAbilityResource(Button.SECONDARY_FIRE) < 50
 
     eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 100)
@@ -342,14 +326,6 @@ rule "— Ammo overload (Illari)":
 
     eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 0)
 
-rule "— Ammo overload (Freja)":
-    @Event eachPlayer
-    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.special_preferences[Special.AMMO_OVERLOAD]
-    @Condition eventPlayer.getCurrentHero() == Hero.FREJA
-    @Condition eventPlayer.getAmmo(1) == 0
-
-    eventPlayer.setAmmo(1, 1000)
 
 rule "— Ultimate mode • No cooldown":
     @Event eachPlayer

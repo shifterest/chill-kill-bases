@@ -18,7 +18,7 @@ rule "— Prepare base":
         async(UpdateCamera, AsyncBehavior.RESTART)
     else:
         eventPlayer.progress_hud[ProgressHUD.TEXT] = "preparing base..."
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_preferences[Base.COLOR]
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
         chase(eventPlayer.progress, 100, duration = 1, ChaseReeval.NONE)
     
         waitUntil(
@@ -54,8 +54,8 @@ rule "— Create base":
         
     if isOverlappingBase(
         eventPlayer.getPosition(),
-        eventPlayer.base_preferences[Base.SIZE],
-        eventPlayer.base_preferences[Base.GAP_SIZE]
+        eventPlayer.preferences[Preference.BASE_SIZE],
+        eventPlayer.preferences[Preference.BASE_GAP_SIZE]
     ):
         DebuffPlayer()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "can't place a base here")
@@ -95,7 +95,7 @@ def BaseCreationHint():
     eventPlayer.startCamera(
         raycast(
             eventPlayer.base_vector,
-            eventPlayer.base_vector + (Vector.UP * eventPlayer.base_preferences[Base.SIZE] * 2) + (Vector.BACKWARD / 2),
+            eventPlayer.base_vector + (Vector.UP * eventPlayer.preferences[Preference.BASE_SIZE] * 2) + (Vector.BACKWARD / 2),
             null,
             eventPlayer,
             false
@@ -108,7 +108,7 @@ def BaseCreationHint():
     eventPlayer.startForcingPosition(
         raycast(
             eventPlayer.base_vector,
-            eventPlayer.base_vector + Vector.BACKWARD * min(1, eventPlayer.base_preferences[Base.SIZE]),
+            eventPlayer.base_vector + Vector.BACKWARD * min(1, eventPlayer.preferences[Preference.BASE_SIZE]),
             null,
             eventPlayer,
             false
@@ -180,7 +180,7 @@ def UpdateBaseWithinOwner():
         p for p in getAllPlayers() if p.base_vector
         and eventPlayer in getPlayersInRadius(
             p.base_vector,
-            p.base_preferences[Base.SIZE],
+            p.preferences[Preference.BASE_SIZE],
             Team.ALL,
             LosCheck.OFF
     )])[0]
@@ -196,11 +196,11 @@ rule "— Settle in base / update base mode":
     @Condition (
         eventPlayer.previous_base_within_radius != eventPlayer.base_within_owner
         or eventPlayer.previous_base_mode
-        != eventPlayer.base_within_owner.main_preferences[Main.BASE_MODE]
+        != eventPlayer.base_within_owner.preferences[Preference.BASE_MODE]
     )
 
     eventPlayer.previous_base_within_radius = eventPlayer.base_within_owner
-    eventPlayer.previous_base_mode = eventPlayer.base_within_owner.main_preferences[Main.BASE_MODE]
+    eventPlayer.previous_base_mode = eventPlayer.base_within_owner.preferences[Preference.BASE_MODE]
 
     if eventPlayer.base_within_owner == eventPlayer:
         if eventPlayer.base_settled_owner == eventPlayer:
@@ -208,7 +208,7 @@ rule "— Settle in base / update base mode":
             return
         async(SettleInOwnBase, AsyncBehavior.RESTART)
     else:
-        switch eventPlayer.base_within_owner.main_preferences[Main.BASE_MODE]:
+        switch eventPlayer.base_within_owner.preferences[Preference.BASE_MODE]:
             case BaseMode.FRIENDLY:
                 async(SettleInFriendlyBase, AsyncBehavior.RESTART)
                 break
@@ -244,8 +244,8 @@ def Repel():
         wait(0.1)
     while [
         p for p in getAllPlayers()
-        if p.base_vector and eventPlayer in getPlayersInRadius(p.base_vector, p.base_preferences[Base.SIZE], Team.ALL, LosCheck.OFF)
-    ][0].main_preferences[Main.BASE_MODE] == BaseMode.EXCLUSIVE
+        if p.base_vector and eventPlayer in getPlayersInRadius(p.base_vector, p.preferences[Preference.BASE_SIZE], Team.ALL, LosCheck.OFF)
+    ][0].preferences[Preference.BASE_MODE] == BaseMode.EXCLUSIVE
 
 
 def SettleInOwnBase():
@@ -278,7 +278,7 @@ def SettleInFriendlyBase():
 
     waitUntil(
         eventPlayer.base_progress == 100
-        or eventPlayer.base_within_owner.main_preferences[Main.BASE_MODE]
+        or eventPlayer.base_within_owner.preferences[Preference.BASE_MODE]
         != BaseMode.FRIENDLY
         or eventPlayer.settle_immediately
         or eventPlayer.previous_base_within_radius
@@ -304,13 +304,13 @@ rule "— Switch hero":
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
     @Condition not eventPlayer.isInModeratorMode
     @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.dream_preferences[Dream.DREAM_MODE]
+    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
     @Condition not eventPlayer.isParalyzed
     @Condition not eventPlayer.isParalyzedByModerator
     @Condition eventPlayer.progress == 0
 
     eventPlayer.progress_hud[ProgressHUD.TEXT] = "entering hero picker..."
-    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_preferences[Base.COLOR]
+    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
     chase(eventPlayer.progress, 100, duration = 0.6, ChaseReeval.NONE)
 
     waitUntil(
@@ -346,11 +346,11 @@ rule "— Pack base":
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition not eventPlayer.isInModeratorMode
     @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.dream_preferences[Dream.DREAM_MODE]
+    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
     @Condition eventPlayer.progress == 0
 
     eventPlayer.progress_hud[ProgressHUD.TEXT] = "preparing to pack base..."
-    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_preferences[Base.COLOR]
+    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
     chase(eventPlayer.progress, 100, duration = 1, ChaseReeval.NONE)
 
     waitUntil(
@@ -379,7 +379,7 @@ rule "— Pack base":
 rule "— Pack base remotely":
     @Event eachPlayer
     @Condition eventPlayer.base_vector
-    @Condition eventPlayer.game_preferences[Game.REMOTE_PACK_BASE]
+    @Condition eventPlayer.preferences[Preference.REMOTE_PACK_BASE]
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition eventPlayer.base_settled_owner != eventPlayer
@@ -387,7 +387,7 @@ rule "— Pack base remotely":
     @Condition eventPlayer.progress == 0
 
     eventPlayer.progress_hud[ProgressHUD.TEXT] = "preparing to pack base..."
-    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_preferences[Base.COLOR]
+    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
     chase(eventPlayer.progress, 100, duration = 1.5, ChaseReeval.NONE)
 
     waitUntil(
@@ -421,19 +421,19 @@ def PackBase():
 
 rule "— Fast travel":
     @Event eachPlayer
-    @Condition eventPlayer.game_preferences[Game.FAST_TRAVEL]
+    @Condition eventPlayer.preferences[Preference.FAST_TRAVEL]
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
-    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE] or (
-        not eventPlayer.main_preferences[Main.PLAYER_MODE] and not (
+    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] or (
+        not eventPlayer.preferences[Preference.PLAYER_MODE] and not (
             eventPlayer.base_settled_owner != eventPlayer
             or not eventPlayer.base_settled_owner
         )
     )
-    @Condition not eventPlayer.dream_preferences[Dream.DREAM_MODE]
+    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
     @Condition not eventPlayer.isUsingKeyboard
-    @Condition not (eventPlayer.base_settled_owner == eventPlayer and eventPlayer.base_preferences[Base.BASE_LOCK])
+    @Condition not (eventPlayer.base_settled_owner == eventPlayer and eventPlayer.preferences[Preference.BASE_LOCK])
     @Condition not eventPlayer.mount
     @Condition eventPlayer.progress == 0
 
@@ -444,14 +444,14 @@ rule "— Fast travel":
             heroIcon(eventPlayer.base_to_fast_travel_owner.getCurrentHero()),
             eventPlayer.base_to_fast_travel_owner
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_to_fast_travel_owner.base_preferences[Base.COLOR]
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_COLOR]
     elif eventPlayer.base_vector and eventPlayer.base_within_owner != eventPlayer:
         eventPlayer.base_to_fast_travel_owner = eventPlayer
         eventPlayer.progress_hud[ProgressHUD.TEXT] = "fast traveling to your base..."
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_preferences[Base.COLOR]
-    elif eventPlayer.main_preferences[Main.PLAYER_MODE] and eventPlayer.base_settled_owner and eventPlayer.previous_position:
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
+    elif eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.base_settled_owner and eventPlayer.previous_position:
         eventPlayer.progress_hud[ProgressHUD.TEXT] = "fast traveling to previous position..."
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_preferences[Base.COLOR]
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
         chase(eventPlayer.progress, 100, duration = 0.6, ChaseReeval.NONE)
 
         waitUntil(
@@ -483,12 +483,12 @@ rule "— Fast travel":
     waitUntil(
         eventPlayer.progress == 100
         or not eventPlayer.isHoldingButton(Button.MELEE)
-        or (eventPlayer.base_to_fast_travel_owner != eventPlayer and eventPlayer.base_to_fast_travel_owner.main_preferences[Main.BASE_MODE] != 1)
-        or (not eventPlayer.main_preferences[Main.PLAYER_MODE] and not eventPlayer.base_settled_owner)
+        or (eventPlayer.base_to_fast_travel_owner != eventPlayer and eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_MODE] != 1)
+        or (not eventPlayer.preferences[Preference.PLAYER_MODE] and not eventPlayer.base_settled_owner)
         or not eventPlayer.base_to_fast_travel_owner.base_vector
         or eventPlayer in getPlayersInRadius(
             eventPlayer.base_to_fast_travel_owner.base_vector,
-            eventPlayer.base_to_fast_travel_owner.base_preferences[Base.SIZE],
+            eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_SIZE],
             Team.ALL,
             LosCheck.OFF
         )
@@ -523,7 +523,7 @@ def Confine():
 
     if not eventPlayer in getPlayersInRadius(
         eventPlayer.base_settled_owner.base_vector,
-        eventPlayer.base_settled_owner.base_preferences[Base.SIZE] + 3,
+        eventPlayer.base_settled_owner.preferences[Preference.BASE_SIZE] + 3,
         Team.ALL,
         LosCheck.OFF
     ):
@@ -533,7 +533,7 @@ def Confine():
                 eventPlayer.base_settled_owner.base_vector,
                 eventPlayer.getPosition()
             )
-            * (eventPlayer.base_settled_owner.base_preferences[Base.SIZE])
+            * (eventPlayer.base_settled_owner.preferences[Preference.BASE_SIZE])
             + eventPlayer.base_settled_owner.base_vector
         )
 

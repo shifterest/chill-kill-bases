@@ -7,32 +7,32 @@ rule "Unbound":
 
 rule "— Dealt damage":
     @Event playerDealtDamage
-    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.UNBOUND
+    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL
     @Condition eventPlayer != victim
 
-    switch eventPlayer.unbound_preferences[Unbound.DAMAGE_EFFECT]:
-        case UnboundEffect.SLEEP:
+    switch eventPlayer.preferences[Preference.DAMAGE_EFFECT]:
+        case AbilityEffect.SLEEP:
             victim.setStatusEffect(eventPlayer, Status.ASLEEP, 1)
             break
-        case UnboundEffect.BURN:
+        case AbilityEffect.BURN:
             victim.setStatusEffect(eventPlayer, Status.BURNING, 1)
             break
-        case UnboundEffect.FREEZE:
+        case AbilityEffect.FREEZE:
             victim.setStatusEffect(eventPlayer, Status.FROZEN, 1)
             break
-        case UnboundEffect.HACK:
+        case AbilityEffect.HACK:
             victim.setStatusEffect(eventPlayer, Status.HACKED, 1)
             break
-        case UnboundEffect.KNOCK:
+        case AbilityEffect.KNOCK:
             victim.setStatusEffect(eventPlayer, Status.KNOCKED_DOWN, 1)
             break
-        case UnboundEffect.STUN:
+        case AbilityEffect.STUN:
             victim.setStatusEffect(eventPlayer, Status.STUNNED, 1)
             break
-        case UnboundEffect.REPEL:
+        case AbilityEffect.REPEL:
             victim.applyImpulse(directionTowards(eventPlayer.getPosition(), victim.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
-        case UnboundEffect.ATTRACT:
+        case AbilityEffect.ATTRACT:
             victim.applyImpulse(directionTowards(victim.getPosition(), eventPlayer.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
 
@@ -41,32 +41,32 @@ rule "— Dealt damage":
 
 rule "— Received damage":
     @Event playerTookDamage
-    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.UNBOUND
+    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL
     @Condition eventPlayer != attacker
 
-    switch eventPlayer.unbound_preferences[Unbound.THORNS_EFFECT]:
-        case UnboundEffect.SLEEP:
+    switch eventPlayer.preferences[Preference.THORNS_EFFECT]:
+        case AbilityEffect.SLEEP:
             attacker.setStatusEffect(eventPlayer, Status.ASLEEP, 1)
             break
-        case UnboundEffect.BURN:
+        case AbilityEffect.BURN:
             attacker.setStatusEffect(eventPlayer, Status.BURNING, 1)
             break
-        case UnboundEffect.FREEZE:
+        case AbilityEffect.FREEZE:
             attacker.setStatusEffect(eventPlayer, Status.FROZEN, 1)
             break
-        case UnboundEffect.HACK:
+        case AbilityEffect.HACK:
             attacker.setStatusEffect(eventPlayer, Status.HACKED, 1)
             break
-        case UnboundEffect.KNOCK:
+        case AbilityEffect.KNOCK:
             attacker.setStatusEffect(eventPlayer, Status.KNOCKED_DOWN, 1)
             break
-        case UnboundEffect.STUN:
+        case AbilityEffect.STUN:
             attacker.setStatusEffect(eventPlayer, Status.STUNNED, 1)
             break
-        case UnboundEffect.REPEL:
+        case AbilityEffect.REPEL:
             attacker.applyImpulse(directionTowards(eventPlayer.getPosition(), attacker.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
-        case UnboundEffect.ATTRACT:
+        case AbilityEffect.ATTRACT:
             attacker.applyImpulse(directionTowards(attacker.getPosition(), eventPlayer.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
 
@@ -75,32 +75,32 @@ rule "— Received damage":
 
 rule "— Dealt healing":
     @Event playerDealtHealing
-    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.UNBOUND
+    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL
     @Condition eventPlayer != healee
 
-    switch eventPlayer.unbound_preferences[Unbound.HEALING_EFFECT]:
-        case UnboundEffect.SLEEP:
+    switch eventPlayer.preferences[Preference.HEALING_EFFECT]:
+        case AbilityEffect.SLEEP:
             healee.setStatusEffect(eventPlayer, Status.ASLEEP, 1)
             break
-        case UnboundEffect.BURN:
+        case AbilityEffect.BURN:
             healee.setStatusEffect(eventPlayer, Status.BURNING, 1)
             break
-        case UnboundEffect.FREEZE:
+        case AbilityEffect.FREEZE:
             healee.setStatusEffect(eventPlayer, Status.FROZEN, 1)
             break
-        case UnboundEffect.HACK:
+        case AbilityEffect.HACK:
             healee.setStatusEffect(eventPlayer, Status.HACKED, 1)
             break
-        case UnboundEffect.KNOCK:
+        case AbilityEffect.KNOCK:
             healee.setStatusEffect(eventPlayer, Status.KNOCKED_DOWN, 1)
             break
-        case UnboundEffect.STUN:
+        case AbilityEffect.STUN:
             healee.setStatusEffect(eventPlayer, Status.STUNNED, 1)
             break
-        case UnboundEffect.REPEL:
+        case AbilityEffect.REPEL:
             healee.applyImpulse(directionTowards(eventPlayer.getPosition(), healee.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
-        case UnboundEffect.ATTRACT:
+        case AbilityEffect.ATTRACT:
             healee.applyImpulse(directionTowards(healee.getPosition(), eventPlayer.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
 

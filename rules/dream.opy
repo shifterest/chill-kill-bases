@@ -15,7 +15,7 @@ def DreamMode():
 
     waitUntil(eventPlayer.isHoldingButton(Button.JUMP) or isActive(), 99999)
 
-    eventPlayer.dream_preferences[Dream.DREAM_MODE] = false
+    eventPlayer.preferences[Preference.DREAM_MODE] = false
     eventPlayer.enableHeroHud()
     UpdatePhase()
     async(UpdateCamera, AsyncBehavior.RESTART)
@@ -24,24 +24,24 @@ def DreamMode():
 
 rule "— Dream on AFK":
     @Event eachPlayer
-    @Condition eventPlayer.dream_preferences[Dream.AFK_TIMER] > 0
-    @Condition eventPlayer.dream_preferences[Dream.AFK_TIMER] * 60 == eventPlayer.afk_timer
+    @Condition eventPlayer.preferences[Preference.AFK_TIMER] > 0
+    @Condition eventPlayer.preferences[Preference.AFK_TIMER] * 60 == eventPlayer.afk_timer
 
     if (
         eventPlayer.isInModeratorMode
         or eventPlayer.isUsingKeyboard
-        or eventPlayer.dream_preferences[Dream.DREAM_MODE]
-        or eventPlayer.special_preferences[Special.ULTIMATE_MODE] == UltimateMode.INFINITE
+        or eventPlayer.preferences[Preference.DREAM_MODE]
+        or eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
     ):
         return
 
-    eventPlayer.dream_preferences[Dream.DREAM_MODE] = true
+    eventPlayer.preferences[Preference.DREAM_MODE] = true
     DreamMode()
 
 
 rule "— Switch spectated player":
     @Event eachPlayer
-    @Condition eventPlayer.dream_preferences[Dream.DREAM_MODE]
+    @Condition eventPlayer.preferences[Preference.DREAM_MODE]
 
     do:
         eventPlayer.focused_player = random.choice(
@@ -59,17 +59,17 @@ rule "— Switch spectated player":
             eventPlayer.focused_player = eventPlayer
 
         waitUntil(
-            not eventPlayer.dream_preferences[Dream.DREAM_MODE]
+            not eventPlayer.preferences[Preference.DREAM_MODE]
             or not eventPlayer.focused_player.hasSpawned()
             or eventPlayer.focused_player.isInvisible,
-            eventPlayer.dream_preferences[Dream.SWITCH_TIMER]
+            eventPlayer.preferences[Preference.SWITCH_TIMER]
         )
     while RULE_CONDITION
 
 
 rule "— Reset AFK timer":
     @Event eachPlayer
-    @Condition eventPlayer.dream_preferences[Dream.AFK_TIMER] > 0
+    @Condition eventPlayer.preferences[Preference.AFK_TIMER] > 0
     @Condition isActive()
 
     do:
@@ -82,10 +82,10 @@ rule "— Reset AFK timer":
 def UpdateAFKTimer():
     @Name "— Update AFK timer"
 
-    if eventPlayer.dream_preferences[Dream.AFK_TIMER] > 0:
+    if eventPlayer.preferences[Preference.AFK_TIMER] > 0:
         chase(
             eventPlayer.afk_timer,
-            eventPlayer.dream_preferences[Dream.AFK_TIMER] * 60,
+            eventPlayer.preferences[Preference.AFK_TIMER] * 60,
             rate = 1,
             ChaseReeval.NONE
         )

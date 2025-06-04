@@ -7,8 +7,8 @@ rule "Paralysis":
 
 rule "— Self-paralyze":
     @Event eachPlayer
-    @Condition eventPlayer.main_preferences[Main.PLAYER_MODE]
-    @Condition eventPlayer.game_preferences[Game.SELF_PARALYSIS]
+    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
+    @Condition eventPlayer.preferences[Preference.SELF_PARALYSIS]
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
     @Condition not eventPlayer.isInModeratorMode
@@ -28,7 +28,7 @@ def Unparalyze():
 
     eventPlayer.isParalyzed = false
     if not eventPlayer.isParalyzedByModerator:
-        switch eventPlayer.game_preferences[Game.PARALYSIS_MODE]:
+        switch eventPlayer.preferences[Preference.PARALYSIS_MODE]:
             case Paralysis.KNOCKED_DOWN:
                 eventPlayer.clearStatusEffect(Status.KNOCKED_DOWN)
                 break
@@ -49,7 +49,7 @@ rule "— Keep paralysis inflicted":
     @Condition eventPlayer.isParalyzedByModerator or eventPlayer.isParalyzed
 
     do:
-        switch eventPlayer.game_preferences[Game.PARALYSIS_MODE]:
+        switch eventPlayer.preferences[Preference.PARALYSIS_MODE]:
             case Paralysis.KNOCKED_DOWN:
                 if not eventPlayer.hasStatusEffect(Status.KNOCKED_DOWN):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):

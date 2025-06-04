@@ -56,7 +56,6 @@ settings {
 #!include "rules/special.opy"
 
 rule "— Debug HUD":
-    @Disabled
     @Condition isInitialized
 
     hudSubtext(

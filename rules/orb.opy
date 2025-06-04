@@ -1,55 +1,5 @@
 #!mainFile "../main.opy"
 
-#!define UpdateSubPreferencesHUD(subpreference, data, preferences)\
-eventPlayer.preferences_hud[PreferencesHUD.TITLE] = data[eventPlayer.main_preferences[subpreference]][Preference.TITLE]\
-eventPlayer.preferences_hud[PreferencesHUD.CURRENT_PREFERENCE] = eventPlayer.main_preferences[subpreference] + 1\
-eventPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES] = len(data)\
-eventPlayer.preferences_hud[PreferencesHUD.TYPE] = data[eventPlayer.main_preferences[subpreference]][Preference.TYPE]\
-eventPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] = data[eventPlayer.main_preferences[subpreference]][Preference.CHILL_UNBOUND]\
-if not eventPlayer.main_preferences[Main.PLAYER_MODE] and data[eventPlayer.main_preferences[subpreference]][Preference.CHILL_UNBOUND]:\
-    eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Colors.GRAY\
-elif data[eventPlayer.main_preferences[subpreference]][Preference.COLORS][preferences[eventPlayer.main_preferences[subpreference]]]:\
-    if len(data[eventPlayer.main_preferences[subpreference]][Preference.COLORS]) > 1:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = data[eventPlayer.main_preferences[subpreference]][Preference.COLORS][preferences[eventPlayer.main_preferences[subpreference]]]\
-    else:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = data[eventPlayer.main_preferences[subpreference]][Preference.COLORS]\
-else:\
-    eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Colors.WHITE\
-switch eventPlayer.preferences_hud[PreferencesHUD.TYPE]:\
-    case PreferenceType.MULTIPLE_CHOICE:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = data[eventPlayer.main_preferences[subpreference]][Preference.PARAMETERS][preferences[eventPlayer.main_preferences[subpreference]]]\
-        eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), preferences[eventPlayer.main_preferences[subpreference]] + 1, len(data[eventPlayer.main_preferences[subpreference]][Preference.PARAMETERS]), iconString(Icon.ARROW_RIGHT))\
-        break\
-    case PreferenceType.INTERACT_MULTIPLE_CHOICE:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = data[eventPlayer.main_preferences[subpreference]][Preference.PARAMETERS][1][preferences[eventPlayer.main_preferences[subpreference]]]\
-        eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), preferences[eventPlayer.main_preferences[subpreference]] + 1, len(data[eventPlayer.main_preferences[subpreference]][Preference.PARAMETERS][1]), iconString(Icon.ARROW_RIGHT))\
-        break\
-    case PreferenceType.COLOR_PICKER:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = preferences[eventPlayer.main_preferences[subpreference]]\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = colors_data[preferences[eventPlayer.main_preferences[subpreference]]]\
-        eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), preferences[eventPlayer.main_preferences[subpreference]] + 1, len(colors_data), iconString(Icon.ARROW_RIGHT))\
-        break\
-    case PreferenceType.BOOLEAN:\
-        if preferences[eventPlayer.main_preferences[subpreference]]:\
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "on"\
-        else:\
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "off"\
-        break\
-    case PreferenceType.NUMERIC:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "{}{}".format(preferences[eventPlayer.main_preferences[subpreference]], data[eventPlayer.main_preferences[subpreference]][Preference.PARAMETERS][3] if data[eventPlayer.main_preferences[subpreference]][Preference.PARAMETERS][3] else " units")\
-        break\
-    case PreferenceType.KEYBOARD:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE]\
-        break\
-    default:\
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = ""\
-        break\
-if data[eventPlayer.main_preferences[subpreference]][Preference.DESCRIPTIONS][preferences[eventPlayer.main_preferences[subpreference]]]:\
-    eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = data[eventPlayer.main_preferences[subpreference]][Preference.DESCRIPTIONS][preferences[eventPlayer.main_preferences[subpreference]]]\
-else:\
-    eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = data[eventPlayer.main_preferences[subpreference]][Preference.DESCRIPTIONS]
-
-
 rule "Preferences":
     @Disabled
     @Delimiter
@@ -98,7 +48,7 @@ rule "— Draw preferences HUD":
     createInWorldText(
         localPlayer if localPlayer.isUsingKeyboard else null,
         "{}{}".format(
-            localPlayer.effects_preferences[Effects.CUSTOM_MESSAGE],
+            localPlayer.preferences[Preference.CUSTOM_MESSAGE],
             "|" if getTotalTimeElapsed() % 1 <= 0.5 else " "
         ),
         menu_vector(0, 0.3),
@@ -178,10 +128,11 @@ rule "— Draw preferences HUD":
         Color.WHITE,
         SpecVisibility.NEVER
     )
-        # PREFERENCES
+    
+    # PREFERENCES
     # preferences category
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences and localPlayer.isInSubPreference else null,
+        localPlayer if localPlayer.isViewingPreferences and localPlayer.isViewingAdvancedPreferences else null,
         "{} • go back".format(buttonString(Button.MELEE)),
         orb_vector(0.9),
         0.9,
@@ -229,7 +180,7 @@ rule "— Draw preferences HUD":
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
         rainbow_rgb()
-        if localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] == Colors.RAINBOW
+        if localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] == Color.RAINBOW
         else colors_data[localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR]],
         SpecVisibility.NEVER
     )
@@ -245,8 +196,8 @@ rule "— Draw preferences HUD":
         0.8,
         Clip.NONE,
         rainbow_rgb()
-        if localPlayer.base_preferences[Base.COLOR] == Colors.RAINBOW
-        else colors_data[localPlayer.base_preferences[Base.COLOR]],
+        if localPlayer.preferences[Preference.BASE_COLOR] == Color.RAINBOW
+        else colors_data[localPlayer.preferences[Preference.BASE_COLOR]],
         null,
         ProgressWorldTextReeval.VISIBILITY_POSITION_VALUES_AND_COLOR,
         SpecVisibility.NEVER
@@ -255,7 +206,7 @@ rule "— Draw preferences HUD":
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         "{} • see more".format(buttonString(Button.INTERACT))
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.SUB_PREFERENCE
+        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.CATEGORY
         else "{} {} {}  |  {} • reset".format(
             buttonString(Button.ABILITY_1),
             localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
@@ -311,11 +262,10 @@ rule "— Draw preferences HUD":
     # chill or zen mode required
     createInWorldText(
         localPlayer
-        if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND]
+        if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED]
         and localPlayer.isViewingPreferences
         else null,
-        "unbound required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.UNBOUND and localPlayer.main_preferences[Main.PLAYER_MODE] != PlayerMode.UNBOUND
-        else "chill / unbound / zen required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] == ChillUnbound.CHILL and not localPlayer.main_preferences[Main.PLAYER_MODE]
+        "chill / zen required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] and not localPlayer.preferences[Preference.PLAYER_MODE]
         else "",
         localPlayer.base_vector,
         0.9,
@@ -329,69 +279,63 @@ rule "— Draw preferences HUD":
 def UpdatePreferencesHUD():
     @Name "— Update preferences HUD"
 
-    if eventPlayer.isInSubPreference:
-        eventPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] = main_preferences_data[eventPlayer.preferences_index][Preference.COLORS]
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                UpdateSubPreferencesHUD(Main.GAME, game_preferences_data, eventPlayer.game_preferences)
-                break
-            case Main.EFFECTS:
-                UpdateSubPreferencesHUD(Main.EFFECTS, effects_preferences_data, eventPlayer.effects_preferences)
-                break
-            case Main.HERO:
-                UpdateSubPreferencesHUD(Main.HERO, hero_preferences_data, eventPlayer.hero_preferences)
-                break
-            case Main.UNBOUND:
-                UpdateSubPreferencesHUD(Main.UNBOUND, unbound_preferences_data, eventPlayer.unbound_preferences)
-                break
-            case Main.SPECIAL:
-                UpdateSubPreferencesHUD(Main.SPECIAL, special_preferences_data, eventPlayer.special_preferences)
-                break
-            case Main.HERO:
-                UpdateSubPreferencesHUD(Main.HERO, hero_preferences_data, eventPlayer.hero_preferences)
-                break
-            case Main.BASE:
-                UpdateSubPreferencesHUD(Main.BASE, base_preferences_data, eventPlayer.base_preferences)
-                break
-            case Main.DREAM:
-                UpdateSubPreferencesHUD(Main.DREAM, dream_preferences_data, eventPlayer.dream_preferences)
-                break
+    eventPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] = [
+        cat[PreferenceCategoryProperty.COLOR] for cat in preferences_category_data
+        if (dynamic_preferences_index(eventPlayer) >= cat[PreferenceCategoryProperty.STARTING_INDEX]
+        and dynamic_preferences_index(eventPlayer) <= cat[PreferenceCategoryProperty.ENDING_INDEX])
+    ][0]
+    eventPlayer.preferences_hud[PreferencesHUD.TITLE] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TITLE]
+    eventPlayer.preferences_hud[PreferencesHUD.CURRENT_PREFERENCE] = eventPlayer.preferences_index + 1
+    if eventPlayer.isViewingAdvancedPreferences:
+        eventPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES] = len(preferences_data)
     else:
-        eventPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] = Colors.ORANGE
-        eventPlayer.preferences_hud[PreferencesHUD.TITLE] = main_preferences_data[eventPlayer.preferences_index][Preference.TITLE]
-        eventPlayer.preferences_hud[PreferencesHUD.CURRENT_PREFERENCE] = eventPlayer.preferences_index + 1
-        eventPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES] = len(main_preferences_data)
-        eventPlayer.preferences_hud[PreferencesHUD.TYPE] = main_preferences_data[eventPlayer.preferences_index][Preference.TYPE]
-        eventPlayer.preferences_hud[PreferencesHUD.CHILL_UNBOUND] = main_preferences_data[eventPlayer.preferences_index][Preference.CHILL_UNBOUND]
-        if not eventPlayer.main_preferences[Main.PLAYER_MODE] and main_preferences_data[eventPlayer.preferences_index][Preference.CHILL_UNBOUND]:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Colors.GRAY
-        elif main_preferences_data[eventPlayer.preferences_index][Preference.COLORS][eventPlayer.main_preferences[eventPlayer.preferences_index]]:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = main_preferences_data[eventPlayer.preferences_index][Preference.COLORS][eventPlayer.main_preferences[eventPlayer.preferences_index]]
-        elif main_preferences_data[eventPlayer.preferences_index][Preference.COLORS]:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = main_preferences_data[eventPlayer.preferences_index][Preference.COLORS]
-        else:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Colors.WHITE
-        switch eventPlayer.preferences_hud[PreferencesHUD.TYPE]:
-            case PreferenceType.BOOLEAN:
-                if eventPlayer.main_preferences[eventPlayer.preferences_index]:
-                    eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "on"
-                else:
-                    eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "off"
-                break
-            case PreferenceType.MULTIPLE_CHOICE:
-                eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = main_preferences_data[eventPlayer.preferences_index][Preference.PARAMETERS][eventPlayer.main_preferences[eventPlayer.preferences_index]]
-                eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.main_preferences[eventPlayer.preferences_index] + 1, len(main_preferences_data[eventPlayer.preferences_index][Preference.PARAMETERS]), iconString(Icon.ARROW_RIGHT))
-                break
-            case PreferenceType.SUB_PREFERENCE:
-                eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "• • •"
-                break
-            default:
-                eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = ""
-                break
-        if main_preferences_data[eventPlayer.preferences_index][Preference.DESCRIPTIONS][eventPlayer.main_preferences[eventPlayer.preferences_index]]:
-            eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = main_preferences_data[eventPlayer.preferences_index][Preference.DESCRIPTIONS][eventPlayer.main_preferences[eventPlayer.preferences_index]]
-        else:
-            eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = main_preferences_data[eventPlayer.preferences_index][Preference.DESCRIPTIONS]
+        eventPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES] = len(quick_preferences_data)
+    eventPlayer.preferences_hud[PreferencesHUD.TYPE] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]
+    eventPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.CHILL_REQUIRED]
+    if not eventPlayer.preferences[Preference.PLAYER_MODE] and preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.CHILL_REQUIRED]:
+        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Color.GRAY
+    elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]:
+        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
+    elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS]:
+        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS]
+    else:
+        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Color.WHITE
+    switch eventPlayer.preferences_hud[PreferencesHUD.TYPE]:
+        case PreferenceType.BOOLEAN:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]:
+                eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "on"
+            else:
+                eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "off"
+            break
+        case PreferenceType.MULTIPLE_CHOICE:
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
+            eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]), iconString(Icon.ARROW_RIGHT))
+            break
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
+            eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]), iconString(Icon.ARROW_RIGHT))
+            break
+        case PreferenceType.COLOR_PICKER:
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = colors_data[eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
+            eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(colors_data), iconString(Icon.ARROW_RIGHT))
+            break
+        case PreferenceType.CATEGORY:
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "• • •"
+            break
+        case PreferenceType.NUMERIC:
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "{}{}".format(eventPlayer.preferences[dynamic_preferences_index(eventPlayer)], preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.SUFFIX] if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.SUFFIX] else " units")
+            break
+        case PreferenceType.KEYBOARD:
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = eventPlayer.preferences[Preference.CUSTOM_MESSAGE]
+            break
+        default:
+            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = ""
+            break
+    if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.DESCRIPTIONS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]:
+        eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.DESCRIPTIONS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
+    else:
+        eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.DESCRIPTIONS]
 
 
 rule "— View / hide preferences":
@@ -399,7 +343,7 @@ rule "— View / hide preferences":
     @Condition eventPlayer.base_settled_owner == eventPlayer
     @Condition not eventPlayer.isInModeratorMode
     @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.dream_preferences[Dream.DREAM_MODE]
+    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
     @Condition distance(
         eventPlayer.getEyePosition()
         + distance(eventPlayer.getEyePosition(), eventPlayer.base_vector)
@@ -414,7 +358,7 @@ rule "— View / hide preferences":
     waitUntil(
         eventPlayer.base_settled_owner != eventPlayer
         or eventPlayer.isUsingKeyboard
-        or eventPlayer.dream_preferences[Dream.DREAM_MODE]
+        or eventPlayer.preferences[Preference.DREAM_MODE]
         # or eventPlayer.isCommunicatingEmote()
         or distance(
             eventPlayer.getEyePosition()
@@ -430,171 +374,98 @@ rule "— View / hide preferences":
     async(UpdateAbilities, AsyncBehavior.RESTART)
 
 
-rule "— Go back to main preferences":
+rule "— Switch between quick and advanced preferences":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
-    @Condition eventPlayer.isInSubPreference
 
-    eventPlayer.isInSubPreference = false
+    if eventPlayer.isViewingAdvancedPreferences:
+        if (
+            eventPlayer.preferences_index >= preferences_category_data[0][PreferenceCategoryProperty.STARTING_INDEX]
+            and eventPlayer.preferences_index <= preferences_category_data[0][PreferenceCategoryProperty.ENDING_INDEX]
+        ):
+            eventPlayer.isViewingAdvancedPreferences = false
+        else:
+            eventPlayer.preferences_index = [
+                cat[PreferenceCategoryProperty.CATEGORY_INDEX] for cat in preferences_category_data
+                if eventPlayer.preferences_index >= cat[PreferenceCategoryProperty.STARTING_INDEX]
+                and eventPlayer.preferences_index <= cat[PreferenceCategoryProperty.ENDING_INDEX]
+            ][0]
+    else:
+        eventPlayer.isViewingAdvancedPreferences = true
+
     UpdatePreferencesHUD()
     ExplodeBase()
     BuffPlayer()
 
 
-rule "— Interact / toggle parameter":
+rule "— Interact / toggle preference":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
-    if eventPlayer.isInSubPreference:
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                switch game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.TYPE]:
-                    case PreferenceType.BOOLEAN:
-                        if eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]]:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = false
-                        else:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = true
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.INTERACT:
-                        chase(
-                            eventPlayer.interaction_progress,
-                            100,
-                            duration = game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS],
-                            ChaseReeval.NONE
-                        )
-                        waitUntil(
-                            eventPlayer.interaction_progress == 100
-                            or not eventPlayer.isHoldingButton(Button.INTERACT)
-                            or not eventPlayer.isViewingPreferences,
-                            game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS]
-                        )
-                        if eventPlayer.interaction_progress == 100:
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        stopChasingVariable(eventPlayer.interaction_progress)
-                        eventPlayer.interaction_progress = 0
-                        break
-                    case PreferenceType.INTERACT_MULTIPLE_CHOICE:
-                        chase(
-                            eventPlayer.interaction_progress,
-                            100,
-                            duration = game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][0],
-                            ChaseReeval.NONE
-                        )
-                        waitUntil(
-                            eventPlayer.interaction_progress == 100
-                            or not eventPlayer.isHoldingButton(Button.INTERACT)
-                            or not eventPlayer.isViewingPreferences,
-                            game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][0]
-                        )
-                        if eventPlayer.interaction_progress == 100:
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        stopChasingVariable(eventPlayer.interaction_progress)
-                        eventPlayer.interaction_progress = 0
-                        break
-                break
-            case Main.EFFECTS:
-                switch effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.TYPE]:
-                    case PreferenceType.BOOLEAN:
-                        if eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]]:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = false
-                        else:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = true
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.KEYBOARD:
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                break
-            case Main.HERO:
-                switch hero_preferences_data[eventPlayer.main_preferences[Main.HERO]][Preference.TYPE]:
-                    case PreferenceType.BOOLEAN:
-                        if eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]]:
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] = false
-                        else:
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] = true
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                break
-            case Main.UNBOUND:
-                switch unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.TYPE]:
-                    case PreferenceType.BOOLEAN:
-                        if eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]]:
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = false
-                        else:
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = true
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                break
-            case Main.SPECIAL:
-                switch special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.TYPE]:
-                    case PreferenceType.BOOLEAN:
-                        if eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]]:
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] = false
-                        else:
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] = true
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                break
-            case Main.BASE:
-                switch base_preferences_data[eventPlayer.main_preferences[Main.BASE]][Preference.TYPE]:
-                    case PreferenceType.BOOLEAN:
-                        if eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]]:
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] = false
-                        else:
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] = true
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                break
-            case Main.DREAM:
-                switch dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.TYPE]:
-                    case PreferenceType.BOOLEAN:
-                        if eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]]:
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] = false
-                        else:
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] = true
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.INTERACT_BOOLEAN:
-                        chase(
-                            eventPlayer.interaction_progress,
-                            100,
-                            duration = dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.PARAMETERS],
-                            ChaseReeval.NONE
-                        )
-                        waitUntil(
-                            eventPlayer.interaction_progress == 100
-                            or not eventPlayer.isHoldingButton(Button.INTERACT)
-                            or not eventPlayer.isViewingPreferences,
-                            dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.PARAMETERS]
-                        )
-                        if eventPlayer.interaction_progress == 100:
-                            if eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]]:
-                                eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] = false
-                            else:
-                                eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] = true
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        stopChasingVariable(eventPlayer.interaction_progress)
-                        eventPlayer.interaction_progress = 0
-                        break
-                break
-    else:
-        switch main_preferences_data[eventPlayer.preferences_index][Preference.TYPE]:
-            case PreferenceType.BOOLEAN:
-                if eventPlayer.main_preferences[eventPlayer.preferences_index]:
-                    eventPlayer.main_preferences[eventPlayer.preferences_index] = false
-                else:
-                    eventPlayer.main_preferences[eventPlayer.preferences_index] = true
-                UpdatePreferencesHUD()
-                break
-            case PreferenceType.SUB_PREFERENCE:
-                eventPlayer.isInSubPreference = true
-                UpdatePreferencesHUD()
-                ExplodeBase()
-                BuffPlayer()
-                break
+    switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
+        case PreferenceType.BOOLEAN:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = false
+            else:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = true
+            UpdatePreferencesHUD()
+            break
+        case PreferenceType.CATEGORY:
+            if eventPlayer.isViewingAdvancedPreferences:
+                eventPlayer.preferences_index = [
+                    cat[PreferenceCategoryProperty.STARTING_INDEX] for cat in preferences_category_data
+                    if (cat[PreferenceCategoryProperty.CATEGORY_INDEX] == eventPlayer.preferences_index)
+                ][0]
+            else:
+                preferences_category_data[eventPlayer.preferences_index][PreferenceCategoryProperty.CATEGORY_INDEX] = [
+                    cat[PreferenceCategoryProperty.STARTING_INDEX] for cat in preferences_category_data
+                    if (cat[PreferenceCategoryProperty.CATEGORY_INDEX] == dynamic_preferences_index(eventPlayer))
+                ][0]
+            UpdatePreferencesHUD()
+            ExplodeBase()
+            BuffPlayer()
+            break
+        case PreferenceType.INTERACT:
+        case PreferenceType.INTERACT_BOOLEAN:
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+            if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE:
+                chase(
+                    eventPlayer.interaction_progress,
+                    100,
+                    duration = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0],
+                    ChaseReeval.NONE
+                )
+                waitUntil(
+                    eventPlayer.interaction_progress == 100
+                    or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    or not eventPlayer.isViewingPreferences,
+                    preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0]
+                )
+            else:
+                chase(
+                    eventPlayer.interaction_progress,
+                    100,
+                    duration = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS],
+                    ChaseReeval.NONE
+                )
+                waitUntil(
+                    eventPlayer.interaction_progress == 100
+                    or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    or not eventPlayer.isViewingPreferences,
+                    preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]
+                )
+            if eventPlayer.interaction_progress == 100:
+                if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_BOOLEAN:
+                    if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]:
+                        eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = false
+                    else:
+                        eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = true
+                async(InteractWithPreferences, AsyncBehavior.RESTART)
+            stopChasingVariable(eventPlayer.interaction_progress)
+            eventPlayer.interaction_progress = 0
+            break
 
 
 rule "— Go to next preference":
@@ -602,52 +473,13 @@ rule "— Go to next preference":
     @Condition eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
 
-    if eventPlayer.isInSubPreference:
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                if eventPlayer.main_preferences[Main.GAME] < len(game_preferences_data) - 1:
-                    eventPlayer.main_preferences[Main.GAME] += 1
-                else:
-                    eventPlayer.main_preferences[Main.GAME] = 0
-                break
-            case Main.EFFECTS:
-                if eventPlayer.main_preferences[Main.EFFECTS] < len(effects_preferences_data) - 1:
-                    eventPlayer.main_preferences[Main.EFFECTS] += 1
-                else:
-                    eventPlayer.main_preferences[Main.EFFECTS] = 0
-                break
-            case Main.UNBOUND:
-                if eventPlayer.main_preferences[Main.UNBOUND] < len(unbound_preferences_data) - 1:
-                    eventPlayer.main_preferences[Main.UNBOUND] += 1
-                else:
-                    eventPlayer.main_preferences[Main.UNBOUND] = 0
-                break
-            case Main.HERO:
-                if eventPlayer.main_preferences[Main.HERO] < len(hero_preferences_data) - 1:
-                    eventPlayer.main_preferences[Main.HERO] += 1
-                else:
-                    eventPlayer.main_preferences[Main.HERO] = 0
-                break
-            case Main.SPECIAL:
-                if eventPlayer.main_preferences[Main.SPECIAL] < len(special_preferences_data) - 1:
-                    eventPlayer.main_preferences[Main.SPECIAL] += 1
-                else:
-                    eventPlayer.main_preferences[Main.SPECIAL] = 0
-                break
-            case Main.BASE:
-                if eventPlayer.main_preferences[Main.BASE] < len(base_preferences_data) - 1:
-                    eventPlayer.main_preferences[Main.BASE] += 1
-                else:
-                    eventPlayer.main_preferences[Main.BASE] = 0
-                break
-            case Main.DREAM:
-                if eventPlayer.main_preferences[Main.DREAM] < len(dream_preferences_data) - 1:
-                    eventPlayer.main_preferences[Main.DREAM] += 1
-                else:
-                    eventPlayer.main_preferences[Main.DREAM] = 0
-                break
+    if eventPlayer.isViewingAdvancedPreferences:
+        if eventPlayer.preferences_index < len(preferences_data) - 1:
+            eventPlayer.preferences_index += 1
+        else:
+            eventPlayer.preferences_index = 0
     else:
-        if eventPlayer.preferences_index < len(main_preferences_data) - 1:
+        if eventPlayer.preferences_index < len(quick_preferences_data) - 1:
             eventPlayer.preferences_index += 1
         else:
             eventPlayer.preferences_index = 0
@@ -660,328 +492,63 @@ rule "— Go to previous preference":
     @Condition eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
 
-    if eventPlayer.isInSubPreference:
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                if eventPlayer.main_preferences[Main.GAME] > 0:
-                    eventPlayer.main_preferences[Main.GAME] -= 1
-                else:
-                    eventPlayer.main_preferences[Main.GAME] = len(game_preferences_data) - 1
-                break
-            case Main.EFFECTS:
-                if eventPlayer.main_preferences[Main.EFFECTS] > 0:
-                    eventPlayer.main_preferences[Main.EFFECTS] -= 1
-                else:
-                    eventPlayer.main_preferences[Main.EFFECTS] = len(effects_preferences_data) - 1
-                break
-            case Main.HERO:
-                if eventPlayer.main_preferences[Main.HERO] > 0:
-                    eventPlayer.main_preferences[Main.HERO] -= 1
-                else:
-                    eventPlayer.main_preferences[Main.HERO] = len(hero_preferences_data) - 1
-                break
-            case Main.UNBOUND:
-                if eventPlayer.main_preferences[Main.UNBOUND] > 0:
-                    eventPlayer.main_preferences[Main.UNBOUND] -= 1
-                else:
-                    eventPlayer.main_preferences[Main.UNBOUND] = len(unbound_preferences_data) - 1
-                break
-            case Main.SPECIAL:
-                if eventPlayer.main_preferences[Main.SPECIAL] > 0:
-                    eventPlayer.main_preferences[Main.SPECIAL] -= 1
-                else:
-                    eventPlayer.main_preferences[Main.SPECIAL] = len(special_preferences_data) - 1
-                break
-            case Main.BASE:
-                if eventPlayer.main_preferences[Main.BASE] > 0:
-                    eventPlayer.main_preferences[Main.BASE] -= 1
-                else:
-                    eventPlayer.main_preferences[Main.BASE] = len(base_preferences_data) - 1
-                break
-            case Main.DREAM:
-                if eventPlayer.main_preferences[Main.DREAM] > 0:
-                    eventPlayer.main_preferences[Main.DREAM] -= 1
-                else:
-                    eventPlayer.main_preferences[Main.DREAM] = len(dream_preferences_data) - 1
-                break
+    if eventPlayer.isViewingAdvancedPreferences:
+        if eventPlayer.preferences_index > 0:
+            eventPlayer.preferences_index -= 1
+        else:
+            eventPlayer.preferences_index = len(preferences_data) - 1
     else:
         if eventPlayer.preferences_index > 0:
             eventPlayer.preferences_index -= 1
         else:
-            eventPlayer.preferences_index = len(main_preferences_data) - 1
+            eventPlayer.preferences_index = len(quick_preferences_data) - 1
 
     UpdatePreferencesHUD()
 
 
-rule "— Go to next / increase parameter":
+rule "— Go to next option / increase preference":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
     @Condition not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
-    if eventPlayer.isInSubPreference:
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                switch game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if (
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]]
-                            < len(game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS]) - 1
-                        ):
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] += 1
-                        else:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = 0
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.INTERACT_MULTIPLE_CHOICE:
-                        if (
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]]
-                            < len(game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][1]) - 1
-                        ):
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] += 1
-                        else:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = 0
-                        async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_data[
-                                eventPlayer.main_preferences[Main.GAME]
-                            ][Preference.PARAMETERS][1]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]]
-                            < game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][1]
-                        ):
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] += game_preferences_data[
-                                eventPlayer.main_preferences[Main.GAME]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.EFFECTS:
-                switch effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if (
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]]
-                            < len(effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.PARAMETERS]) - 1
-                        ):
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] += 1
-                        else:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = 0
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.COLOR_PICKER:
-                        if (
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]]
-                            < len(colors_data) - 1
-                        ):
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] += 1
-                        else:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = 0
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = effects_preferences_data[
-                                eventPlayer.main_preferences[Main.EFFECTS]
-                            ][Preference.PARAMETERS][1]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]]
-                            < effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.PARAMETERS][1]
-                        ):
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] += effects_preferences_data[
-                                eventPlayer.main_preferences[Main.EFFECTS]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.HERO:
-                switch hero_preferences_data[eventPlayer.main_preferences[Main.HERO]][Preference.TYPE]:
-                    case PreferenceType.COLOR_PICKER:
-                        if (
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]]
-                            < len(colors_data) - 1
-                        ):
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] += 1
-                        else:
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] = 0
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] = hero_preferences_data[
-                                eventPlayer.main_preferences[Main.HERO]
-                            ][Preference.PARAMETERS][1]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]]
-                            < hero_preferences_data[eventPlayer.main_preferences[Main.HERO]][Preference.PARAMETERS][1]
-                        ):
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] += hero_preferences_data[
-                                eventPlayer.main_preferences[Main.HERO]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.UNBOUND:
-                switch unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if (
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]]
-                            < len(unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.PARAMETERS]) - 1
-                        ):
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] += 1
-                        else:
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = 0
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = unbound_preferences_data[
-                                eventPlayer.main_preferences[Main.UNBOUND]
-                            ][Preference.PARAMETERS][1]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]]
-                            < unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.PARAMETERS][1]
-                        ):
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] += unbound_preferences_data[
-                                eventPlayer.main_preferences[Main.UNBOUND]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.SPECIAL:
-                switch special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if (
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]]
-                            < len(special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.PARAMETERS]) - 1
-                        ):
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] += 1
-                        else:
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] = 0
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] = special_preferences_data[
-                                eventPlayer.main_preferences[Main.SPECIAL]
-                            ][Preference.PARAMETERS][1]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]]
-                            < special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.PARAMETERS][1]
-                        ):
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] += special_preferences_data[
-                                eventPlayer.main_preferences[Main.SPECIAL]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.BASE:
-                switch base_preferences_data[eventPlayer.main_preferences[Main.BASE]][Preference.TYPE]:
-                    case PreferenceType.COLOR_PICKER:
-                        if (
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]]
-                            < len(colors_data) - 1
-                        ):
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] += 1
-                        else:
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] = 0
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] = base_preferences_data[
-                                eventPlayer.main_preferences[Main.BASE]
-                            ][Preference.PARAMETERS][1]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]]
-                            < base_preferences_data[eventPlayer.main_preferences[Main.BASE]][Preference.PARAMETERS][1]
-                        ):
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] += base_preferences_data[
-                                eventPlayer.main_preferences[Main.BASE]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.DREAM:
-                switch dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.TYPE]:
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] = dream_preferences_data[
-                                eventPlayer.main_preferences[Main.DREAM]
-                            ][Preference.PARAMETERS][1]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]]
-                            < dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.PARAMETERS][1]
-                        ):
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] += dream_preferences_data[
-                                eventPlayer.main_preferences[Main.DREAM]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-    else:
-        switch main_preferences_data[eventPlayer.preferences_index][Preference.TYPE]:
-            case PreferenceType.MULTIPLE_CHOICE:
-                if (
-                    eventPlayer.main_preferences[eventPlayer.preferences_index]
-                    < len(main_preferences_data[eventPlayer.preferences_index][Preference.PARAMETERS]) - 1
-                ):
-                    eventPlayer.main_preferences[eventPlayer.preferences_index] += 1
-                else:
-                    eventPlayer.main_preferences[eventPlayer.preferences_index] = 0
+    switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
+        case PreferenceType.NUMERIC:
+            if eventPlayer.isHoldingButton(Button.CROUCH):
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
-                break
-
+                ExplodeBase()
+                BuffPlayer()
+            elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
+                async(InteractWithPreferences, AsyncBehavior.RESTART)
+            else:
+                ExplodeBase()
+                BuffPlayer()
+                return
+            break
+        case PreferenceType.COLOR_PICKER:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(colors_data) - 1:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
+            else:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            break
+        case PreferenceType.MULTIPLE_CHOICE:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
+            else:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            break
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
+            else:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            break
+                
     if not eventPlayer.isAdjustingPreference:
         waitUntil(not eventPlayer.isHoldingButton(Button.ABILITY_2), 0.4)
 
@@ -998,257 +565,48 @@ rule "— Go to next / increase parameter":
     goto RULE_START
 
 
-rule "— Go to previous / decrease parameter":
+rule "— Go to previous option / decrease preference":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1)
     @Condition not eventPlayer.isHoldingButton(Button.ABILITY_2)
 
-    if eventPlayer.isInSubPreference:
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                switch game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] > 0:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] -= 1
-                        else:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = len(
-                                game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS]
-                            ) - 1
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.INTERACT_MULTIPLE_CHOICE:
-                        if eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] > 0:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] -= 1
-                        else:
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = len(
-                                game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][1]
-                            ) - 1
-                        async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_data[
-                                eventPlayer.main_preferences[Main.GAME]
-                            ][Preference.PARAMETERS][0]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]]
-                            > game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.PARAMETERS][0]
-                        ):
-                            eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] -= game_preferences_data[
-                                eventPlayer.main_preferences[Main.GAME]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.EFFECTS:
-                switch effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] > 0:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] -= 1
-                        else:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = len(
-                                effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.PARAMETERS]
-                            ) - 1
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.COLOR_PICKER:
-                        if eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] > 0:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] -= 1
-                        else:
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = len(colors_data) - 1
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] = effects_preferences_data[
-                                eventPlayer.main_preferences[Main.EFFECTS]
-                            ][Preference.PARAMETERS][0]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]]
-                            > effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.PARAMETERS][0]
-                        ):
-                            eventPlayer.effects_preferences[eventPlayer.main_preferences[Main.EFFECTS]] -= effects_preferences_data[
-                                eventPlayer.main_preferences[Main.EFFECTS]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.HERO:
-                switch hero_preferences_data[eventPlayer.main_preferences[Main.HERO]][Preference.TYPE]:
-                    case PreferenceType.COLOR_PICKER:
-                        if eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] > 0:
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] -= 1
-                        else:
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] = len(colors_data) - 1
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] = hero_preferences_data[
-                                eventPlayer.main_preferences[Main.HERO]
-                            ][Preference.PARAMETERS][0]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]]
-                            > hero_preferences_data[eventPlayer.main_preferences[Main.HERO]][Preference.PARAMETERS][0]
-                        ):
-                            eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] -= hero_preferences_data[
-                                eventPlayer.main_preferences[Main.HERO]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.UNBOUND:
-                switch unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] > 0:
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] -= 1
-                        else:
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = len(
-                                unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.PARAMETERS]
-                            ) - 1
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = unbound_preferences_data[
-                                eventPlayer.main_preferences[Main.UNBOUND]
-                            ][Preference.PARAMETERS][0]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]]
-                            > unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.PARAMETERS][0]
-                        ):
-                            eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] -= unbound_preferences_data[
-                                eventPlayer.main_preferences[Main.UNBOUND]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.SPECIAL:
-                switch special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        if eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] > 0:
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] -= 1
-                        else:
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] = len(
-                                special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.PARAMETERS]
-                            ) - 1
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] = special_preferences_data[
-                                eventPlayer.main_preferences[Main.SPECIAL]
-                            ][Preference.PARAMETERS][0]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]]
-                            > special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.PARAMETERS][0]
-                        ):
-                            eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] -= special_preferences_data[
-                                eventPlayer.main_preferences[Main.SPECIAL]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.BASE:
-                switch base_preferences_data[eventPlayer.main_preferences[Main.BASE]][Preference.TYPE]:
-                    case PreferenceType.COLOR_PICKER:
-                        if eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] > 0:
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] -= 1
-                        else:
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] = len(colors_data) - 1
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        break
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] = base_preferences_data[
-                                eventPlayer.main_preferences[Main.BASE]
-                            ][Preference.PARAMETERS][0]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]]
-                            > base_preferences_data[eventPlayer.main_preferences[Main.BASE]][Preference.PARAMETERS][0]
-                        ):
-                            eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] -= base_preferences_data[
-                                eventPlayer.main_preferences[Main.BASE]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-            case Main.DREAM:
-                switch dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.TYPE]:
-                    case PreferenceType.NUMERIC:
-                        if eventPlayer.isHoldingButton(Button.CROUCH):
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] = dream_preferences_data[
-                                eventPlayer.main_preferences[Main.DREAM]
-                            ][Preference.PARAMETERS][0]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                            ExplodeBase()
-                            BuffPlayer()
-                        elif (
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]]
-                            > dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.PARAMETERS][0]
-                        ):
-                            eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] -= dream_preferences_data[
-                                eventPlayer.main_preferences[Main.DREAM]
-                            ][Preference.PARAMETERS][2]
-                            async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        else:
-                            ExplodeBase()
-                            BuffPlayer()
-                            return
-                        break
-                break
-    else:
-        switch main_preferences_data[eventPlayer.preferences_index][Preference.TYPE]:
-            case PreferenceType.MULTIPLE_CHOICE:
-                if eventPlayer.main_preferences[eventPlayer.preferences_index] > 0:
-                    eventPlayer.main_preferences[eventPlayer.preferences_index] -= 1
-                else:
-                    eventPlayer.main_preferences[eventPlayer.preferences_index] = len(main_preferences_data[eventPlayer.preferences_index][Preference.PARAMETERS]) - 1
+    switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
+        case PreferenceType.NUMERIC:
+            if eventPlayer.isHoldingButton(Button.CROUCH):
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
-                break
+                ExplodeBase()
+                BuffPlayer()
+            elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
+                async(InteractWithPreferences, AsyncBehavior.RESTART)
+            else:
+                ExplodeBase()
+                BuffPlayer()
+                return
+            break
+        case PreferenceType.COLOR_PICKER:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
+            else:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(colors_data) - 1
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            break
+        case PreferenceType.MULTIPLE_CHOICE:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
+            else:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            break
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
+            else:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            break
 
     if not eventPlayer.isAdjustingPreference:
         waitUntil(not eventPlayer.isHoldingButton(Button.ABILITY_1), 0.4)
@@ -1271,251 +629,160 @@ rule "— Reset preference":
     @Condition eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
-    if eventPlayer.isInSubPreference:
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                switch game_preferences_data[eventPlayer.main_preferences[Main.GAME]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                        eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_default[eventPlayer.main_preferences[Main.GAME]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                    case PreferenceType.NUMERIC:
-                        eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_default[eventPlayer.main_preferences[Main.GAME]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                break
-            case Main.EFFECTS:
-                switch effects_preferences_data[eventPlayer.main_preferences[Main.EFFECTS]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                    case PreferenceType.COLOR_PICKER:
-                    case PreferenceType.NUMERIC:
-                        eventPlayer.game_preferences[eventPlayer.main_preferences[Main.GAME]] = game_preferences_default[eventPlayer.main_preferences[Main.GAME]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                break
-            case Main.HERO:
-                switch hero_preferences_data[eventPlayer.main_preferences[Main.HERO]][Preference.TYPE]:
-                    case PreferenceType.COLOR_PICKER:
-                    case PreferenceType.NUMERIC:
-                        eventPlayer.hero_preferences[eventPlayer.main_preferences[Main.HERO]] = hero_preferences_default[eventPlayer.main_preferences[Main.HERO]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                break
-            case Main.UNBOUND:
-                switch unbound_preferences_data[eventPlayer.main_preferences[Main.UNBOUND]][Preference.TYPE]:
-                    case PreferenceType.NUMERIC:
-                        eventPlayer.unbound_preferences[eventPlayer.main_preferences[Main.UNBOUND]] = unbound_preferences_default[eventPlayer.main_preferences[Main.UNBOUND]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                break
-            case Main.SPECIAL:
-                switch special_preferences_data[eventPlayer.main_preferences[Main.SPECIAL]][Preference.TYPE]:
-                    case PreferenceType.MULTIPLE_CHOICE:
-                    case PreferenceType.NUMERIC:
-                        eventPlayer.special_preferences[eventPlayer.main_preferences[Main.SPECIAL]] = special_preferences_default[eventPlayer.main_preferences[Main.SPECIAL]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                break
-            case Main.BASE:
-                switch base_preferences_data[eventPlayer.main_preferences[Main.BASE]][Preference.TYPE]:
-                    case PreferenceType.COLOR_PICKER:
-                    case PreferenceType.NUMERIC:
-                        eventPlayer.base_preferences[eventPlayer.main_preferences[Main.BASE]] = base_preferences_default[eventPlayer.main_preferences[Main.BASE]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                break
-            case Main.DREAM:
-                switch dream_preferences_data[eventPlayer.main_preferences[Main.DREAM]][Preference.TYPE]:
-                    case PreferenceType.NUMERIC:
-                        eventPlayer.dream_preferences[eventPlayer.main_preferences[Main.DREAM]] = dream_preferences_default[eventPlayer.main_preferences[Main.DREAM]]
-                        async(InteractWithPreferences, AsyncBehavior.RESTART)
-                        ExplodeBase()
-                        BuffPlayer()
-                        break
-                break
+    switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
+        case PreferenceType.MULTIPLE_CHOICE:
+        case PreferenceType.COLOR_PICKER:
+        case PreferenceType.NUMERIC:
+            eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_default[dynamic_preferences_index(eventPlayer)]
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            ExplodeBase()
+            BuffPlayer()
+            break
 
 
 def InteractWithPreferences():
     @Name "— Preferences interactions"
 
-    if eventPlayer.isInSubPreference:
-        eventPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] = main_preferences_data[eventPlayer.preferences_index][Preference.COLORS]
-        switch eventPlayer.preferences_index:
-            case Main.GAME:
-                switch eventPlayer.main_preferences[Main.GAME]:
-                    case Game.FAST_TRAVEL_TO_OBJECTIVE:
-                        if (
-                            eventPlayer.main_preferences[Main.PLAYER_MODE]
-                            and getObjectivePosition(eventPlayer.game_preferences[Game.FAST_TRAVEL_TO_OBJECTIVE]) != vect(0, 0, 0)
-                        ):
-                            eventPlayer.teleport(nearestWalkablePosition(getObjectivePosition(eventPlayer.game_preferences[Game.FAST_TRAVEL_TO_OBJECTIVE])))
-                            BuffPlayer()
-                        elif not eventPlayer.main_preferences[Main.PLAYER_MODE]:
-                            DebuffPlayer()
-                            iconMessage(eventPlayer, iconString(Icon.WARNING), "can't fast travel in kill mode")
-                        else:
-                            DebuffPlayer()
-                            iconMessage(eventPlayer, iconString(Icon.WARNING), "objective doesn't exist")
-                        break
-                    case Game.THIRD_PERSON:
-                    case Game.THIRD_PERSON_DISTANCE:
-                        async(UpdateCamera, AsyncBehavior.RESTART)
-                        break
-                    case Game.SWITCH_TEAM:
-                        if getCurrentGamemode() == Gamemode.SKIRMISH:
-                            DebuffPlayer()
-                            iconMessage(eventPlayer, iconString(Icon.WARNING), "switching teams disabled due to reports of server crashes")
-                            # moveToTeam(eventPlayer, getOppositeTeam(eventPlayer.getTeam()), -1)
-                        else:
-                            DebuffPlayer()
-                            iconMessage(eventPlayer, iconString(Icon.WARNING), "gamemode is FFA")
-                        break
-                    case Game.RESET:
-                        PackBase()
-                        LoadDefaultPreferences()
-                        InitializePlayer()
-                        BuffPlayer()
-                        iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "preferences reset")
-                        break
-                break
-            case Main.EFFECTS:
-                switch eventPlayer.main_preferences[Main.EFFECTS]:
-                    case Effects.CUSTOM_MESSAGE:
-                        eventPlayer.isUsingKeyboard = true
-                        eventPlayer.previous_position_direction = [
-                            eventPlayer.getPosition(), vect(
-                                eventPlayer.getFacingDirection().x,
-                                0,
-                                eventPlayer.getFacingDirection().z
-                            )
-                        ]
-                        eventPlayer.disableHeroHUD()
-                        eventPlayer.setStatusEffect(eventPlayer, Status.ROOTED, 99999)
-                        eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
-                        eventPlayer.setInvisibility(Invis.ALL)
-                        eventPlayer.isInvisible = true
-                        UpdateAbilities()
-                        eventPlayer.startCamera(
-                            eventPlayer.getEyePosition(),
-                            eventPlayer.getEyePosition() + eventPlayer.previous_position_direction[1],
-                            0
-                        )
-                        break
-                    case Effects.AURA:
-                    case Effects.AURA_EFFECT:
-                    case Effects.HIDE_AURA_IN_FIRST_PERSON:
-                        async(UpdateAura, AsyncBehavior.RESTART)
-                        break
-                break
-            case Main.UNBOUND:
-                switch eventPlayer.main_preferences[Main.UNBOUND]:
-                    case Unbound.DAMAGE:
-                    case Unbound.HEALING:
-                    case Unbound.HEALTH:
-                        UpdateHero()
-                        break
-            case Main.HERO:
-                switch eventPlayer.main_preferences[Main.HERO]:
-                    case Hero.OUTLINE_COLOR:
-                        updateHeroOutline()
-                        break
-                    case Hero.SIZE:
-                        UpdateSizeNoclip()
-                        break
-                    case Hero.FLIGHT:
-                        UpdateFlight()
-                        break
-                    case Hero.KNOCKBACK:
-                        UpdateKnockback()
-                        break
-                    case Hero.PROJECTILE_SPEED:
-                    case Hero.PROJECTILE_GRAVITY:
-                        UpdateProjectiles()
-                        break
-                    case Hero.VOICE_PITCH:
-                        updatePitch()
-                        break
-                break
-            case Main.SPECIAL:
-                switch eventPlayer.main_preferences[Main.SPECIAL]:
-                    case Special.AMMO_OVERLOAD:
-                        UpdateAmmo()
-                        break
-                    case Special.NOCLIP:
-                        UpdateSizeNoclip()
-                        break
-                    case Special.INVISIBILITY:
-                        UpdateInvisibility()
-                        break
-                    case Special.ALLOW_MOUNTING:
-                        if (
-                            not eventPlayer.special_preferences[Special.ALLOW_MOUNTING]
-                            and eventPlayer.rider
-                        ):
-                            UnmountPlayer()
-                        break
-                    case Special.MOUNTING_MODE:
-                        UpdateRider()
-                        break
-                break
-            case Main.BASE:
-                switch eventPlayer.main_preferences[Main.BASE]:
-                    case Base.SIZE:
-                    case Base.GAP_SIZE:
-                        while isOverlappingBase(
-                            eventPlayer.base_vector,
-                            eventPlayer.base_preferences[Base.SIZE],
-                            eventPlayer.base_preferences[Base.GAP_SIZE]
-                        ):
-                            if eventPlayer.main_preferences[Main.BASE] == Base.SIZE:
-                                eventPlayer.base_preferences[Base.SIZE] -= base_preferences_data[Base.SIZE][Preference.PARAMETERS][2]
-                                eventPlayer.previous_base_size = eventPlayer.base_preferences[Base.SIZE]
-                            else:
-                                eventPlayer.base_preferences[Base.GAP_SIZE] -= base_preferences_data[Base.GAP_SIZE][Preference.PARAMETERS][2]
-                                eventPlayer.previous_base_gap_size = eventPlayer.base_preferences[Base.GAP_SIZE]
+    switch dynamic_preferences_index(eventPlayer):
+        case Preference.FAST_TRAVEL_TO_OBJECTIVE:
+            if (
+                eventPlayer.preferences[Preference.PLAYER_MODE]
+                and getObjectivePosition(eventPlayer.preferences[Preference.FAST_TRAVEL_TO_OBJECTIVE]) != vect(0, 0, 0)
+            ):
+                eventPlayer.teleport(nearestWalkablePosition(getObjectivePosition(eventPlayer.preferences[Preference.FAST_TRAVEL_TO_OBJECTIVE])))
+                BuffPlayer()
+            elif not eventPlayer.preferences[Preference.PLAYER_MODE]:
+                DebuffPlayer()
+                iconMessage(eventPlayer, iconString(Icon.WARNING), "can't fast travel in kill mode")
+            else:
+                DebuffPlayer()
+                iconMessage(eventPlayer, iconString(Icon.WARNING), "objective doesn't exist")
+            break
+        case Preference.THIRD_PERSON:
+        case Preference.THIRD_PERSON_DISTANCE:
+            async(UpdateCamera, AsyncBehavior.RESTART)
+            break
+        case Preference.SWITCH_TEAM:
+            if getCurrentGamemode() == Gamemode.SKIRMISH:
+                DebuffPlayer()
+                iconMessage(eventPlayer, iconString(Icon.WARNING), "switching teams disabled due to reports of server crashes")
+                # moveToTeam(eventPlayer, getOppositeTeam(eventPlayer.getTeam()), -1)
+            else:
+                DebuffPlayer()
+                iconMessage(eventPlayer, iconString(Icon.WARNING), "gamemode is FFA")
+            break
+        case Preference.RESET:
+            PackBase()
+            LoadDefaultPreferences()
+            InitializePlayer()
+            BuffPlayer()
+            iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "preferences reset")
+            break
+        case Preference.CUSTOM_MESSAGE:
+            eventPlayer.isUsingKeyboard = true
+            eventPlayer.previous_position_direction = [
+                eventPlayer.getPosition(), vect(
+                    eventPlayer.getFacingDirection().x,
+                    0,
+                    eventPlayer.getFacingDirection().z
+                )
+            ]
+            eventPlayer.disableHeroHUD()
+            eventPlayer.setStatusEffect(eventPlayer, Status.ROOTED, 99999)
+            eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
+            eventPlayer.setInvisibility(Invis.ALL)
+            eventPlayer.isInvisible = true
+            UpdateAbilities()
+            eventPlayer.startCamera(
+                eventPlayer.getEyePosition(),
+                eventPlayer.getEyePosition() + eventPlayer.previous_position_direction[1],
+                0
+            )
+            break
+        case Preference.AURA:
+        case Preference.AURA_EFFECT:
+        case Preference.HIDE_AURA_IN_FIRST_PERSON:
+            async(UpdateAura, AsyncBehavior.RESTART)
+            break
+        case Preference.DAMAGE:
+        case Preference.HEALING:
+        case Preference.HEALTH:
+            UpdateHero()
+            break
+        case Preference.OUTLINE_COLOR:
+            updateHeroOutline()
+            break
+        case Preference.SIZE:
+            UpdateSizeNoclip()
+            break
+        case Preference.FLIGHT:
+            UpdateFlight()
+            break
+        case Preference.KNOCKBACK:
+            UpdateKnockback()
+            break
+        case Preference.PROJECTILE_SPEED:
+        case Preference.PROJECTILE_GRAVITY:
+            UpdateProjectiles()
+            break
+        case Preference.VOICE_PITCH:
+            updatePitch()
+            break
+        case Preference.AMMO_OVERLOAD:
+            UpdateAmmo()
+            break
+        case Preference.NOCLIP:
+            UpdateSizeNoclip()
+            break
+        case Preference.INVISIBILITY:
+            UpdateInvisibility()
+            break
+        case Preference.ALLOW_MOUNTING:
+            if (
+                not eventPlayer.preferences[Preference.ALLOW_MOUNTING]
+                and eventPlayer.rider
+            ):
+                UnmountPlayer()
+            break
+        case Preference.MOUNTING_MODE:
+            UpdateRider()
+            break
+        case Preference.BASE_SIZE:
+        case Preference.BASE_GAP_SIZE:
+            while isOverlappingBase(
+                eventPlayer.base_vector,
+                eventPlayer.preferences[Preference.BASE_SIZE],
+                eventPlayer.preferences[Preference.BASE_GAP_SIZE]
+            ):
+                if eventPlayer.preferences[Preference.BASE] == Preference.BASE_SIZE:
+                    eventPlayer.preferences[Preference.BASE_SIZE] -= preferences_data[Preference.BASE_SIZE][PreferenceProperty.PARAMETERS][2]
+                    eventPlayer.previous_base_size = eventPlayer.preferences[Preference.BASE_SIZE]
+                else:
+                    eventPlayer.preferences[Preference.BASE_GAP_SIZE] -= preferences_data[Preference.BASE_GAP_SIZE][PreferenceProperty.PARAMETERS][2]
+                    eventPlayer.previous_base_gap_size = eventPlayer.preferences[Preference.BASE_GAP_SIZE]
 
-                        if eventPlayer.main_preferences[Main.BASE] == Base.SIZE:
-                            eventPlayer.previous_base_size = eventPlayer.base_preferences[Base.SIZE]
-                        else:
-                            eventPlayer.previous_base_gap_size = eventPlayer.base_preferences[Base.GAP_SIZE]
-                        break
-                    case Base.NOCLIP:
-                    case Base.GRAVITY:
-                    case Base.SPEED:
-                    case Base.JUMP_SPEED:
-                        eventPlayer.base_preferences_changed = true
-                        break
-                    case Base.BASE_LOCK:
-                        UpdateBaseWithinOwner()
-                        break
-                break
-            case Main.DREAM:
-                switch eventPlayer.main_preferences[Main.DREAM]:
-                    case Dream.DREAM_MODE:
-                        DreamMode()
-                        break
-                    case Dream.AFK_TIMER:
-                        UpdateAFKTimer()
-                        break
-                break
-    else:
-        switch eventPlayer.preferences_index:
-            case Main.PLAYER_MODE:
-                UpdateHero()
-                break
+            if eventPlayer.preferences[Preference.BASE] == Preference.BASE_SIZE:
+                eventPlayer.previous_base_size = eventPlayer.preferences[Preference.BASE_SIZE]
+            else:
+                eventPlayer.previous_base_gap_size = eventPlayer.preferences[Preference.BASE_GAP_SIZE]
+            break
+        case Preference.BASE_NOCLIP:
+        case Preference.BASE_GRAVITY:
+        case Preference.BASE_SPEED:
+        case Preference.BASE_JUMP_SPEED:
+            eventPlayer.base_preferences_changed = true
+            break
+        case Preference.BASE_LOCK:
+            UpdateBaseWithinOwner()
+            break
+        case Preference.DREAM_MODE:
+            DreamMode()
+            break
+        case Preference.AFK_TIMER:
+            UpdateAFKTimer()
+            break
+        case Preference.PLAYER_MODE:
+            UpdateHero()
+            break
     UpdatePreferencesHUD()
     BackupPlayer()

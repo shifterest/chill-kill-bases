@@ -1,17 +1,23 @@
 #!mainFile "../main.opy"
 
 # preferences indices
-enum Preference:
+enum PreferenceProperty:
     TITLE,
     DESCRIPTIONS,
     TYPE,
     PARAMETERS,
     COLORS,
-    CHILL_UNBOUND
+    CHILL_REQUIRED
 
+
+enum PreferenceCategoryProperty:
+    CATEGORY_INDEX,
+    STARTING_INDEX,
+    ENDING_INDEX,
+    COLOR
 
 enum PreferenceType:
-    SUB_PREFERENCE,
+    CATEGORY,
     MULTIPLE_CHOICE,
     BOOLEAN,
     NUMERIC,
@@ -29,19 +35,17 @@ enum Numeric:
     SUFFIX
 
 
-enum Main:
-    PLAYER_MODE,
-    BASE_MODE,
+enum Preference:
+    # Main
     GAME,
-    EFFECTS,
     HERO,
-    UNBOUND,
+    ABILITIES,
+    EFFECTS,
     SPECIAL,
     BASE,
-    DREAM
-
-
-enum Game:
+    DREAM,
+    # Game
+    PLAYER_MODE,
     THIRD_PERSON,
     THIRD_PERSON_DISTANCE,
     SHOW_HOTKEYS,
@@ -52,30 +56,64 @@ enum Game:
     INSTANT_RESPAWN,
     REMOTE_PACK_BASE,
     SWITCH_TEAM,
-    RESET
-
-
-enum Effects:
+    RESET,
+    # Hero
+    OUTLINE_COLOR,
+    FLIGHT,
+    FLIGHT_ACCELERATION,
+    SIZE,
+    GRAVITY,
+    SPEED,
+    JUMP_SPEED,
+    VOICE_PITCH,
+    # Abilities
+    DAMAGE,
+    DAMAGE_EFFECT,
+    HEALING,
+    HEALING_EFFECT,
+    HEALTH,
+    THORNS,
+    THORNS_EFFECT,
+    ABILITY_MODE,
+    ABILITY_SPAM_DELAY,
+    ULTIMATE_MODE,
+    ULTIMATE_SPAM_DELAY,
+    KNOCKBACK,
+    PROJECTILE_SPEED,
+    PROJECTILE_GRAVITY,
+    AMMO_OVERLOAD,
+    # Effects
     CUSTOM_MESSAGE,
     CUSTOM_MESSAGE_COLOR,
     AURA,
     AURA_EFFECT,
     AURA_COLOR,
     AURA_SIZE,
-    HIDE_AURA_IN_FIRST_PERSON
+    HIDE_AURA_IN_FIRST_PERSON,
+    # Special
+    NOCLIP,
+    INVISIBILITY,
+    ALLOW_MOUNTING,
+    MOUNTING_MODE,
+    TRAMPOLINE,
+    # Base
+    BASE_MODE,
+    BASE_COLOR,
+    BASE_SIZE,
+    BASE_GAP_SIZE,
+    BASE_LOCK,
+    BASE_NOCLIP,
+    BASE_GRAVITY,
+    BASE_SPEED,
+    BASE_JUMP_SPEED,
+    # Dream
+    DREAM_MODE,
+    AFK_TIMER,
+    SWITCH_TIMER,
+    CLIP_CAMERA
 
 
-enum Unbound:
-    DAMAGE,
-    THORNS,
-    HEALING,
-    HEALTH,
-    DAMAGE_EFFECT,
-    THORNS_EFFECT,
-    HEALING_EFFECT
-
-
-enum UnboundEffect:
+enum AbilityEffect:
     NONE,
     SLEEP,
     BURN,
@@ -85,52 +123,6 @@ enum UnboundEffect:
     STUN,
     REPEL,
     ATTRACT
-
-
-enum Hero:
-    OUTLINE_COLOR,
-    FLIGHT,
-    FLIGHT_ACCELERATION,
-    KNOCKBACK,
-    SIZE,
-    GRAVITY,
-    SPEED,
-    JUMP_SPEED,
-    PROJECTILE_SPEED,
-    PROJECTILE_GRAVITY,
-    VOICE_PITCH
-
-
-enum Special:
-    NOCLIP,
-    INVISIBILITY,
-    ALLOW_MOUNTING,
-    MOUNTING_MODE,
-    TRAMPOLINE,
-    AMMO_OVERLOAD,
-    ABILITY_MODE,
-    ABILITY_SPAM_DELAY,
-    ULTIMATE_MODE,
-    ULTIMATE_SPAM_DELAY
-
-
-enum Base:
-    COLOR,
-    SIZE,
-    GAP_SIZE,
-    BASE_LOCK,
-    NOCLIP,
-    GRAVITY,
-    SPEED,
-    JUMP_SPEED
-
-
-enum Dream:
-    DREAM_MODE,
-    AFK_TIMER,
-    SWITCH_TIMER,
-    CLIP_CAMERA
-
 
 # other enums
 enum Mode:
@@ -167,7 +159,7 @@ enum PreferencesHUD:
     PARAMETER_COLOR,
     CURRENT_TOTAL_PARAMETERS,
     DESCRIPTION,
-    CHILL_UNBOUND
+    CHILL_REQUIRED
 
 
 enum OnScreenHUD:
@@ -175,29 +167,28 @@ enum OnScreenHUD:
     SETTLEMENT
 
 
-enum Colors:
+enum Color:
     WHITE,
+    GRAY,
+    BLACK,
+    RED,
+    ORANGE,
     YELLOW,
     GREEN,
-    PURPLE,
-    RED,
-    BLUE,
-    AQUA,
-    ORANGE,
-    SKY_BLUE,
-    TURQUOISE,
     LIME_GREEN,
-    GRAY,
+    AQUA,
+    TURQUOISE,
+    SKY_BLUE,
+    BLUE,
     VIOLET,
+    PURPLE,
     ROSE,
-    BLACK,
     RAINBOW
 
 
 enum PlayerMode:
     KILL,
     CHILL,
-    UNBOUND,
     ZEN
 
 
@@ -244,13 +235,6 @@ enum MountingMode:
     BACK,
     LEFT,
     RIGHT
-
-
-enum ChillUnbound:
-    NONE,
-    CHILL,
-    UNBOUND
-
     
 enum SpecialChar:
     BACKSPACE = 1,

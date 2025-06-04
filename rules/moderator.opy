@@ -97,7 +97,7 @@ rule "— Paralyze / unparalyze player":
         if eventPlayer.focused_player.isParalyzedByModerator:
             eventPlayer.focused_player.isParalyzedByModerator = false
             if not eventPlayer.focused_player.isParalyzed:
-                switch eventPlayer.focused_player.game_preferences[Game.PARALYSIS_MODE]:
+                switch eventPlayer.focused_player.preferences[Preference.PARALYSIS_MODE]:
                     case Paralysis.KNOCKED_DOWN:
                         eventPlayer.focused_player.clearStatusEffect(Status.KNOCKED_DOWN)
                         break
@@ -143,12 +143,12 @@ rule "— Kill / resurrect player":
                 iconMessage(eventPlayer.focused_player, iconString(Icon.SKULL), "resurrected by moderator")
             iconMessage(eventPlayer, iconString(Icon.SKULL), "{} resurrected".format(eventPlayer.focused_player))
         else:
-            if eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN:
+            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(100)
             if eventPlayer.focused_player.hasStatusEffect(Status.PHASED_OUT):
                 eventPlayer.focused_player.clearStatusEffect(Status.PHASED_OUT)
             kill(eventPlayer.focused_player, null)
-            if eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN:
+            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(0)
             DebuffFocus()
             if eventPlayer.focused_player != eventPlayer:
@@ -178,7 +178,7 @@ rule "— Remove base":
             heroIcon(eventPlayer.focused_player.getCurrentHero()),
             eventPlayer.focused_player
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = Colors.RED
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = Color.RED
         chase(eventPlayer.progress, 100, duration=1, ChaseReeval.NONE)
         waitUntil(
             eventPlayer.progress == 100
@@ -216,7 +216,7 @@ rule "— Teleport player to you":
             heroIcon(eventPlayer.focused_player.getCurrentHero()),
             eventPlayer.focused_player
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.focused_player.hero_preferences[Hero.OUTLINE_COLOR]
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
         chase(eventPlayer.progress, 100, duration=0.6, ChaseReeval.NONE)
         waitUntil(
             eventPlayer.progress == 100
@@ -250,7 +250,7 @@ rule "— Teleport to player":
             heroIcon(eventPlayer.focused_player.getCurrentHero()),
             eventPlayer.focused_player
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.focused_player.hero_preferences[Hero.OUTLINE_COLOR]
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
         chase(eventPlayer.progress, 100, duration=0.6, ChaseReeval.NONE)
         waitUntil(
             eventPlayer.progress == 100
@@ -307,7 +307,7 @@ rule "— Ban player":
     else:
         eventPlayer.name_to_ban = "{}".format(eventPlayer.focused_player)
         eventPlayer.progress_hud[ProgressHUD.TEXT] = "banning {}...".format(eventPlayer.name_to_ban)
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = Colors.RED
+        eventPlayer.progress_hud[ProgressHUD.COLOR] = Color.RED
         chase(eventPlayer.progress, 100, duration=1.5, ChaseReeval.NONE)
         waitUntil(
             eventPlayer.progress == 100

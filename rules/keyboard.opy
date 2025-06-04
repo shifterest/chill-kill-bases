@@ -116,14 +116,14 @@ rule "— Input key":
     if eventPlayer.keyboard_input_character:
         switch eventPlayer.keyboard_input_character:
             case SpecialChar.BACKSPACE:
-                eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE] = eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE].substring(
-                    0, strLen(eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE]) - 1
+                eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = eventPlayer.preferences[Preference.CUSTOM_MESSAGE].substring(
+                    0, strLen(eventPlayer.preferences[Preference.CUSTOM_MESSAGE]) - 1
                 )
 
                 waitUntil(not eventPlayer.isHoldingButton(Button.PRIMARY_FIRE), 0.6)
                 
                 if eventPlayer.isHoldingButton(Button.PRIMARY_FIRE):
-                    eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE] = ""
+                    eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = ""
                 break
             case SpecialChar.EXIT:
                 eventPlayer.isUsingKeyboard = false
@@ -137,8 +137,8 @@ rule "— Input key":
                 eventPlayer.previous_position_direction = null
                 break
             default:
-                eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE] = "{}{}".format(
-                    eventPlayer.effects_preferences[Effects.CUSTOM_MESSAGE], eventPlayer.keyboard_input_character
+                eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = "{}{}".format(
+                    eventPlayer.preferences[Preference.CUSTOM_MESSAGE], eventPlayer.keyboard_input_character
                 )
 
 

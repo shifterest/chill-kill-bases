@@ -17,11 +17,11 @@ def InitializePlayer():
     updateHeroOutline()
     UpdateMessage()
 
-
+    
 def UpdateHero():
     @Name "— Update hero"
 
-    switch eventPlayer.main_preferences[Main.PLAYER_MODE]:
+    switch eventPlayer.preferences[Preference.PLAYER_MODE]:
         case PlayerMode.KILL:
             eventPlayer.setDamageDealt(100)
             eventPlayer.setDamageReceived(100)
@@ -30,19 +30,18 @@ def UpdateHero():
             eventPlayer.setUltCharge(0)
             break
         case PlayerMode.CHILL:
+            eventPlayer.setDamageDealt(max(eventPlayer.preferences[Preference.DAMAGE], 0.1))
+            eventPlayer.setDamageReceived(100)
+            eventPlayer.setHealingDealt(max(eventPlayer.preferences[Preference.HEALING], 0.1))
+            eventPlayer.setMaxHealth(eventPlayer.preferences[Preference.HEALTH])
+            eventPlayer.setHealth(999999999)
+            break
         case PlayerMode.ZEN:
             eventPlayer.setDamageDealt(0)
             eventPlayer.setDamageReceived(0)
             eventPlayer.setHealingDealt(0)
             eventPlayer.setMaxHealth(100)
             eventPlayer.setHealth(eventPlayer.getMaxHealth())
-            break
-        case PlayerMode.UNBOUND:
-            eventPlayer.setDamageDealt(max(eventPlayer.unbound_preferences[Unbound.DAMAGE], 0.1))
-            eventPlayer.setDamageReceived(100)
-            eventPlayer.setHealingDealt(max(eventPlayer.unbound_preferences[Unbound.HEALING], 0.1))
-            eventPlayer.setMaxHealth(eventPlayer.unbound_preferences[Unbound.HEALTH])
-            eventPlayer.setHealth(999999999)
             break
 
     UpdateAbilities()
@@ -81,15 +80,15 @@ def UpdateAbilities():
     elif eventPlayer.base_settled_owner == eventPlayer:
         DisableAbilities()
     elif (
-        eventPlayer.base_settled_owner.main_preferences[Main.BASE_MODE] == BaseMode.FRIENDLY
-        or eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN
+        eventPlayer.base_settled_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
+        or eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN
     ):
         DisableAbilities()
     else:
         EnableAbilities()
 
     if (
-        (eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN or eventPlayer.base_settled_owner)
+        (eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN or eventPlayer.base_settled_owner)
         and not (
             eventPlayer.isDuplicatingAHero()
             or eventPlayer.isInModeratorMode
@@ -190,13 +189,13 @@ def EnableAbilities():
 def UpdateFlight():
     @Name "— Update flight"
 
-    if eventPlayer.main_preferences[Main.PLAYER_MODE] and eventPlayer.hero_preferences[Hero.FLIGHT]:
+    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.FLIGHT]:
         eventPlayer.startAcceleration(
             Vector.UP,
-            evalOnce(eventPlayer.hero_preferences[Hero.FLIGHT_ACCELERATION])
+            evalOnce(eventPlayer.preferences[Preference.FLIGHT_ACCELERATION])
             if eventPlayer.isHoldingButton(Button.JUMP)
             else 0,
-            evalOnce(eventPlayer.hero_preferences[Hero.FLIGHT_ACCELERATION] * 2),
+            evalOnce(eventPlayer.preferences[Preference.FLIGHT_ACCELERATION] * 2),
             Relativity.TO_PLAYER,
             AccelReeval.DIRECTION_RATE_AND_MAX_SPEED
         )
@@ -205,36 +204,31 @@ def UpdateFlight():
 
 
 def UpdateKnockback():
-    @Name "— Update knockback dealt and received"
+    @Name "— Update knockback dealt"
 
-    if eventPlayer.main_preferences[Main.PLAYER_MODE]:
-        eventPlayer.setKnockbackDealt(eventPlayer.hero_preferences[Hero.KNOCKBACK])
-        if eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.UNBOUND or eventPlayer.hero_preferences[Hero.KNOCKBACK] > 100:
-            eventPlayer.setKnockbackReceived(100)
-        else:
-            eventPlayer.setKnockbackReceived(5)
+    if eventPlayer.preferences[Preference.PLAYER_MODE]:
+        eventPlayer.setKnockbackDealt(eventPlayer.preferences[Preference.KNOCKBACK])
     else:
         eventPlayer.setKnockbackDealt(100)
-        eventPlayer.setKnockbackReceived(100)
 
 
 def UpdateSizeNoclip():
     @Name "— Update hero size and environmental collision"
 
-    if eventPlayer.main_preferences[Main.PLAYER_MODE] and eventPlayer.hero_preferences[Hero.SIZE] != 100:
-        eventPlayer.startScalingSize(eventPlayer.hero_preferences[Hero.SIZE] / 100, false)
+    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.SIZE] != 100:
+        eventPlayer.startScalingSize(eventPlayer.preferences[Preference.SIZE] / 100, false)
     else:
         eventPlayer.stopScalingSize()
 
     if eventPlayer.base_within_owner:
-        if eventPlayer.base_within_owner.base_preferences[Base.NOCLIP]:
+        if eventPlayer.base_within_owner.preferences[Preference.BASE_NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()
-    elif eventPlayer.main_preferences[Main.PLAYER_MODE]:
-        if eventPlayer.special_preferences[Special.NOCLIP]:
+    elif eventPlayer.preferences[Preference.PLAYER_MODE]:
+        if eventPlayer.preferences[Preference.NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
-        elif eventPlayer.hero_preferences[Hero.SIZE] > 100:
+        elif eventPlayer.preferences[Preference.SIZE] > 100:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()
@@ -246,13 +240,13 @@ def UpdatePhysics():
     @Name "— Update gravity and speeds"
 
     if eventPlayer.base_within_owner:
-        eventPlayer.setGravity(eventPlayer.base_within_owner.base_preferences[Base.GRAVITY])
-        eventPlayer.setMoveSpeed(eventPlayer.base_within_owner.base_preferences[Base.SPEED])
-        eventPlayer.setJumpVerticalSpeed(eventPlayer.base_within_owner.base_preferences[Base.JUMP_SPEED])
-    elif eventPlayer.main_preferences[Main.PLAYER_MODE]:
-        eventPlayer.setGravity(eventPlayer.hero_preferences[Hero.GRAVITY])
-        eventPlayer.setMoveSpeed(eventPlayer.hero_preferences[Hero.SPEED])
-        eventPlayer.setJumpVerticalSpeed(eventPlayer.hero_preferences[Hero.JUMP_SPEED])
+        eventPlayer.setGravity(eventPlayer.base_within_owner.preferences[Preference.BASE_GRAVITY])
+        eventPlayer.setMoveSpeed(eventPlayer.base_within_owner.preferences[Preference.BASE_SPEED])
+        eventPlayer.setJumpVerticalSpeed(eventPlayer.base_within_owner.preferences[Preference.BASE_JUMP_SPEED])
+    elif eventPlayer.preferences[Preference.PLAYER_MODE]:
+        eventPlayer.setGravity(eventPlayer.preferences[Preference.GRAVITY])
+        eventPlayer.setMoveSpeed(eventPlayer.preferences[Preference.SPEED])
+        eventPlayer.setJumpVerticalSpeed(eventPlayer.preferences[Preference.JUMP_SPEED])
     else:
         eventPlayer.setGravity(100)
         eventPlayer.setMoveSpeed(100)
@@ -262,9 +256,9 @@ def UpdatePhysics():
 def UpdateProjectiles():
     @Name "— Update projectile speed and gravity"
 
-    if eventPlayer.main_preferences[Main.PLAYER_MODE]:
-        eventPlayer.setProjectileSpeed(eventPlayer.hero_preferences[Hero.PROJECTILE_SPEED])
-        eventPlayer.setProjectileGravity(eventPlayer.hero_preferences[Hero.PROJECTILE_GRAVITY])
+    if eventPlayer.preferences[Preference.PLAYER_MODE]:
+        eventPlayer.setProjectileSpeed(eventPlayer.preferences[Preference.PROJECTILE_SPEED])
+        eventPlayer.setProjectileGravity(eventPlayer.preferences[Preference.PROJECTILE_GRAVITY])
     else:
         eventPlayer.setProjectileSpeed(100)
         eventPlayer.setProjectileGravity(100)
@@ -273,7 +267,7 @@ def UpdateProjectiles():
 def UpdateInvisibility():
     @Name "— Update invisibility"
 
-    if eventPlayer.main_preferences[Main.PLAYER_MODE] and eventPlayer.special_preferences[Special.INVISIBILITY]:
+    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.INVISIBILITY]:
         eventPlayer.setInvisibility(Invis.ENEMIES)
         eventPlayer.isInvisible = true
     else:
@@ -287,10 +281,10 @@ def UpdatePhase():
     if eventPlayer.base_settled_owner == eventPlayer:
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, 99999)
     elif (
-        eventPlayer.base_settled_owner.main_preferences[Main.BASE_MODE]
+        eventPlayer.base_settled_owner.preferences[Preference.BASE_MODE]
         == BaseMode.FRIENDLY
-        or (eventPlayer.main_preferences[Main.PLAYER_MODE] == PlayerMode.ZEN)
-        or eventPlayer.dream_preferences[Dream.DREAM_MODE]
+        or (eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN)
+        or eventPlayer.preferences[Preference.DREAM_MODE]
     ):
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, 99999)
     elif eventPlayer.hasStatusEffect(Status.PHASED_OUT):
@@ -308,7 +302,7 @@ def UpdateHoT():
 def UpdateAmmo():
     @Name "— Update ammo"
 
-    if eventPlayer.main_preferences[Main.PLAYER_MODE] and eventPlayer.special_preferences[Special.AMMO_OVERLOAD]:
+    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.AMMO_OVERLOAD]:
         eventPlayer.setMaxAmmo(0, 1000)
         eventPlayer.setAmmo(0, 1000)
         eventPlayer.setMaxAmmo(1, 1000)

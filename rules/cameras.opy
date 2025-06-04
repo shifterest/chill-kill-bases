@@ -8,7 +8,7 @@ rule "Cameras":
 rule "— ADS in third-person":
     @Event eachPlayer
     @Condition not optimize
-    @Condition eventPlayer.game_preferences[Game.THIRD_PERSON]
+    @Condition eventPlayer.preferences[Preference.THIRD_PERSON]
     @Condition (
         eventPlayer.getCurrentHero() == Hero.ANA
         or eventPlayer.getCurrentHero() == Hero.ASHE
@@ -17,7 +17,7 @@ rule "— ADS in third-person":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.dream_preferences[Dream.DREAM_MODE]
+    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
 
     eventPlayer.stopCamera()
 
@@ -36,7 +36,7 @@ rule "— ADS in third-person":
 rule "— Ultimate in third-person":
     @Event eachPlayer
     @Condition not optimize
-    @Condition eventPlayer.game_preferences[Game.THIRD_PERSON]
+    @Condition eventPlayer.preferences[Preference.THIRD_PERSON]
     @Condition (
         eventPlayer.getCurrentHero() == Hero.BASTION
         or eventPlayer.getCurrentHero() == Hero.JUNKRAT
@@ -44,7 +44,7 @@ rule "— Ultimate in third-person":
     @Condition eventPlayer.isUsingUltimate()
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.dream_preferences[Dream.DREAM_MODE]
+    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
 
     eventPlayer.stopCamera()
 
@@ -65,7 +65,7 @@ def UpdateCamera():
 
     if eventPlayer.isInBaseCreationMode:
         BaseCreationCamera()
-    elif eventPlayer.game_preferences[Game.THIRD_PERSON]:
+    elif eventPlayer.preferences[Preference.THIRD_PERSON]:
         ThirdPersonCamera()
     else:
         StopCamera()
@@ -93,7 +93,7 @@ def BaseCreationCamera():
         raycast(
             eventPlayer.getEyePosition(),
             eventPlayer.getEyePosition() + (
-                Vector.UP + eventPlayer.getFacingDirection() * eventPlayer.base_preferences[Base.SIZE] * -1.5
+                Vector.UP + eventPlayer.getFacingDirection() * eventPlayer.preferences[Preference.BASE_SIZE] * -1.5
             ),
             null,
             eventPlayer,
@@ -130,10 +130,10 @@ def ThirdPersonCamera():
         raycast(
             eventPlayer.getEyePosition(),
             eventPlayer.getEyePosition() + (
-                Vector.UP * (eventPlayer.hero_preferences[Hero.SIZE] / 100) + eventPlayer.getFacingDirection()
-                * (eventPlayer.hero_preferences[Hero.SIZE] / -40) * (eventPlayer.game_preferences[Game.THIRD_PERSON_DISTANCE] / 100)
-                if eventPlayer.main_preferences[Main.PLAYER_MODE]
-                else Vector.UP + eventPlayer.getFacingDirection() * -2.5 * (eventPlayer.game_preferences[Game.THIRD_PERSON_DISTANCE] / 100)
+                Vector.UP * (eventPlayer.preferences[Preference.SIZE] / 100) + eventPlayer.getFacingDirection()
+                * (eventPlayer.preferences[Preference.SIZE] / -40) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                else Vector.UP + eventPlayer.getFacingDirection() * -2.5 * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
             ),
             null,
             eventPlayer,
@@ -170,10 +170,10 @@ def ThirdPersonSpectatorCamera():
             eventPlayer.focused_player.getEyePosition(),
             eventPlayer.focused_player.getEyePosition()
             + (
-                Vector.UP * (eventPlayer.focused_player.hero_preferences[Hero.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection()
-                * (eventPlayer.focused_player.hero_preferences[Hero.SIZE] / -40) * (eventPlayer.game_preferences[Game.THIRD_PERSON_DISTANCE] / 100)
-                if eventPlayer.focused_player.main_preferences[Main.PLAYER_MODE]
-                else Vector.UP + eventPlayer.focused_player.getFacingDirection() * -2.5 * (eventPlayer.game_preferences[Game.THIRD_PERSON_DISTANCE] / 100)
+                Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection()
+                * (eventPlayer.focused_player.preferences[Preference.SIZE] / -40) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
+                else Vector.UP + eventPlayer.focused_player.getFacingDirection() * -2.5 * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
             ),
             null,
             eventPlayer.focused_player,
@@ -205,12 +205,12 @@ def DreamCamera():
         1
     )
     wait()
-    if eventPlayer.dream_preferences[Dream.CLIP_CAMERA]:
+    if eventPlayer.preferences[Preference.CLIP_CAMERA]:
         eventPlayer.startCamera(
             raycast(
                 eventPlayer.focused_player.getEyePosition(),
                 eventPlayer.focused_player.getEyePosition() + (
-                    Vector.UP * (eventPlayer.focused_player.hero_preferences[Hero.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.hero_preferences[Hero.SIZE] / -20)
+                    Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences[Preference.SIZE] / -20)
                 ),
                 null,
                 eventPlayer,
@@ -222,7 +222,7 @@ def DreamCamera():
     else:
         eventPlayer.startCamera(
             eventPlayer.focused_player.getEyePosition() + (
-                Vector.UP * (eventPlayer.focused_player.hero_preferences[Hero.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.hero_preferences[Hero.SIZE] / -20)
+                Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences[Preference.SIZE] / -20)
             ),
             eventPlayer.focused_player.getEyePosition(),
             5

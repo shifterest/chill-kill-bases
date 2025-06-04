@@ -38,18 +38,18 @@ rule "— Transition rainbow color":
 
 rule "— Rainbow hero outline":
     @Event eachPlayer
-    @Condition eventPlayer.hero_preferences[Hero.OUTLINE_COLOR] == Colors.RAINBOW
+    @Condition eventPlayer.preferences[Preference.OUTLINE_COLOR] == Color.RAINBOW
 
     do:
         updateHeroOutline()
-        wait (0.3)
+        wait(0.3)
     while RULE_CONDITION
 
 
 rule "— Chill mode hint":
     @Event eachPlayer
     @Condition not eventPlayer.has_created_base_once
-    @Condition not eventPlayer.main_preferences[Main.PLAYER_MODE]
+    @Condition not eventPlayer.preferences[Preference.PLAYER_MODE]
 
     do:
         wait(60, Wait.ABORT_WHEN_FALSE)

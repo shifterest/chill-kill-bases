@@ -22,7 +22,7 @@ rule "— Mount to player":
     eventPlayer.mount = eventPlayer.getRealPlayerClosestToReticle(Team.ALL)
     eventPlayer.mount.rider = eventPlayer
     iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "mounted to {}".format(eventPlayer.mount))
-    BuffPlayer()
+    BuffSound()
     wait(1)
 
 
@@ -61,26 +61,26 @@ def UpdateRider():
                 break
 
 
-rule "— Unmount":
+rule "— Manually eject from mount":
     @Event eachPlayer
     @Condition eventPlayer.mount
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.INTERACT)
 
-    Unmount()
+    EjectFromMount()
 
 
-def Unmount():
-    @Name "— Unmount (subroutine)"
+def EjectFromMount():
+    @Name "— Eject from mount"
 
-    iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "unmounted from {}".format(eventPlayer.mount))
+    iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "ejected from {}".format(eventPlayer.mount))
     wait(0.1)
     eventPlayer.mount.rider = null
     eventPlayer.mount = null
     eventPlayer.detach()
-    BuffPlayer()
+    BuffSound()
 
 
-rule "— Unmount on kill mode / mount disconnect":
+rule "— Eject from mount on kill mode / mount disconnect":
     @Event eachPlayer
     @Condition eventPlayer.mount
     @Condition (
@@ -91,19 +91,19 @@ rule "— Unmount on kill mode / mount disconnect":
     eventPlayer.mount = null
 
 
-rule "— Unmount player":
+rule "— Manually eject rider":
     @Event eachPlayer
     @Condition eventPlayer.rider
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
 
-    UnmountPlayer()
+    EjectRider()
 
 
-def UnmountPlayer():
-    @Name "— Unmount player (subroutine)"
+def EjectRider():
+    @Name "— Eject rider"
 
-    iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "unmounted {}".format(eventPlayer.rider))
+    iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "ejected {}".format(eventPlayer.rider))
     wait(0.1)
     eventPlayer.rider.detach()
     if eventPlayer.preferences[Preference.ALLOW_MOUNTING]:
@@ -115,10 +115,10 @@ def UnmountPlayer():
         )
     eventPlayer.rider.mount = null
     eventPlayer.rider = null
-    BuffPlayer()
+    BuffSound()
 
 
-rule "— Unmount player on player disconnect":
+rule "— Eject rider on rider disconnect":
     @Event eachPlayer
     @Condition eventPlayer.rider
     @Condition not eventPlayer.rider in getAllPlayers()

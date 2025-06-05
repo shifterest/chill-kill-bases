@@ -44,15 +44,15 @@ playervar name_to_ban
 # base
 playervar base_vector
 playervar has_created_base_once
-playervar settle_immediately
+playervar activate_base_immediately
 playervar base_preferences_changed
-playervar previous_base_within_radius
-playervar previous_base_mode
+playervar last_known_base_owner
+playervar last_known_base_mode
 playervar previous_base_size
 playervar previous_base_gap_size
 # base owners
-playervar base_within_owner
-playervar base_settled_owner
+playervar current_base_owner
+playervar active_base_owner
 playervar base_to_fast_travel_owner
 # preferences
 playervar preferences_index

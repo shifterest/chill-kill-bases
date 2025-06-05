@@ -2,7 +2,7 @@
 
 subroutine BackupPlayer
 subroutine BaseCreationCamera
-subroutine BaseCreationHint
+subroutine Tutorial
 subroutine Confine
 subroutine CreateBaseEffects
 subroutine DestroyBaseEffects
@@ -16,21 +16,20 @@ subroutine InteractWithPreferences
 subroutine LoadDefaultPreferences
 subroutine PackBase
 subroutine Repel
-subroutine SettleInFriendlyBase
-subroutine SettleInOwnBase
+subroutine ActivateFriendlyBase
+subroutine ActivateOwnBase
 subroutine StopCamera
 subroutine ThirdPersonCamera
 subroutine ThirdPersonSpectatorCamera
-subroutine Transition
-subroutine Unmount
-subroutine UnmountPlayer
+subroutine UpdateBaseEffects
+subroutine EjectFromMount
+subroutine EjectRider
 subroutine Unparalyze
 subroutine UpdateAbilities
 subroutine UpdateAFKTimer
 subroutine UpdateAmmo
 subroutine UpdateAura
-subroutine UpdateBaseEffects
-subroutine UpdateBaseWithinOwner
+subroutine UpdateCurrentBaseOwner
 subroutine UpdateCamera
 subroutine UpdateFlight
 subroutine UpdateHero

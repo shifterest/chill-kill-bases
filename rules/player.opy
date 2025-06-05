@@ -38,7 +38,7 @@ rule "— Player spawned":
             eventPlayer.previous_position_direction = null
         else:
             eventPlayer.teleport(eventPlayer.base_vector)
-        eventPlayer.settle_immediately = true
+        eventPlayer.activate_base_immediately = true
         eventPlayer.startForcingPosition(eventPlayer.getPosition(), false)
         wait(0.5)
         eventPlayer.stopForcingPosition()
@@ -50,8 +50,8 @@ rule "— Player spawned":
 rule "— Player died":
     @Event playerDied
 
-    eventPlayer.base_within_owner = null
-    eventPlayer.base_settled_owner = null
+    eventPlayer.current_base_owner = null
+    eventPlayer.active_base_owner = null
     eventPlayer.cubic_bezier = 1
 
     if eventPlayer.death_throttle > 6:
@@ -61,12 +61,12 @@ rule "— Player died":
         eventPlayer.death_throttle += 1
         eventPlayer.respawn()
 
-    waitUntil(eventPlayer.isAlive(), 99999)
+    waitUntil(eventPlayer.isAlive(), Math.INFINITY)
 
     if eventPlayer.base_vector:
         wait(0.1)
         eventPlayer.teleport(eventPlayer.base_vector)
-        eventPlayer.settle_immediately = true
+        eventPlayer.activate_base_immediately = true
 
 
 rule "— Player left":

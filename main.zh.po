@@ -1,0 +1,9 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh\n"
+"X-Generator: OverPy\n"
+
+#. file huds.opy, line 35, rule "— Draw global HUD"
+msgid "{0} current • {1} mean • {2} peak"
+msgstr ""

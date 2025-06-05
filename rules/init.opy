@@ -21,7 +21,7 @@ rule "— Avoid server crashes":
     setSlowMotion(20)
 
     wait(1)
-    waitUntil(getServerLoad() < 175, 99999)
+    waitUntil(getServerLoad() < 175, Math.INFINITY)
 
     isOverloaded = false
     setSlowMotion(100)
@@ -65,57 +65,56 @@ rule "— Populate global variables":
         "Customize various game settings.",
         PreferenceType.CATEGORY,
         null,
-        Color.GREEN
+        ExtendedColor.GREEN
     ]
     preferences_data[Preference.HERO] = [
         "hero preferences",
         "Modify hero attributes.",
         PreferenceType.CATEGORY,
         null,
-        Color.YELLOW
+        ExtendedColor.YELLOW
     ]
     preferences_data[Preference.ABILITIES] = [
-        "effects preferences",
+        "ability preferences",
         "Configure ability and ultimate mechanics.",
         PreferenceType.CATEGORY,
         null,
-        Color.PURPLE
+        ExtendedColor.PURPLE
     ]
     preferences_data[Preference.EFFECTS] = [
         "effects preferences",
         "Adjust various visual effects.",
         PreferenceType.CATEGORY,
         null,
-        Color.VIOLET
+        ExtendedColor.VIOLET
     ]
     preferences_data[Preference.SPECIAL] = [
         "special preferences",
         "Control special game features.",
         PreferenceType.CATEGORY,
         null,
-        Color.TURQUOISE
+        ExtendedColor.TURQUOISE
     ]
     preferences_data[Preference.BASE] = [
         "base preferences",
         "Customize base appearance and behavior.",
         PreferenceType.CATEGORY,
         null,
-        Color.ROSE
+        ExtendedColor.ROSE
     ]
     preferences_data[Preference.DREAM] = [
         "dream preferences",
         "Adjust dream mode settings.",
         PreferenceType.CATEGORY,
         null,
-        Color.AQUA
+        ExtendedColor.AQUA
     ]
     # Game
     preferences_data[Preference.PLAYER_MODE] = [
         "player mode",
         [
             "No special features, kill or be killed.",
-            "Enable chill features and protection, but no damage.",
-            "Enable unbound features. Be as harmless or lethal as you want.",
+            "Enable chill features. Be as harmless or lethal as you want.",
             "Enable invulnerability, disable most abilities."
         ],
         PreferenceType.MULTIPLE_CHOICE,
@@ -124,7 +123,7 @@ rule "— Populate global variables":
             "{} chill".format(abilityIconString(Hero.MEI, Button.ULTIMATE)),
             "{} zen".format(abilityIconString(Hero.ZENYATTA, Button.ULTIMATE))
         ],
-        [Color.RED, Color.SKY_BLUE, Color.GREEN]
+        [ExtendedColor.RED, ExtendedColor.SKY_BLUE, ExtendedColor.GREEN]
     ]
     preferences_data[Preference.THIRD_PERSON] = [
         "third-person camera",
@@ -331,7 +330,7 @@ rule "— Populate global variables":
         "Ability spam is disabled on this server." if optimize else "Set the delay between successive ability activations.",
         PreferenceType.NUMERIC,
         [0.01, 1, 0.01, " second(s)"],
-        Color.GRAY if optimize else Color.WHITE,
+        ExtendedColor.GRAY if optimize else ExtendedColor.WHITE,
         true
     ]
     preferences_data[Preference.ULTIMATE_MODE] = [
@@ -352,7 +351,7 @@ rule "— Populate global variables":
         "Ultimate spam is disabled on this server." if optimize else "Set the delay between successive ultimate activations.",
         PreferenceType.NUMERIC,
         [0.01, 1, 0.01, " second(s)"],
-        Color.GRAY if optimize else Color.WHITE,
+        ExtendedColor.GRAY if optimize else ExtendedColor.WHITE,
         true
     ]
     preferences_data[Preference.KNOCKBACK] = [
@@ -487,9 +486,9 @@ rule "— Populate global variables":
         [
             "{} passive".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)),
             "{} friendly".format(abilityIconString(Hero.ZARYA, Button.ABILITY_1)),
-            "{} exclusive".format(iconString(Icon.NO))
+            "{} repulsive".format(iconString(Icon.NO))
         ],
-        [Color.WHITE, Color.BLUE, Color.ORANGE]
+        [ExtendedColor.WHITE, ExtendedColor.BLUE, ExtendedColor.ORANGE]
     ]
     preferences_data[Preference.BASE_COLOR] = [
         "base color",
@@ -563,14 +562,14 @@ rule "— Populate global variables":
     ]
 
     preferences_category_data = [
-        [null, Preference.GAME, Preference.DREAM, Color.ORANGE],
-        [Preference.GAME, Preference.PLAYER_MODE, Preference.RESET, Color.GREEN],
-        [Preference.HERO, Preference.OUTLINE_COLOR, Preference.VOICE_PITCH, Color.YELLOW],
-        [Preference.ABILITIES, Preference.DAMAGE, Preference.AMMO_OVERLOAD, Color.PURPLE],
-        [Preference.EFFECTS, Preference.CUSTOM_MESSAGE, Preference.HIDE_AURA_IN_FIRST_PERSON, Color.VIOLET],
-        [Preference.SPECIAL, Preference.NOCLIP, Preference.TRAMPOLINE, Color.TURQUOISE],
-        [Preference.BASE, Preference.BASE_MODE, Preference.BASE_JUMP_SPEED, Color.ROSE],
-        [Preference.DREAM, Preference.DREAM_MODE, Preference.CLIP_CAMERA, Color.AQUA],
+        [-1, Preference.GAME, Preference.DREAM, ExtendedColor.ORANGE],
+        [Preference.GAME, Preference.PLAYER_MODE, Preference.RESET, ExtendedColor.GREEN],
+        [Preference.HERO, Preference.OUTLINE_COLOR, Preference.VOICE_PITCH, ExtendedColor.YELLOW],
+        [Preference.ABILITIES, Preference.DAMAGE, Preference.AMMO_OVERLOAD, ExtendedColor.PURPLE],
+        [Preference.EFFECTS, Preference.CUSTOM_MESSAGE, Preference.HIDE_AURA_IN_FIRST_PERSON, ExtendedColor.VIOLET],
+        [Preference.SPECIAL, Preference.NOCLIP, Preference.TRAMPOLINE, ExtendedColor.TURQUOISE],
+        [Preference.BASE, Preference.BASE_MODE, Preference.BASE_JUMP_SPEED, ExtendedColor.ROSE],
+        [Preference.DREAM, Preference.DREAM_MODE, Preference.CLIP_CAMERA, ExtendedColor.AQUA],
     ]
 
     quick_preferences_data = [
@@ -612,7 +611,7 @@ rule "— Populate global variables":
     preferences_default[Preference.SWITCH_TEAM] = null
     preferences_default[Preference.RESET] = null
     # Hero
-    preferences_default[Preference.OUTLINE_COLOR] = Color.WHITE
+    preferences_default[Preference.OUTLINE_COLOR] = ExtendedColor.WHITE
     preferences_default[Preference.FLIGHT] = true
     preferences_default[Preference.FLIGHT_ACCELERATION] = 25
     preferences_default[Preference.SIZE] = 100
@@ -638,10 +637,10 @@ rule "— Populate global variables":
     preferences_default[Preference.AMMO_OVERLOAD] = true
     # Effects
     preferences_default[Preference.CUSTOM_MESSAGE] = ""
-    preferences_default[Preference.CUSTOM_MESSAGE_COLOR] = Color.WHITE
+    preferences_default[Preference.CUSTOM_MESSAGE_COLOR] = ExtendedColor.WHITE
     preferences_default[Preference.AURA] = true
     preferences_default[Preference.AURA_EFFECT] = ChillEffect.SPARKLES
-    preferences_default[Preference.AURA_COLOR] = Color.WHITE
+    preferences_default[Preference.AURA_COLOR] = ExtendedColor.WHITE
     preferences_default[Preference.AURA_SIZE] = 150
     preferences_default[Preference.HIDE_AURA_IN_FIRST_PERSON] = false
     # Special
@@ -652,7 +651,7 @@ rule "— Populate global variables":
     preferences_default[Preference.TRAMPOLINE] = false
     # Base
     preferences_default[Preference.BASE_MODE] = BaseMode.PASSIVE
-    preferences_default[Preference.BASE_COLOR] = Color.ORANGE
+    preferences_default[Preference.BASE_COLOR] = ExtendedColor.ORANGE
     preferences_default[Preference.BASE_SIZE] = 3.5
     preferences_default[Preference.BASE_GAP_SIZE] = 0
     preferences_default[Preference.BASE_LOCK] = false
@@ -732,9 +731,9 @@ rule "— Initialize player":
                 eventPlayer.preferences[Preference.DAMAGE_EFFECT] = AbilityEffect.SLEEP
                 eventPlayer.preferences[Preference.THORNS_EFFECT] = AbilityEffect.SLEEP
                 eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = "hey there!"
-                eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] = Color.RAINBOW
+                eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] = ExtendedColor.RAINBOW
                 eventPlayer.preferences[Preference.AURA_EFFECT] = ChillEffect.SPARKLES
-                eventPlayer.preferences[Preference.AURA_COLOR] = Color.RAINBOW
+                eventPlayer.preferences[Preference.AURA_COLOR] = ExtendedColor.RAINBOW
                 eventPlayer.preferences[Preference.BASE_SPEED] = 200
                 eventPlayer.preferences[Preference.BASE_JUMP_SPEED] = 500
                 eventPlayer.preferences[Preference.AFK_TIMER] = 1
@@ -743,9 +742,9 @@ rule "— Initialize player":
                 eventPlayer.has_created_base_once = true
                 eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = "♡ R O Y A L T Y ♡"
                 eventPlayer.preferences[Preference.PLAYER_MODE] = PlayerMode.CHILL
-                eventPlayer.preferences[Preference.OUTLINE_COLOR] = Color.RAINBOW
-                eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] = random.choice([Color.ROSE, Color.RAINBOW])
-                eventPlayer.preferences[Preference.AURA_COLOR] = random.choice([Color.ROSE, Color.RAINBOW])
+                eventPlayer.preferences[Preference.OUTLINE_COLOR] = ExtendedColor.RAINBOW
+                eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] = random.choice([ExtendedColor.ROSE, ExtendedColor.RAINBOW])
+                eventPlayer.preferences[Preference.AURA_COLOR] = random.choice([ExtendedColor.ROSE, ExtendedColor.RAINBOW])
                 break
             case "DJBASTION":
             case "Bastion":
@@ -791,11 +790,11 @@ def LoadDefaultPreferences():
     eventPlayer.preferences = preferences_default
 
     if createWorkshopSetting(bool, "game preferences", "randomize hero outline color", true, 4):
-        eventPlayer.preferences[Preference.OUTLINE_COLOR] = random.randint(Color.YELLOW, Color.BLACK)
+        eventPlayer.preferences[Preference.OUTLINE_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
     if createWorkshopSetting(bool, "game preferences", "randomize base color", true, 5):
-        eventPlayer.preferences[Preference.BASE_COLOR] = random.randint(Color.YELLOW, Color.BLACK)
+        eventPlayer.preferences[Preference.BASE_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
     if createWorkshopSetting(bool, "game preferences", "randomize chill mode effect color", true, 6):
-        eventPlayer.preferences[Preference.AURA_COLOR] = random.randint(Color.YELLOW, Color.BLACK)
+        eventPlayer.preferences[Preference.AURA_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
 
 
 def HardReset():
@@ -808,14 +807,14 @@ def HardReset():
     eventPlayer.name_to_ban = null
     eventPlayer.base_vector = null
     eventPlayer.has_created_base_once = null
-    eventPlayer.settle_immediately = null
+    eventPlayer.activate_base_immediately = null
     eventPlayer.base_preferences_changed = null
-    eventPlayer.previous_base_within_radius = null
-    eventPlayer.previous_base_mode = null
+    eventPlayer.last_known_base_owner = null
+    eventPlayer.last_known_base_mode = null
     eventPlayer.previous_base_size = null
     eventPlayer.previous_base_gap_size = null
-    eventPlayer.base_within_owner = null
-    eventPlayer.base_settled_owner = null
+    eventPlayer.current_base_owner = null
+    eventPlayer.active_base_owner = null
     eventPlayer.base_to_fast_travel_owner = null
     eventPlayer.preferences_index = null
     eventPlayer.preferences = null

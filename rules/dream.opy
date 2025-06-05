@@ -13,7 +13,7 @@ def DreamMode():
     UpdatePhase()
     DreamCamera()
 
-    waitUntil(eventPlayer.isHoldingButton(Button.JUMP) or isActive(), 99999)
+    waitUntil(eventPlayer.isHoldingButton(Button.JUMP) or isActive(), Math.INFINITY)
 
     eventPlayer.preferences[Preference.DREAM_MODE] = false
     eventPlayer.enableHeroHud()

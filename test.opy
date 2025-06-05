@@ -1,4 +1,5 @@
 #!suppressWarnings w_ow2_rule_condition_chase
+#!translations en es ja ko zh ru fr
 
 settings {
     "main": {
@@ -34,8 +35,8 @@ settings {
 
 #!include "script/variables.opy"
 #!include "script/subroutines.opy"
-#!include "script/macros.opy"
 #!include "script/enums.opy"
+#!include "script/macros.opy"
 
 #!include "rules/init.opy"
 #!include "rules/loops.opy"
@@ -56,16 +57,11 @@ settings {
 #!include "rules/special.opy"
 
 rule "— Debug HUD":
-    @Condition isInitialized
+    @Disabled
+    @Event eachPlayer
 
-    hudSubtext(
-        localPlayer,
-        "Variables: \n{}".format(
-            localPlayer.getAmmo(1)
-        ),
-        HudPosition.LEFT,
-        1,
-        Color.WHITE,
-        HudReeval.VISIBILITY_AND_STRING,
-        SpecVisibility.DEFAULT
-    )
+    debug(base_in_crosshair(eventPlayer))
+    debug(eventPlayer.getEyePosition())
+    debug(eventPlayer.getFacingDirection())
+    debug(eventPlayer.base_vector)
+    debug(eventPlayer.preferences[Preference.BASE_SIZE])

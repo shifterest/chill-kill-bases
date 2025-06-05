@@ -1,6 +1,5 @@
 #!mainFile "../main.opy"
 
-# preferences indices
 enum PreferenceProperty:
     TITLE,
     DESCRIPTIONS,
@@ -15,6 +14,7 @@ enum PreferenceCategoryProperty:
     STARTING_INDEX,
     ENDING_INDEX,
     COLOR
+
 
 enum PreferenceType:
     CATEGORY,
@@ -124,6 +124,7 @@ enum AbilityEffect:
     REPEL,
     ATTRACT
 
+
 # other enums
 enum Mode:
     DEFAULT,
@@ -164,10 +165,10 @@ enum PreferencesHUD:
 
 enum OnScreenHUD:
     MAIN,
-    SETTLEMENT
+    ACTIVATION
 
 
-enum Color:
+enum ExtendedColor:
     WHITE,
     GRAY,
     BLACK,
@@ -195,7 +196,7 @@ enum PlayerMode:
 enum BaseMode:
     PASSIVE,
     FRIENDLY,
-    EXCLUSIVE
+    REPULSIVE
 
 
 enum Paralysis:
@@ -235,7 +236,8 @@ enum MountingMode:
     BACK,
     LEFT,
     RIGHT
-    
+
+
 enum SpecialChar:
     BACKSPACE = 1,
     EXIT

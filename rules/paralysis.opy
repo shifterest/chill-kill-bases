@@ -54,37 +54,37 @@ rule "— Keep paralysis inflicted":
                 if not eventPlayer.hasStatusEffect(Status.KNOCKED_DOWN):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
-                        eventPlayer.setStatusEffect(null, Status.KNOCKED_DOWN, 99999)
+                        eventPlayer.setStatusEffect(null, Status.KNOCKED_DOWN, Math.INFINITY)
                         UpdatePhase()
                     else:
-                        eventPlayer.setStatusEffect(null, Status.KNOCKED_DOWN, 99999)
+                        eventPlayer.setStatusEffect(null, Status.KNOCKED_DOWN, Math.INFINITY)
                 break
             case Paralysis.STUNNED:
                 if not eventPlayer.hasStatusEffect(Status.STUNNED):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
-                        eventPlayer.setStatusEffect(null, Status.STUNNED, 99999)
+                        eventPlayer.setStatusEffect(null, Status.STUNNED, Math.INFINITY)
                         UpdatePhase()
                     else:
-                        eventPlayer.setStatusEffect(null, Status.STUNNED, 99999)
+                        eventPlayer.setStatusEffect(null, Status.STUNNED, Math.INFINITY)
                 break
             case Paralysis.ASLEEP:
                 if not eventPlayer.hasStatusEffect(Status.ASLEEP):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
-                        eventPlayer.setStatusEffect(null, Status.ASLEEP, 99999)
+                        eventPlayer.setStatusEffect(null, Status.ASLEEP, Math.INFINITY)
                         UpdatePhase()
                     else:
-                        eventPlayer.setStatusEffect(null, Status.ASLEEP, 99999)
+                        eventPlayer.setStatusEffect(null, Status.ASLEEP, Math.INFINITY)
                 break
             case Paralysis.FROZEN:
                 if not eventPlayer.hasStatusEffect(Status.FROZEN):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
-                        eventPlayer.setStatusEffect(null, Status.FROZEN, 99999)
+                        eventPlayer.setStatusEffect(null, Status.FROZEN, Math.INFINITY)
                         UpdatePhase()
                     else:
-                        eventPlayer.setStatusEffect(null, Status.FROZEN, 99999)
+                        eventPlayer.setStatusEffect(null, Status.FROZEN, Math.INFINITY)
                 break
         wait(1)
     while RULE_CONDITION

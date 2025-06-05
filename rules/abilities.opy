@@ -178,7 +178,7 @@ rule "— Ability mode • Hold to spam • Ability 2":
     do:
         eventPlayer.setAbilityCooldown(Button.ABILITY_2, 0)
         if eventPlayer.getCurrentHero() == Hero.MOIRA:
-            waitUntil(eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), 99999)
+            waitUntil(eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), Math.INFINITY)
         wait()
         eventPlayer.forceButtonPress(Button.ABILITY_2)
         wait()
@@ -363,7 +363,7 @@ rule "— Ultimate mode • Infinite":
                     not eventPlayer.preferences[Preference.PLAYER_MODE]
                     or not eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
                     or not eventPlayer.isUsingUltimate(),
-                    99999
+                    Math.INFINITY
                 )
                 break
     while RULE_CONDITION

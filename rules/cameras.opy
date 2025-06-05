@@ -13,6 +13,7 @@ rule "— ADS in third-person":
         eventPlayer.getCurrentHero() == Hero.ANA
         or eventPlayer.getCurrentHero() == Hero.ASHE
         or eventPlayer.getCurrentHero() == Hero.WIDOWMAKER
+        or eventPlayer.getCurrentHero() == Hero.FREJA
     )
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isViewingPreferences
@@ -26,7 +27,7 @@ rule "— ADS in third-person":
         or eventPlayer.isViewingPreferences
         or eventPlayer.isInModeratorMode
         or eventPlayer.isDead(),
-        99999
+        Math.INFINITY
     )
 
     if not eventPlayer.isInModeratorMode:
@@ -53,7 +54,7 @@ rule "— Ultimate in third-person":
         or eventPlayer.isViewingPreferences
         or eventPlayer.isInModeratorMode
         or eventPlayer.isDead(),
-        99999
+        Math.INFINITY
     )
 
     if not eventPlayer.isInModeratorMode:

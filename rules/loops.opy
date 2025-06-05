@@ -38,7 +38,7 @@ rule "— Transition rainbow color":
 
 rule "— Rainbow hero outline":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.OUTLINE_COLOR] == Color.RAINBOW
+    @Condition eventPlayer.preferences[Preference.OUTLINE_COLOR] == ExtendedColor.RAINBOW
 
     do:
         updateHeroOutline()

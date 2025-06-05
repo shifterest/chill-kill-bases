@@ -13,7 +13,7 @@ def InitializePlayer():
     async(UpdateCamera, AsyncBehavior.RESTART)
     updatePitch()
     UpdateAFKTimer()
-    waitUntil(eventPlayer.hasSpawned(), 99999)
+    waitUntil(eventPlayer.hasSpawned(), Math.INFINITY)
     updateHeroOutline()
     UpdateMessage()
 
@@ -58,8 +58,8 @@ def UpdateHero():
     UpdateAmmo()
 
 
-def Transition():
-    @Name "— Transition between in-base and outside"
+def UpdateBaseEffects():
+    @Name "— Update base effects"
 
     UpdateAbilities()
     UpdatePhase()
@@ -77,10 +77,10 @@ def UpdateAbilities():
     if eventPlayer.isInModeratorMode or eventPlayer.isUsingKeyboard or eventPlayer.isViewingPreferences:
         DisableAbilities()
         eventPlayer.disallowButton(Button.CROUCH)
-    elif eventPlayer.base_settled_owner == eventPlayer:
+    elif eventPlayer.active_base_owner == eventPlayer:
         DisableAbilities()
     elif (
-        eventPlayer.base_settled_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
+        eventPlayer.active_base_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
         or eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN
     ):
         DisableAbilities()
@@ -88,7 +88,7 @@ def UpdateAbilities():
         EnableAbilities()
 
     if (
-        (eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN or eventPlayer.base_settled_owner)
+        (eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN or eventPlayer.active_base_owner)
         and not (
             eventPlayer.isDuplicatingAHero()
             or eventPlayer.isInModeratorMode
@@ -220,8 +220,8 @@ def UpdateSizeNoclip():
     else:
         eventPlayer.stopScalingSize()
 
-    if eventPlayer.base_within_owner:
-        if eventPlayer.base_within_owner.preferences[Preference.BASE_NOCLIP]:
+    if eventPlayer.current_base_owner:
+        if eventPlayer.current_base_owner.preferences[Preference.BASE_NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()
@@ -239,10 +239,10 @@ def UpdateSizeNoclip():
 def UpdatePhysics():
     @Name "— Update gravity and speeds"
 
-    if eventPlayer.base_within_owner:
-        eventPlayer.setGravity(eventPlayer.base_within_owner.preferences[Preference.BASE_GRAVITY])
-        eventPlayer.setMoveSpeed(eventPlayer.base_within_owner.preferences[Preference.BASE_SPEED])
-        eventPlayer.setJumpVerticalSpeed(eventPlayer.base_within_owner.preferences[Preference.BASE_JUMP_SPEED])
+    if eventPlayer.current_base_owner:
+        eventPlayer.setGravity(eventPlayer.current_base_owner.preferences[Preference.BASE_GRAVITY])
+        eventPlayer.setMoveSpeed(eventPlayer.current_base_owner.preferences[Preference.BASE_SPEED])
+        eventPlayer.setJumpVerticalSpeed(eventPlayer.current_base_owner.preferences[Preference.BASE_JUMP_SPEED])
     elif eventPlayer.preferences[Preference.PLAYER_MODE]:
         eventPlayer.setGravity(eventPlayer.preferences[Preference.GRAVITY])
         eventPlayer.setMoveSpeed(eventPlayer.preferences[Preference.SPEED])
@@ -278,15 +278,15 @@ def UpdateInvisibility():
 def UpdatePhase():
     @Name "— Update phased status effect"
 
-    if eventPlayer.base_settled_owner == eventPlayer:
-        eventPlayer.setStatusEffect(null, Status.PHASED_OUT, 99999)
+    if eventPlayer.active_base_owner == eventPlayer:
+        eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
     elif (
-        eventPlayer.base_settled_owner.preferences[Preference.BASE_MODE]
+        eventPlayer.active_base_owner.preferences[Preference.BASE_MODE]
         == BaseMode.FRIENDLY
         or (eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN)
         or eventPlayer.preferences[Preference.DREAM_MODE]
     ):
-        eventPlayer.setStatusEffect(null, Status.PHASED_OUT, 99999)
+        eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
     elif eventPlayer.hasStatusEffect(Status.PHASED_OUT):
         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
 
@@ -295,7 +295,7 @@ def UpdateHoT():
     @Name "— Update healing over time"
 
     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
-        eventPlayer.startHoT(eventPlayer, 99999, 500)
+        eventPlayer.startHoT(eventPlayer, Math.INFINITY, 500)
     else:
         eventPlayer.stopAllHoT()
 

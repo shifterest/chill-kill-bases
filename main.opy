@@ -1,4 +1,5 @@
 #!suppressWarnings w_ow2_rule_condition_chase
+#!translations en es ja ko zh ru fr
 
 settings {
     "main": {
@@ -44,23 +45,23 @@ settings {
 
 #!include "script/variables.opy"
 #!include "script/subroutines.opy"
-#!include "script/macros.opy"
 #!include "script/enums.opy"
+#!include "script/macros.opy"
 
-#!include "rules/init.opy"
-#!include "rules/loops.opy"
-#!include "rules/backup.opy"
-#!include "rules/huds.opy"
-#!include "rules/moderator.opy"
-#!include "rules/player.opy"
-#!include "rules/update.opy"
-#!include "rules/base.opy"
-#!include "rules/orb.opy"
-#!include "rules/keyboard.opy"
 #!include "rules/abilities.opy"
-#!include "rules/unbound.opy"
-#!include "rules/dream.opy"
+#!include "rules/backup.opy"
+#!include "rules/base.opy"
 #!include "rules/cameras.opy"
-#!include "rules/paralysis.opy"
+#!include "rules/dream.opy"
+#!include "rules/huds.opy"
+#!include "rules/init.opy"
+#!include "rules/keyboard.opy"
+#!include "rules/loops.opy"
+#!include "rules/moderator.opy"
 #!include "rules/mount.opy"
+#!include "rules/orb.opy"
+#!include "rules/paralysis.opy"
+#!include "rules/player.opy"
 #!include "rules/special.opy"
+#!include "rules/unbound.opy"
+#!include "rules/update.opy"

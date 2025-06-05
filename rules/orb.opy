@@ -132,8 +132,13 @@ rule "— Draw preferences HUD":
     # PREFERENCES
     # preferences category
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences and localPlayer.isViewingAdvancedPreferences else null,
-        "{} • go back".format(buttonString(Button.MELEE)),
+        localPlayer if localPlayer.isViewingPreferences else null,
+        "viewing quick settings | {} • go to advanced settings".format(buttonString(Button.MELEE))
+        if not localPlayer.isViewingAdvancedPreferences
+        else "viewing advanced settings | {} • go to quick settings".format(buttonString(Button.MELEE))
+        if (localPlayer.preferences_index >= preferences_category_data[0][PreferenceCategoryProperty.STARTING_INDEX]
+        and localPlayer.preferences_index <= preferences_category_data[0][PreferenceCategoryProperty.ENDING_INDEX])
+        else "viewing advanced settings | {} • go to categories".format(buttonString(Button.MELEE)),
         orb_vector(0.9),
         0.9,
         Clip.NONE,
@@ -180,7 +185,7 @@ rule "— Draw preferences HUD":
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
         rainbow_rgb()
-        if localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] == Color.RAINBOW
+        if localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] == ExtendedColor.RAINBOW
         else colors_data[localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR]],
         SpecVisibility.NEVER
     )
@@ -196,7 +201,7 @@ rule "— Draw preferences HUD":
         0.8,
         Clip.NONE,
         rainbow_rgb()
-        if localPlayer.preferences[Preference.BASE_COLOR] == Color.RAINBOW
+        if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
         else colors_data[localPlayer.preferences[Preference.BASE_COLOR]],
         null,
         ProgressWorldTextReeval.VISIBILITY_POSITION_VALUES_AND_COLOR,
@@ -205,7 +210,7 @@ rule "— Draw preferences HUD":
     # player preference counter hotkeys
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
-        "{} • see more".format(buttonString(Button.INTERACT))
+        "{} • jump".format(buttonString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.CATEGORY
         else "{} {} {}  |  {} • reset".format(
             buttonString(Button.ABILITY_1),
@@ -293,13 +298,13 @@ def UpdatePreferencesHUD():
     eventPlayer.preferences_hud[PreferencesHUD.TYPE] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]
     eventPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.CHILL_REQUIRED]
     if not eventPlayer.preferences[Preference.PLAYER_MODE] and preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.CHILL_REQUIRED]:
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Color.GRAY
+        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = ExtendedColor.GRAY
     elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]:
         eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
     elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS]:
         eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS]
     else:
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = Color.WHITE
+        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = ExtendedColor.WHITE
     switch eventPlayer.preferences_hud[PreferencesHUD.TYPE]:
         case PreferenceType.BOOLEAN:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]:
@@ -340,7 +345,7 @@ def UpdatePreferencesHUD():
 
 rule "— View / hide preferences":
     @Event eachPlayer
-    @Condition eventPlayer.base_settled_owner == eventPlayer
+    @Condition eventPlayer.active_base_owner == eventPlayer
     @Condition not eventPlayer.isInModeratorMode
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
@@ -356,7 +361,7 @@ rule "— View / hide preferences":
     UpdatePreferencesHUD()
 
     waitUntil(
-        eventPlayer.base_settled_owner != eventPlayer
+        eventPlayer.active_base_owner != eventPlayer
         or eventPlayer.isUsingKeyboard
         or eventPlayer.preferences[Preference.DREAM_MODE]
         # or eventPlayer.isCommunicatingEmote()
@@ -367,7 +372,7 @@ rule "— View / hide preferences":
             eventPlayer.base_vector
         )
         > orb_radius,
-        99999
+        Math.INFINITY
     )
 
     eventPlayer.isViewingPreferences = false
@@ -384,6 +389,7 @@ rule "— Switch between quick and advanced preferences":
             eventPlayer.preferences_index >= preferences_category_data[0][PreferenceCategoryProperty.STARTING_INDEX]
             and eventPlayer.preferences_index <= preferences_category_data[0][PreferenceCategoryProperty.ENDING_INDEX]
         ):
+            eventPlayer.preferences_index = 0
             eventPlayer.isViewingAdvancedPreferences = false
         else:
             eventPlayer.preferences_index = [
@@ -392,11 +398,12 @@ rule "— Switch between quick and advanced preferences":
                 and eventPlayer.preferences_index <= cat[PreferenceCategoryProperty.ENDING_INDEX]
             ][0]
     else:
+        eventPlayer.preferences_index = 0
         eventPlayer.isViewingAdvancedPreferences = true
 
     UpdatePreferencesHUD()
-    ExplodeBase()
-    BuffPlayer()
+    BaseRingExplosion()
+    BuffSound()
 
 
 rule "— Interact / toggle preference":
@@ -410,51 +417,30 @@ rule "— Interact / toggle preference":
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = false
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = true
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
             UpdatePreferencesHUD()
             break
         case PreferenceType.CATEGORY:
-            if eventPlayer.isViewingAdvancedPreferences:
-                eventPlayer.preferences_index = [
-                    cat[PreferenceCategoryProperty.STARTING_INDEX] for cat in preferences_category_data
-                    if (cat[PreferenceCategoryProperty.CATEGORY_INDEX] == eventPlayer.preferences_index)
-                ][0]
-            else:
-                preferences_category_data[eventPlayer.preferences_index][PreferenceCategoryProperty.CATEGORY_INDEX] = [
-                    cat[PreferenceCategoryProperty.STARTING_INDEX] for cat in preferences_category_data
-                    if (cat[PreferenceCategoryProperty.CATEGORY_INDEX] == dynamic_preferences_index(eventPlayer))
-                ][0]
+            eventPlayer.preferences_index = [
+                cat[PreferenceCategoryProperty.STARTING_INDEX] for cat in preferences_category_data
+                if (cat[PreferenceCategoryProperty.CATEGORY_INDEX] == eventPlayer.preferences_index)
+            ][0]
             UpdatePreferencesHUD()
-            ExplodeBase()
-            BuffPlayer()
+            BaseRingExplosion()
+            BuffSound()
             break
         case PreferenceType.INTERACT:
         case PreferenceType.INTERACT_BOOLEAN:
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
             if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE:
-                chase(
-                    eventPlayer.interaction_progress,
-                    100,
-                    duration = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0],
-                    ChaseReeval.NONE
-                )
-                waitUntil(
-                    eventPlayer.interaction_progress == 100
-                    or not eventPlayer.isHoldingButton(Button.INTERACT)
-                    or not eventPlayer.isViewingPreferences,
-                    preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0]
+                chaseInteractionProgress(
+                    preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0],
+                    not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             else:
-                chase(
-                    eventPlayer.interaction_progress,
-                    100,
-                    duration = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS],
-                    ChaseReeval.NONE
-                )
-                waitUntil(
-                    eventPlayer.interaction_progress == 100
-                    or not eventPlayer.isHoldingButton(Button.INTERACT)
-                    or not eventPlayer.isViewingPreferences,
-                    preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]
+                chaseInteractionProgress(
+                    preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS],
+                    not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             if eventPlayer.interaction_progress == 100:
                 if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_BOOLEAN:
@@ -463,6 +449,7 @@ rule "— Interact / toggle preference":
                     else:
                         eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = true
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
+                UpdatePreferencesHUD()
             stopChasingVariable(eventPlayer.interaction_progress)
             eventPlayer.interaction_progress = 0
             break
@@ -517,14 +504,14 @@ rule "— Go to next option / increase preference":
             if eventPlayer.isHoldingButton(Button.CROUCH):
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
-                ExplodeBase()
-                BuffPlayer()
+                BaseRingExplosion()
+                BuffSound()
             elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
             else:
-                ExplodeBase()
-                BuffPlayer()
+                BaseRingExplosion()
+                BuffSound()
                 return
             break
         case PreferenceType.COLOR_PICKER:
@@ -576,14 +563,14 @@ rule "— Go to previous option / decrease preference":
             if eventPlayer.isHoldingButton(Button.CROUCH):
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
-                ExplodeBase()
-                BuffPlayer()
+                BaseRingExplosion()
+                BuffSound()
             elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
             else:
-                ExplodeBase()
-                BuffPlayer()
+                BaseRingExplosion()
+                BuffSound()
                 return
             break
         case PreferenceType.COLOR_PICKER:
@@ -635,8 +622,8 @@ rule "— Reset preference":
         case PreferenceType.NUMERIC:
             eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_default[dynamic_preferences_index(eventPlayer)]
             async(InteractWithPreferences, AsyncBehavior.RESTART)
-            ExplodeBase()
-            BuffPlayer()
+            BaseRingExplosion()
+            BuffSound()
             break
 
 
@@ -650,12 +637,12 @@ def InteractWithPreferences():
                 and getObjectivePosition(eventPlayer.preferences[Preference.FAST_TRAVEL_TO_OBJECTIVE]) != vect(0, 0, 0)
             ):
                 eventPlayer.teleport(nearestWalkablePosition(getObjectivePosition(eventPlayer.preferences[Preference.FAST_TRAVEL_TO_OBJECTIVE])))
-                BuffPlayer()
+                BuffSound()
             elif not eventPlayer.preferences[Preference.PLAYER_MODE]:
-                DebuffPlayer()
+                DebuffSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "can't fast travel in kill mode")
             else:
-                DebuffPlayer()
+                DebuffSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "objective doesn't exist")
             break
         case Preference.THIRD_PERSON:
@@ -664,18 +651,18 @@ def InteractWithPreferences():
             break
         case Preference.SWITCH_TEAM:
             if getCurrentGamemode() == Gamemode.SKIRMISH:
-                DebuffPlayer()
+                DebuffSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "switching teams disabled due to reports of server crashes")
                 # moveToTeam(eventPlayer, getOppositeTeam(eventPlayer.getTeam()), -1)
             else:
-                DebuffPlayer()
+                DebuffSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "gamemode is FFA")
             break
         case Preference.RESET:
             PackBase()
             LoadDefaultPreferences()
             InitializePlayer()
-            BuffPlayer()
+            BuffSound()
             iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "preferences reset")
             break
         case Preference.CUSTOM_MESSAGE:
@@ -688,7 +675,7 @@ def InteractWithPreferences():
                 )
             ]
             eventPlayer.disableHeroHUD()
-            eventPlayer.setStatusEffect(eventPlayer, Status.ROOTED, 99999)
+            eventPlayer.setStatusEffect(eventPlayer, Status.ROOTED, Math.INFINITY)
             eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
             eventPlayer.setInvisibility(Invis.ALL)
             eventPlayer.isInvisible = true
@@ -742,10 +729,13 @@ def InteractWithPreferences():
                 not eventPlayer.preferences[Preference.ALLOW_MOUNTING]
                 and eventPlayer.rider
             ):
-                UnmountPlayer()
+                EjectRider()
             break
         case Preference.MOUNTING_MODE:
             UpdateRider()
+            break
+        case Preference.BASE_MODE:
+            eventPlayer.activate_base_immediately = true
             break
         case Preference.BASE_SIZE:
         case Preference.BASE_GAP_SIZE:
@@ -773,7 +763,7 @@ def InteractWithPreferences():
             eventPlayer.base_preferences_changed = true
             break
         case Preference.BASE_LOCK:
-            UpdateBaseWithinOwner()
+            UpdateCurrentBaseOwner()
             break
         case Preference.DREAM_MODE:
             DreamMode()

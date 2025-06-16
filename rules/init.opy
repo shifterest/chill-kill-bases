@@ -17,7 +17,7 @@ rule "— Avoid server crashes":
     wait(1, Wait.ABORT_WHEN_FALSE)
 
     isOverloaded = true
-    iconMessage(hostPlayer, iconString(Icon.WARNING), "slowing down to avoid server crash")
+    iconMessage(getAllPlayers(), iconString(Icon.WARNING), "slowing down to avoid server crash")
     setSlowMotion(20)
 
     wait(1)
@@ -109,6 +109,13 @@ rule "— Populate global variables":
         null,
         ExtendedColor.AQUA
     ]
+    preferences_data[Preference.FLUCTUATOR] = [
+        "Fluctuator preferences",
+        "Configure fluctuators.",
+        PreferenceType.CATEGORY,
+        null,
+        ExtendedColor.RAINBOW
+    ]
     # Game
     preferences_data[Preference.PLAYER_MODE] = [
         "player mode",
@@ -127,8 +134,11 @@ rule "— Populate global variables":
     ]
     preferences_data[Preference.THIRD_PERSON] = [
         "third-person camera",
-        "Enable a third-person camera perspective.",
-        PreferenceType.BOOLEAN
+        "Select a third-person camera perspective.",
+        PreferenceType.MULTIPLE_CHOICE,
+        ["off", "rear", "top-down", "static top-down"],
+        null,
+        true
     ]
     preferences_data[Preference.THIRD_PERSON_DISTANCE] = [
         "third-person camera distance",
@@ -136,22 +146,28 @@ rule "— Populate global variables":
         PreferenceType.NUMERIC,
         [10, 1000, 10, "%"]
     ]
+    preferences_data[Preference.THIRD_PERSON_OFFSET] = [
+        "third-person offset",
+        "Specify the horizontal offset of the camera in third-person view.",
+        PreferenceType.NUMERIC_REVERSIBLE,
+        [-5, 5, 0.5, "m"]
+    ]
     preferences_data[Preference.SHOW_HOTKEYS] = [
         "show hotkeys",
         "Enable the display of gameplay hotkeys.",
         PreferenceType.BOOLEAN
     ]
-    preferences_data[Preference.SELF_PARALYSIS] = [
-        "self-paralysis",
+    preferences_data[Preference.STASIS] = [
+        "stasis",
         "Temporarily immobilize yourself.",
         PreferenceType.BOOLEAN,
         null,
         null,
         true
     ]
-    preferences_data[Preference.PARALYSIS_MODE] = [
-        "paralysis mode",
-        "Select the status effect to apply during paralysis.",
+    preferences_data[Preference.STASIS_MODE] = [
+        "stasis mode",
+        "Select the status effect to apply during stasis.",
         PreferenceType.MULTIPLE_CHOICE,
         ["knock down", "stun", "sleep", "freeze"],
         null,
@@ -220,7 +236,7 @@ rule "— Populate global variables":
     ]
     preferences_data[Preference.SIZE] = [
         "size",
-        "Adjust the size attribute of the hero.",
+        "Adjust the size of the hero.",
         PreferenceType.NUMERIC,
         [10, 500, 10, "%"],
         null,
@@ -228,7 +244,7 @@ rule "— Populate global variables":
     ]
     preferences_data[Preference.GRAVITY] = [
         "gravity",
-        "Set the gravitational effect on the hero.",
+        "Set the gravity on the hero.",
         PreferenceType.NUMERIC,
         [0, 500, 10, "%"],
         null,
@@ -259,7 +275,7 @@ rule "— Populate global variables":
     # Abilities
     preferences_data[Preference.DAMAGE] = [
         "damage",
-        "Set the damage output value.",
+        "Set the damage output percentage.",
         PreferenceType.NUMERIC,
         [0, 5000, 50, "%"],
         null,
@@ -275,7 +291,7 @@ rule "— Populate global variables":
     ]
     preferences_data[Preference.HEALING] = [
         "healing",
-        "Set the healing output value.",
+        "Set the healing output percentage.",
         PreferenceType.NUMERIC,
         [0, 5000, 50, "%"],
         null,
@@ -291,7 +307,7 @@ rule "— Populate global variables":
     ]
     preferences_data[Preference.HEALTH] = [
         "health",
-        "Set the health pool value.",
+        "Set the health pool percentage.",
         PreferenceType.NUMERIC,
         [10, 5000, 10, "%"],
         null,
@@ -299,7 +315,7 @@ rule "— Populate global variables":
     ]
     preferences_data[Preference.THORNS] = [
         "thorns",
-        "Set the damage reflection value.",
+        "Set the damage reflection percentage.",
         PreferenceType.NUMERIC,
         [0, 5000, 50, "%"],
         null,
@@ -449,7 +465,7 @@ rule "— Populate global variables":
     ]
     preferences_data[Preference.INVISIBILITY] = [
         "invisibility",
-        "Enable or disable invisibility.",
+        "Enable or disable the invisibility state of the hero.",
         PreferenceType.BOOLEAN,
         null,
         null,
@@ -560,6 +576,104 @@ rule "— Populate global variables":
         "Enable or disable camera collision in dream mode.",
         PreferenceType.BOOLEAN
     ]
+    preferences_data[Preference.FLUCTUATOR_MODE] = [
+        "Fluctuator mode",
+        [
+            "Configured settings won't fluctuate.",
+            "Configured settings will fluctuate in increments outside your own base.",
+            "Configured settings will fluctuate completely randomly outside own base.",
+        ],
+        PreferenceType.MULTIPLE_CHOICE,
+        ["off", "incremental", "random"],
+        null,
+        true
+    ]
+    preferences_data[Preference.FLUCTUATE_FLIGHT_ACCELERATION] = [
+        "Fluctuate flight acceleration",
+        "Fluctuate the flight acceleration of the hero.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_SIZE] = [
+        "Fluctuate hero size",
+        "Fluctuate the size of the hero.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_GRAVITY] = [
+        "Fluctuate hero gravity",
+        "Fluctuate the gravity on the hero.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_SPEED] = [
+        "Fluctuate hero speed",
+        "Fluctuate the movement speed of the hero.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_JUMP_SPEED] = [
+        "Fluctuate hero jump speed",
+        "Fluctuate the jump speed of the hero.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_VOICE_PITCH] = [
+        "Fluctuate voice pitch",
+        "Fluctuate the pitch of the hero's voice.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_DAMAGE] = [
+        "Fluctuate damage",
+        "Fluctuate the damage output percentage.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_HEALING] = [
+        "Fluctuate healing",
+        "Fluctuate the healing output percentage.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_HEALTH] = [
+        "Fluctuate health",
+        "Fluctuate the health pool percentage.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_THORNS] = [
+        "Fluctuate thorns",
+        "Fluctuate the damage reflection percentage.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_KNOCKBACK] = [
+        "Fluctuate knockback",
+        "Fluctuate the force of the knockback effect.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_PROJECTILE_SPEED] = [
+        "Fluctuate projectile speed",
+        "Fluctuate the speed of projectiles.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_PROJECTILE_GRAVITY] = [
+        "Fluctuate projectile gravity",
+        "Fluctuate the gravitational effect on projectiles.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+    preferences_data[Preference.FLUCTUATE_INVISIBILITY] = [
+        "Fluctuate invisibility",
+        "Fluctuate the invisibility state of the hero.",
+        PreferenceType.BOOLEAN,
+        null, null, true
+    ]
+
+
 
     preferences_category_data = [
         [-1, Preference.GAME, Preference.DREAM, ExtendedColor.ORANGE],
@@ -570,6 +684,7 @@ rule "— Populate global variables":
         [Preference.SPECIAL, Preference.NOCLIP, Preference.TRAMPOLINE, ExtendedColor.TURQUOISE],
         [Preference.BASE, Preference.BASE_MODE, Preference.BASE_JUMP_SPEED, ExtendedColor.ROSE],
         [Preference.DREAM, Preference.DREAM_MODE, Preference.CLIP_CAMERA, ExtendedColor.AQUA],
+        [Preference.FLUCTUATOR, Preference.FLUCTUATOR_MODE, Preference.FLUCTUATE_INVISIBILITY, ExtendedColor.RAINBOW]
     ]
 
     quick_preferences_data = [
@@ -587,7 +702,25 @@ rule "— Populate global variables":
         Preference.TRAMPOLINE,
         Preference.BASE_COLOR,
         Preference.BASE_SIZE,
-        Preference.DREAM_MODE
+        Preference.DREAM_MODE,
+        Preference.FLUCTUATOR_MODE
+    ]
+
+    preferences_flux_data = [
+        [Preference.FLUCTUATE_FLIGHT_ACCELERATION, Preference.FLIGHT_ACCELERATION],
+        [Preference.FLUCTUATE_SIZE, Preference.SIZE],
+        [Preference.FLUCTUATE_GRAVITY, Preference.GRAVITY],
+        [Preference.FLUCTUATE_SPEED, Preference.SPEED],
+        [Preference.FLUCTUATE_JUMP_SPEED, Preference.JUMP_SPEED],
+        [Preference.FLUCTUATE_VOICE_PITCH, Preference.VOICE_PITCH],
+        [Preference.FLUCTUATE_DAMAGE, Preference.DAMAGE],
+        [Preference.FLUCTUATE_HEALING, Preference.HEALING],
+        [Preference.FLUCTUATE_HEALTH, Preference.HEALTH],
+        [Preference.FLUCTUATE_THORNS, Preference.THORNS],
+        [Preference.FLUCTUATE_KNOCKBACK, Preference.KNOCKBACK],
+        [Preference.FLUCTUATE_PROJECTILE_SPEED, Preference.PROJECTILE_SPEED],
+        [Preference.FLUCTUATE_PROJECTILE_GRAVITY, Preference.PROJECTILE_GRAVITY],
+        [Preference.FLUCTUATE_INVISIBILITY, Preference.INVISIBILITY]
     ]
 
     preferences_default[Preference.GAME] = null
@@ -598,12 +731,13 @@ rule "— Populate global variables":
     preferences_default[Preference.BASE] = null
     preferences_default[Preference.DREAM] = null
     # Game
-    preferences_default[Preference.PLAYER_MODE] = PlayerMode.KILL
-    preferences_default[Preference.THIRD_PERSON] = false
+    preferences_default[Preference.PLAYER_MODE] = PlayerMode.CHILL
+    preferences_default[Preference.THIRD_PERSON] = ThirdPersonCamera.OFF
     preferences_default[Preference.THIRD_PERSON_DISTANCE] = 100
+    preferences_default[Preference.THIRD_PERSON_OFFSET] = 1
     preferences_default[Preference.SHOW_HOTKEYS] = true
-    preferences_default[Preference.SELF_PARALYSIS] = true
-    preferences_default[Preference.PARALYSIS_MODE] = Paralysis.KNOCKED_DOWN
+    preferences_default[Preference.STASIS] = true
+    preferences_default[Preference.STASIS_MODE] = Stasis.KNOCKED_DOWN
     preferences_default[Preference.FAST_TRAVEL] = true
     preferences_default[Preference.FAST_TRAVEL_TO_OBJECTIVE] = null
     preferences_default[Preference.INSTANT_RESPAWN] = true
@@ -692,8 +826,6 @@ rule "— Initialize player":
     @Event eachPlayer
     @Condition isInitialized
 
-    eventPlayer.cubic_bezier = 1
-
     eventPlayer.disableGamemodeHud()
     if not createWorkshopSetting(bool, "match preferences", "enable scoreboard", true, 2):
         eventPlayer.disableScoreboard()
@@ -709,7 +841,7 @@ rule "— Initialize player":
         ):
             eventPlayer.base_vector = base_vectors_backups[player_names_backups.index("{}".format(eventPlayer))]
             eventPlayer.has_created_base_once = true
-            CreateBaseEffects()
+            CreateBase()
         eventPlayer.preferences = preferences_backups[player_names_backups.index("{}".format(eventPlayer))]
     else:
         LoadDefaultPreferences()
@@ -760,13 +892,13 @@ rule "— Initialize player":
 
         wait(4)
 
-        bigMessage(eventPlayer, "to get started, hold {} to create a base.".format(buttonString(Button.INTERACT)))
+        bigMessage(eventPlayer, "to get started, hold {} to create a base.".format(buttonToString(Button.INTERACT)))
         switch mode:
             case Mode.MUSIC:
             case Mode.SLEEP:
                 wait(4)
 
-                bigMessage(eventPlayer, "then, join match voice chat for some music!".format(buttonString(Button.INTERACT)))
+                bigMessage(eventPlayer, "then, join match voice chat for some music!".format(buttonToString(Button.INTERACT)))
                 break
     else:
         bigMessage(eventPlayer, "welcome back!")
@@ -797,6 +929,25 @@ def LoadDefaultPreferences():
         eventPlayer.preferences[Preference.AURA_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
 
 
+def ResetFlux():
+    @Name "— Reset flux"
+
+    eventPlayer.preferences_flux[Preference.FLIGHT_ACCELERATION] = eventPlayer.preferences[Preference.FLIGHT_ACCELERATION]
+    eventPlayer.preferences_flux[Preference.SIZE] = eventPlayer.preferences[Preference.SIZE]
+    eventPlayer.preferences_flux[Preference.GRAVITY] = eventPlayer.preferences[Preference.GRAVITY]
+    eventPlayer.preferences_flux[Preference.SPEED] = eventPlayer.preferences[Preference.SPEED]
+    eventPlayer.preferences_flux[Preference.JUMP_SPEED] = eventPlayer.preferences[Preference.JUMP_SPEED]
+    eventPlayer.preferences_flux[Preference.VOICE_PITCH] = eventPlayer.preferences[Preference.VOICE_PITCH]
+    eventPlayer.preferences_flux[Preference.DAMAGE] = eventPlayer.preferences[Preference.DAMAGE]
+    eventPlayer.preferences_flux[Preference.HEALING] = eventPlayer.preferences[Preference.HEALING]
+    eventPlayer.preferences_flux[Preference.HEALTH] = eventPlayer.preferences[Preference.HEALTH]
+    eventPlayer.preferences_flux[Preference.THORNS] = eventPlayer.preferences[Preference.THORNS]
+    eventPlayer.preferences_flux[Preference.KNOCKBACK] = eventPlayer.preferences[Preference.KNOCKBACK]
+    eventPlayer.preferences_flux[Preference.PROJECTILE_SPEED] = eventPlayer.preferences[Preference.PROJECTILE_SPEED]
+    eventPlayer.preferences_flux[Preference.PROJECTILE_GRAVITY] = eventPlayer.preferences[Preference.PROJECTILE_GRAVITY]
+    eventPlayer.preferences_flux[Preference.INVISIBILITY] = eventPlayer.preferences[Preference.INVISIBILITY]
+
+
 def HardReset():
     @Name "— Hard reset"
 
@@ -824,8 +975,8 @@ def HardReset():
     eventPlayer.isInModeratorMode = null
     eventPlayer.isInBaseCreationMode = null
     eventPlayer.isUsingKeyboard = null
-    eventPlayer.isParalyzedByModerator = null
-    eventPlayer.isParalyzed = null
+    eventPlayer.isInModeratorStasis = null
+    eventPlayer.isInStasis = null
     eventPlayer.isInvisible = null
     eventPlayer.death_throttle = null
     eventPlayer.progress = null
@@ -835,11 +986,10 @@ def HardReset():
     eventPlayer.mount = null
     eventPlayer.rider = null
     eventPlayer.chill_effect_id = null
-    eventPlayer.sphere_effect_id = null
+    eventPlayer.base_effect_id = null
     eventPlayer.icon_effect_id = null
     eventPlayer.description_effect_id = null
     eventPlayer.message_effect_id = null
-    eventPlayer.cubic_bezier = null
     eventPlayer.focused_player = null
     eventPlayer.previous_position = null
     eventPlayer.previous_position_direction = null

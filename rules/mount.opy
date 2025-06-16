@@ -22,7 +22,7 @@ rule "— Mount to player":
     eventPlayer.mount = eventPlayer.getRealPlayerClosestToReticle(Team.ALL)
     eventPlayer.mount.rider = eventPlayer
     iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "mounted to {}".format(eventPlayer.mount))
-    BuffSound()
+    BuffExplosionSound()
     wait(1)
 
 
@@ -48,16 +48,16 @@ def UpdateRider():
                 eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 0))
                 break
             case MountingMode.FRONT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
+                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
                 break
             case MountingMode.BACK:
-                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, -1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
+                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, -1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
                 break
             case MountingMode.LEFT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
+                eventPlayer.rider.attachTo(eventPlayer, vect(1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
                 break
             case MountingMode.RIGHT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(-1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
+                eventPlayer.rider.attachTo(eventPlayer, vect(-1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
                 break
 
 
@@ -77,7 +77,7 @@ def EjectFromMount():
     eventPlayer.mount.rider = null
     eventPlayer.mount = null
     eventPlayer.detach()
-    BuffSound()
+    DebuffImpactSound()
 
 
 rule "— Eject from mount on kill mode / mount disconnect":
@@ -115,7 +115,7 @@ def EjectRider():
         )
     eventPlayer.rider.mount = null
     eventPlayer.rider = null
-    BuffSound()
+    DebuffImpactSound()
 
 
 rule "— Eject rider on rider disconnect":

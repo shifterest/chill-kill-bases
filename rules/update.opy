@@ -8,6 +8,7 @@ rule "Update":
 def InitializePlayer():
     @Name "— Initialize player"
 
+    ResetFlux()
     UpdateHero()
     UpdateAura()
     async(UpdateCamera, AsyncBehavior.RESTART)
@@ -67,6 +68,8 @@ def UpdateBaseEffects():
     UpdateSizeNoclip()
     UpdatePhysics()
     UpdateHUD()
+    if eventPlayer.preferences[Preference.THIRD_PERSON] != ThirdPersonCamera.OFF:
+        UpdateCamera()
 
 
 def UpdateAbilities():
@@ -215,8 +218,8 @@ def UpdateKnockback():
 def UpdateSizeNoclip():
     @Name "— Update hero size and environmental collision"
 
-    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.SIZE] != 100:
-        eventPlayer.startScalingSize(eventPlayer.preferences[Preference.SIZE] / 100, false)
+    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences_flux[Preference.SIZE] != 100:
+        eventPlayer.startScalingSize(eventPlayer.preferences_flux[Preference.SIZE] / 100, false)
     else:
         eventPlayer.stopScalingSize()
 
@@ -228,7 +231,7 @@ def UpdateSizeNoclip():
     elif eventPlayer.preferences[Preference.PLAYER_MODE]:
         if eventPlayer.preferences[Preference.NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
-        elif eventPlayer.preferences[Preference.SIZE] > 100:
+        elif eventPlayer.preferences_flux[Preference.SIZE] > 100:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()

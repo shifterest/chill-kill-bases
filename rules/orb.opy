@@ -13,7 +13,7 @@ rule "— Draw preferences HUD":
     createInWorldText(
         localPlayer if localPlayer.isUsingKeyboard else null,
         "▲",
-        updateEveryTick(
+        updateEveryFrame(
             localPlayer.getEyePosition()
             + vect(
                 min(43.5, max(-43.5, angleDifference(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()))) / 35
@@ -133,17 +133,19 @@ rule "— Draw preferences HUD":
     # preferences category
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
-        "viewing quick settings | {} • go to advanced settings".format(buttonString(Button.MELEE))
+        "viewing quick settings | {} • go to advanced settings".format(buttonToString(Button.MELEE))
         if not localPlayer.isViewingAdvancedPreferences
-        else "viewing advanced settings | {} • go to quick settings".format(buttonString(Button.MELEE))
+        else "viewing advanced settings | {} • go to quick settings".format(buttonToString(Button.MELEE))
         if (localPlayer.preferences_index >= preferences_category_data[0][PreferenceCategoryProperty.STARTING_INDEX]
         and localPlayer.preferences_index <= preferences_category_data[0][PreferenceCategoryProperty.ENDING_INDEX])
-        else "viewing advanced settings | {} • go to categories".format(buttonString(Button.MELEE)),
+        else "viewing advanced settings | {} • go to categories".format(buttonToString(Button.MELEE)),
         orb_vector(0.9),
         0.9,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        colors_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
+        rainbow_rgb()
+        if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
+        else colors_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER
     )
 
@@ -162,18 +164,20 @@ rule "— Draw preferences HUD":
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         "{} {} • {} of {} • {} {}".format(
-            buttonString(Button.PRIMARY_FIRE),
+            buttonToString(Button.PRIMARY_FIRE),
             iconString(Icon.ARROW_LEFT),
             localPlayer.preferences_hud[PreferencesHUD.CURRENT_PREFERENCE],
             localPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES],
             iconString(Icon.ARROW_RIGHT),
-            buttonString(Button.SECONDARY_FIRE)
+            buttonToString(Button.SECONDARY_FIRE)
         ),
         orb_vector(0.7),
         0.9,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        colors_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
+        rainbow_rgb()
+        if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
+        else colors_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER
     )
     # player preference
@@ -210,47 +214,61 @@ rule "— Draw preferences HUD":
     # player preference counter hotkeys
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
-        "{} • jump".format(buttonString(Button.INTERACT))
+        "{} • jump".format(buttonToString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.CATEGORY
         else "{} {} {}  |  {} • reset".format(
-            buttonString(Button.ABILITY_1),
+            buttonToString(Button.ABILITY_1),
             localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
-            buttonString(Button.ABILITY_2),
-            buttonString(Button.RELOAD)
+            buttonToString(Button.ABILITY_2),
+            buttonToString(Button.RELOAD)
         )
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.MULTIPLE_CHOICE
         or localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.COLOR_PICKER
         else "{} {} {}  |  {} • interact".format(
-            buttonString(Button.ABILITY_1),
+            buttonToString(Button.ABILITY_1),
             localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
-            buttonString(Button.ABILITY_2),
-            buttonString(Button.INTERACT)
+            buttonToString(Button.ABILITY_2),
+            buttonToString(Button.INTERACT)
         )
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE
-        else "{} • toggle".format(buttonString(Button.INTERACT))
+        else "{} • toggle".format(buttonToString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.BOOLEAN
         else "{0} {1} • {2} {3}  |  {4} + {0} {5} • {6} {4} + {3}  |  {7} • reset".format(
-            buttonString(Button.ABILITY_1),
+            buttonToString(Button.ABILITY_1),
             iconString(Icon.ARROW_DOWN),
             iconString(Icon.ARROW_UP),
-            buttonString(Button.ABILITY_2),
-            buttonString(Button.CROUCH),
+            buttonToString(Button.ABILITY_2),
+            buttonToString(Button.CROUCH),
             iconString(Icon.ARROW_LEFT),
             iconString(Icon.ARROW_RIGHT),
-            buttonString(Button.RELOAD)
+            buttonToString(Button.RELOAD)
         )
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.NUMERIC
-        else "hold {} • interact".format(buttonString(Button.INTERACT))
+        else "{0} {1} • {2} {3}  |  {4} + {0} {5} • {6} {4} + {3}  |  {8} • reverse  |  {7} • reset".format(
+            buttonToString(Button.ABILITY_1),
+            iconString(Icon.ARROW_DOWN),
+            iconString(Icon.ARROW_UP),
+            buttonToString(Button.ABILITY_2),
+            buttonToString(Button.CROUCH),
+            iconString(Icon.ARROW_LEFT),
+            iconString(Icon.ARROW_RIGHT),
+            buttonToString(Button.RELOAD),
+            buttonToString(Button.INTERACT)
+        )
+        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.NUMERIC_REVERSIBLE
+        else "hold {} • interact".format(buttonToString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT
         or localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.KEYBOARD
-        else "hold {} • enable".format(buttonString(Button.INTERACT))
+        else "hold {} • enable".format(buttonToString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT_BOOLEAN
         else "",
         orb_vector(0.4),
         0.9,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        colors_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
+        rainbow_rgb()
+        if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
+        else colors_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER
     )
     # preference description
@@ -329,6 +347,7 @@ def UpdatePreferencesHUD():
             eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "• • •"
             break
         case PreferenceType.NUMERIC:
+        case PreferenceType.NUMERIC_REVERSIBLE:
             eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "{}{}".format(eventPlayer.preferences[dynamic_preferences_index(eventPlayer)], preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.SUFFIX] if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.SUFFIX] else " units")
             break
         case PreferenceType.KEYBOARD:
@@ -403,7 +422,7 @@ rule "— Switch between quick and advanced preferences":
 
     UpdatePreferencesHUD()
     BaseRingExplosion()
-    BuffSound()
+    RingExplosionSound()
 
 
 rule "— Interact / toggle preference":
@@ -419,6 +438,7 @@ rule "— Interact / toggle preference":
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = true
             async(InteractWithPreferences, AsyncBehavior.RESTART)
             UpdatePreferencesHUD()
+            BuffImpactSoundQuiet()
             break
         case PreferenceType.CATEGORY:
             eventPlayer.preferences_index = [
@@ -427,8 +447,12 @@ rule "— Interact / toggle preference":
             ][0]
             UpdatePreferencesHUD()
             BaseRingExplosion()
-            BuffSound()
+            RingExplosionSound()
             break
+        case PreferenceType.NUMERIC_REVERSIBLE:
+            eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] *= -1
+            async(InteractWithPreferences, AsyncBehavior.RESTART)
+            BuffImpactSoundQuiet()
         case PreferenceType.INTERACT:
         case PreferenceType.INTERACT_BOOLEAN:
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
@@ -450,6 +474,7 @@ rule "— Interact / toggle preference":
                         eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = true
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
                 UpdatePreferencesHUD()
+                BuffImpactSoundQuiet()
             stopChasingVariable(eventPlayer.interaction_progress)
             eventPlayer.interaction_progress = 0
             break
@@ -472,6 +497,7 @@ rule "— Go to next preference":
             eventPlayer.preferences_index = 0
 
     UpdatePreferencesHUD()
+    BuffExplosionSoundQuiet()
 
 
 rule "— Go to previous preference":
@@ -491,6 +517,7 @@ rule "— Go to previous preference":
             eventPlayer.preferences_index = len(quick_preferences_data) - 1
 
     UpdatePreferencesHUD()
+    BuffExplosionSoundQuiet()
 
 
 rule "— Go to next option / increase preference":
@@ -501,17 +528,19 @@ rule "— Go to next option / increase preference":
 
     switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
         case PreferenceType.NUMERIC:
+        case PreferenceType.NUMERIC_REVERSIBLE:
             if eventPlayer.isHoldingButton(Button.CROUCH):
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
                 BaseRingExplosion()
-                BuffSound()
+                BuffImpactSound()
             elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
+                BuffImpactSoundQuiet()
             else:
                 BaseRingExplosion()
-                BuffSound()
+                DebuffImpactSound()
                 return
             break
         case PreferenceType.COLOR_PICKER:
@@ -520,6 +549,7 @@ rule "— Go to next option / increase preference":
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
             async(InteractWithPreferences, AsyncBehavior.RESTART)
+            BuffImpactSoundQuiet()
             break
         case PreferenceType.MULTIPLE_CHOICE:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1:
@@ -527,6 +557,7 @@ rule "— Go to next option / increase preference":
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
             async(InteractWithPreferences, AsyncBehavior.RESTART)
+            BuffImpactSoundQuiet()
             break
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1:
@@ -534,6 +565,7 @@ rule "— Go to next option / increase preference":
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
             async(InteractWithPreferences, AsyncBehavior.RESTART)
+            BuffImpactSoundQuiet()
             break
                 
     if not eventPlayer.isAdjustingPreference:
@@ -560,17 +592,19 @@ rule "— Go to previous option / decrease preference":
 
     switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
         case PreferenceType.NUMERIC:
+        case PreferenceType.NUMERIC_REVERSIBLE:
             if eventPlayer.isHoldingButton(Button.CROUCH):
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
                 BaseRingExplosion()
-                BuffSound()
+                BuffImpactSound()
             elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
+                BuffImpactSoundQuiet()
             else:
                 BaseRingExplosion()
-                BuffSound()
+                DebuffImpactSound()
                 return
             break
         case PreferenceType.COLOR_PICKER:
@@ -579,6 +613,7 @@ rule "— Go to previous option / decrease preference":
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(colors_data) - 1
             async(InteractWithPreferences, AsyncBehavior.RESTART)
+            BuffImpactSoundQuiet()
             break
         case PreferenceType.MULTIPLE_CHOICE:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
@@ -586,6 +621,7 @@ rule "— Go to previous option / decrease preference":
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1
             async(InteractWithPreferences, AsyncBehavior.RESTART)
+            BuffImpactSoundQuiet()
             break
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
@@ -593,6 +629,7 @@ rule "— Go to previous option / decrease preference":
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1
             async(InteractWithPreferences, AsyncBehavior.RESTART)
+            BuffImpactSoundQuiet()
             break
 
     if not eventPlayer.isAdjustingPreference:
@@ -620,10 +657,11 @@ rule "— Reset preference":
         case PreferenceType.MULTIPLE_CHOICE:
         case PreferenceType.COLOR_PICKER:
         case PreferenceType.NUMERIC:
+        case PreferenceType.NUMERIC_REVERSIBLE:
             eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_default[dynamic_preferences_index(eventPlayer)]
             async(InteractWithPreferences, AsyncBehavior.RESTART)
             BaseRingExplosion()
-            BuffSound()
+            BuffImpactSound()
             break
 
 
@@ -637,32 +675,33 @@ def InteractWithPreferences():
                 and getObjectivePosition(eventPlayer.preferences[Preference.FAST_TRAVEL_TO_OBJECTIVE]) != vect(0, 0, 0)
             ):
                 eventPlayer.teleport(nearestWalkablePosition(getObjectivePosition(eventPlayer.preferences[Preference.FAST_TRAVEL_TO_OBJECTIVE])))
-                BuffSound()
+                BuffImpactSound()
             elif not eventPlayer.preferences[Preference.PLAYER_MODE]:
-                DebuffSound()
+                DebuffImpactSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "can't fast travel in kill mode")
             else:
-                DebuffSound()
+                DebuffImpactSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "objective doesn't exist")
             break
         case Preference.THIRD_PERSON:
         case Preference.THIRD_PERSON_DISTANCE:
+        case Preference.THIRD_PERSON_OFFSET:
             async(UpdateCamera, AsyncBehavior.RESTART)
             break
         case Preference.SWITCH_TEAM:
             if getCurrentGamemode() == Gamemode.SKIRMISH:
-                DebuffSound()
+                DebuffImpactSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "switching teams disabled due to reports of server crashes")
                 # moveToTeam(eventPlayer, getOppositeTeam(eventPlayer.getTeam()), -1)
             else:
-                DebuffSound()
+                DebuffImpactSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "gamemode is FFA")
             break
         case Preference.RESET:
             PackBase()
             LoadDefaultPreferences()
             InitializePlayer()
-            BuffSound()
+            BuffImpactSound()
             iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "preferences reset")
             break
         case Preference.CUSTOM_MESSAGE:
@@ -774,5 +813,11 @@ def InteractWithPreferences():
         case Preference.PLAYER_MODE:
             UpdateHero()
             break
+        case Preference.GRAVITY:
+        case Preference.SPEED:
+        case Preference.JUMP_SPEED:
+            UpdatePhysics()
+            break
+    ResetFlux()
     UpdatePreferencesHUD()
     BackupPlayer()

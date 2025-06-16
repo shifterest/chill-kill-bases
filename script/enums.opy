@@ -21,6 +21,7 @@ enum PreferenceType:
     MULTIPLE_CHOICE,
     BOOLEAN,
     NUMERIC,
+    NUMERIC_REVERSIBLE,
     INTERACT, # duration
     INTERACT_MULTIPLE_CHOICE,
     INTERACT_BOOLEAN, # duration
@@ -44,13 +45,15 @@ enum Preference:
     SPECIAL,
     BASE,
     DREAM,
+    FLUCTUATOR,
     # Game
     PLAYER_MODE,
     THIRD_PERSON,
     THIRD_PERSON_DISTANCE,
+    THIRD_PERSON_OFFSET,
     SHOW_HOTKEYS,
-    SELF_PARALYSIS,
-    PARALYSIS_MODE,
+    STASIS,
+    STASIS_MODE,
     FAST_TRAVEL,
     FAST_TRAVEL_TO_OBJECTIVE,
     INSTANT_RESPAWN,
@@ -110,7 +113,24 @@ enum Preference:
     DREAM_MODE,
     AFK_TIMER,
     SWITCH_TIMER,
-    CLIP_CAMERA
+    CLIP_CAMERA,
+    # Fluctuator
+    FLUCTUATOR_MODE,
+    FLUCTUATE_FLIGHT_ACCELERATION,
+    FLUCTUATE_SIZE,
+    FLUCTUATE_GRAVITY,
+    FLUCTUATE_SPEED,
+    FLUCTUATE_JUMP_SPEED,
+    FLUCTUATE_VOICE_PITCH,
+    FLUCTUATE_DAMAGE
+    FLUCTUATE_HEALING,
+    FLUCTUATE_HEALTH,
+    FLUCTUATE_THORNS,
+    FLUCTUATE_KNOCKBACK,
+    FLUCTUATE_PROJECTILE_SPEED,
+    FLUCTUATE_PROJECTILE_GRAVITY,
+    FLUCTUATE_INVISIBILITY
+
 
 
 enum AbilityEffect:
@@ -199,7 +219,7 @@ enum BaseMode:
     REPULSIVE
 
 
-enum Paralysis:
+enum Stasis:
     KNOCKED_DOWN,
     STUNNED,
     ASLEEP,
@@ -241,3 +261,22 @@ enum MountingMode:
 enum SpecialChar:
     BACKSPACE = 1,
     EXIT
+
+
+enum ThirdPersonCamera:
+    OFF,
+    REAR,
+    TOP_DOWN,
+    STATIC_TOP_DOWN,
+    FRONT
+
+
+enum Fluctuator:
+    OFF,
+    INCREMENTAL,
+    RANDOM
+
+
+enum FluxDataProperty:
+    FLUX_PREFERENCE,
+    MAIN_PREFERENCE

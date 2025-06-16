@@ -52,7 +52,6 @@ rule "— Player died":
 
     eventPlayer.current_base_owner = null
     eventPlayer.active_base_owner = null
-    eventPlayer.cubic_bezier = 1
 
     if eventPlayer.death_throttle > 6:
         bigMessage(eventPlayer, "Your base probably wasn't supposed to be there.")

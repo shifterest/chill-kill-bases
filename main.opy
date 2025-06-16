@@ -3,7 +3,7 @@
 
 settings {
     "main": {
-        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.3] Last updated: 6/2/2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
+        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.4] Last updated: 6/2/2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
         "modeName": "★ Chill n' Friendly Bases ★"
     },
     "lobby": {
@@ -60,8 +60,15 @@ settings {
 #!include "rules/moderator.opy"
 #!include "rules/mount.opy"
 #!include "rules/orb.opy"
-#!include "rules/paralysis.opy"
+#!include "rules/stasis.opy"
 #!include "rules/player.opy"
 #!include "rules/special.opy"
 #!include "rules/unbound.opy"
 #!include "rules/update.opy"
+#!include "rules/fluctuator.opy"
+
+rule "— Debug HUD":
+    # @Disabled
+    @Event eachPlayer
+
+    debug(eventPlayer.preferences_flux[Preference.VOICE_PITCH])

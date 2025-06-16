@@ -17,6 +17,7 @@ globalvar keys_data
 globalvar preferences_data
 globalvar preferences_category_data
 globalvar quick_preferences_data
+globalvar preferences_flux_data
 # default preferences
 globalvar preferences_default
 # HUD
@@ -57,6 +58,7 @@ playervar base_to_fast_travel_owner
 # preferences
 playervar preferences_index
 playervar preferences
+playervar preferences_flux
 playervar isViewingAdvancedPreferences
 playervar isViewingPreferences
 playervar isAdjustingPreference
@@ -65,8 +67,8 @@ playervar isInModeratorMode
 playervar isInBaseCreationMode
 playervar isUsingKeyboard
 # status
-playervar isParalyzedByModerator
-playervar isParalyzed
+playervar isInModeratorStasis
+playervar isInStasis
 playervar isInvisible
 # chased
 playervar death_throttle
@@ -79,15 +81,15 @@ playervar mount
 playervar rider
 # IDs
 playervar chill_effect_id
-playervar sphere_effect_id
+playervar base_effect_id
 playervar icon_effect_id
 playervar description_effect_id
 playervar message_effect_id
 # miscellaneous
-playervar cubic_bezier
 playervar focused_player
 playervar previous_position
 playervar previous_position_direction
 playervar keyboard_input_character
 playervar previous_facing_direction
 playervar last_hero
+playervar flux_i

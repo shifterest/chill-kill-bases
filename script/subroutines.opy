@@ -47,5 +47,3 @@ subroutine UpdatePreferencesHUD
 subroutine UpdateProjectiles
 subroutine UpdateRider
 subroutine UpdateSizeNoclip
-subroutine ResetFlux
-subroutine UpdateFluxSettings

@@ -109,13 +109,6 @@ rule "— Populate global variables":
         null,
         ExtendedColor.AQUA
     ]
-    preferences_data[Preference.FLUCTUATOR] = [
-        "Fluctuator preferences",
-        "Configure fluctuators.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.RAINBOW
-    ]
     # Game
     preferences_data[Preference.PLAYER_MODE] = [
         "player mode",
@@ -576,104 +569,6 @@ rule "— Populate global variables":
         "Enable or disable camera collision in dream mode.",
         PreferenceType.BOOLEAN
     ]
-    preferences_data[Preference.FLUCTUATOR_MODE] = [
-        "Fluctuator mode",
-        [
-            "Configured settings won't fluctuate.",
-            "Configured settings will fluctuate in increments outside your own base.",
-            "Configured settings will fluctuate completely randomly outside own base.",
-        ],
-        PreferenceType.MULTIPLE_CHOICE,
-        ["off", "incremental", "random"],
-        null,
-        true
-    ]
-    preferences_data[Preference.FLUCTUATE_FLIGHT_ACCELERATION] = [
-        "Fluctuate flight acceleration",
-        "Fluctuate the flight acceleration of the hero.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_SIZE] = [
-        "Fluctuate hero size",
-        "Fluctuate the size of the hero.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_GRAVITY] = [
-        "Fluctuate hero gravity",
-        "Fluctuate the gravity on the hero.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_SPEED] = [
-        "Fluctuate hero speed",
-        "Fluctuate the movement speed of the hero.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_JUMP_SPEED] = [
-        "Fluctuate hero jump speed",
-        "Fluctuate the jump speed of the hero.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_VOICE_PITCH] = [
-        "Fluctuate voice pitch",
-        "Fluctuate the pitch of the hero's voice.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_DAMAGE] = [
-        "Fluctuate damage",
-        "Fluctuate the damage output percentage.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_HEALING] = [
-        "Fluctuate healing",
-        "Fluctuate the healing output percentage.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_HEALTH] = [
-        "Fluctuate health",
-        "Fluctuate the health pool percentage.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_THORNS] = [
-        "Fluctuate thorns",
-        "Fluctuate the damage reflection percentage.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_KNOCKBACK] = [
-        "Fluctuate knockback",
-        "Fluctuate the force of the knockback effect.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_PROJECTILE_SPEED] = [
-        "Fluctuate projectile speed",
-        "Fluctuate the speed of projectiles.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_PROJECTILE_GRAVITY] = [
-        "Fluctuate projectile gravity",
-        "Fluctuate the gravitational effect on projectiles.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-    preferences_data[Preference.FLUCTUATE_INVISIBILITY] = [
-        "Fluctuate invisibility",
-        "Fluctuate the invisibility state of the hero.",
-        PreferenceType.BOOLEAN,
-        null, null, true
-    ]
-
-
 
     preferences_category_data = [
         [-1, Preference.GAME, Preference.DREAM, ExtendedColor.ORANGE],
@@ -684,7 +579,6 @@ rule "— Populate global variables":
         [Preference.SPECIAL, Preference.NOCLIP, Preference.TRAMPOLINE, ExtendedColor.TURQUOISE],
         [Preference.BASE, Preference.BASE_MODE, Preference.BASE_JUMP_SPEED, ExtendedColor.ROSE],
         [Preference.DREAM, Preference.DREAM_MODE, Preference.CLIP_CAMERA, ExtendedColor.AQUA],
-        [Preference.FLUCTUATOR, Preference.FLUCTUATOR_MODE, Preference.FLUCTUATE_INVISIBILITY, ExtendedColor.RAINBOW]
     ]
 
     quick_preferences_data = [
@@ -703,24 +597,6 @@ rule "— Populate global variables":
         Preference.BASE_COLOR,
         Preference.BASE_SIZE,
         Preference.DREAM_MODE,
-        Preference.FLUCTUATOR_MODE
-    ]
-
-    preferences_flux_data = [
-        [Preference.FLUCTUATE_FLIGHT_ACCELERATION, Preference.FLIGHT_ACCELERATION],
-        [Preference.FLUCTUATE_SIZE, Preference.SIZE],
-        [Preference.FLUCTUATE_GRAVITY, Preference.GRAVITY],
-        [Preference.FLUCTUATE_SPEED, Preference.SPEED],
-        [Preference.FLUCTUATE_JUMP_SPEED, Preference.JUMP_SPEED],
-        [Preference.FLUCTUATE_VOICE_PITCH, Preference.VOICE_PITCH],
-        [Preference.FLUCTUATE_DAMAGE, Preference.DAMAGE],
-        [Preference.FLUCTUATE_HEALING, Preference.HEALING],
-        [Preference.FLUCTUATE_HEALTH, Preference.HEALTH],
-        [Preference.FLUCTUATE_THORNS, Preference.THORNS],
-        [Preference.FLUCTUATE_KNOCKBACK, Preference.KNOCKBACK],
-        [Preference.FLUCTUATE_PROJECTILE_SPEED, Preference.PROJECTILE_SPEED],
-        [Preference.FLUCTUATE_PROJECTILE_GRAVITY, Preference.PROJECTILE_GRAVITY],
-        [Preference.FLUCTUATE_INVISIBILITY, Preference.INVISIBILITY]
     ]
 
     preferences_default[Preference.GAME] = null
@@ -927,25 +803,6 @@ def LoadDefaultPreferences():
         eventPlayer.preferences[Preference.BASE_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
     if createWorkshopSetting(bool, "game preferences", "randomize chill mode effect color", true, 6):
         eventPlayer.preferences[Preference.AURA_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
-
-
-def ResetFlux():
-    @Name "— Reset flux"
-
-    eventPlayer.preferences_flux[Preference.FLIGHT_ACCELERATION] = eventPlayer.preferences[Preference.FLIGHT_ACCELERATION]
-    eventPlayer.preferences_flux[Preference.SIZE] = eventPlayer.preferences[Preference.SIZE]
-    eventPlayer.preferences_flux[Preference.GRAVITY] = eventPlayer.preferences[Preference.GRAVITY]
-    eventPlayer.preferences_flux[Preference.SPEED] = eventPlayer.preferences[Preference.SPEED]
-    eventPlayer.preferences_flux[Preference.JUMP_SPEED] = eventPlayer.preferences[Preference.JUMP_SPEED]
-    eventPlayer.preferences_flux[Preference.VOICE_PITCH] = eventPlayer.preferences[Preference.VOICE_PITCH]
-    eventPlayer.preferences_flux[Preference.DAMAGE] = eventPlayer.preferences[Preference.DAMAGE]
-    eventPlayer.preferences_flux[Preference.HEALING] = eventPlayer.preferences[Preference.HEALING]
-    eventPlayer.preferences_flux[Preference.HEALTH] = eventPlayer.preferences[Preference.HEALTH]
-    eventPlayer.preferences_flux[Preference.THORNS] = eventPlayer.preferences[Preference.THORNS]
-    eventPlayer.preferences_flux[Preference.KNOCKBACK] = eventPlayer.preferences[Preference.KNOCKBACK]
-    eventPlayer.preferences_flux[Preference.PROJECTILE_SPEED] = eventPlayer.preferences[Preference.PROJECTILE_SPEED]
-    eventPlayer.preferences_flux[Preference.PROJECTILE_GRAVITY] = eventPlayer.preferences[Preference.PROJECTILE_GRAVITY]
-    eventPlayer.preferences_flux[Preference.INVISIBILITY] = eventPlayer.preferences[Preference.INVISIBILITY]
 
 
 def HardReset():

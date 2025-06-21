@@ -17,7 +17,6 @@ globalvar keys_data
 globalvar preferences_data
 globalvar preferences_category_data
 globalvar quick_preferences_data
-globalvar preferences_flux_data
 # default preferences
 globalvar preferences_default
 # HUD
@@ -58,7 +57,6 @@ playervar base_to_fast_travel_owner
 # preferences
 playervar preferences_index
 playervar preferences
-playervar preferences_flux
 playervar isViewingAdvancedPreferences
 playervar isViewingPreferences
 playervar isAdjustingPreference
@@ -92,4 +90,3 @@ playervar previous_position_direction
 playervar keyboard_input_character
 playervar previous_facing_direction
 playervar last_hero
-playervar flux_i

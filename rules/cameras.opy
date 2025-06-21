@@ -167,14 +167,14 @@ def RearCamera():
             eventPlayer.getEyePosition() + (
                 Vector.UP * (
                     (
-                        eventPlayer.preferences_flux[Preference.SIZE]
+                        eventPlayer.preferences[Preference.SIZE]
                         if eventPlayer.preferences[Preference.PLAYER_MODE]
                         else 100
                     ) / 100
                 ) + eventPlayer.getFacingDirection()
                 * (
                     (
-                        eventPlayer.preferences_flux[Preference.SIZE]
+                        eventPlayer.preferences[Preference.SIZE]
                         if eventPlayer.preferences[Preference.PLAYER_MODE]
                         else 100
                     ) / -40
@@ -219,14 +219,14 @@ def RearSpectatorCamera():
             + (
                 Vector.UP * (
                     (
-                        eventPlayer.focused_player.preferences_flux[Preference.SIZE]
+                        eventPlayer.focused_player.preferences[Preference.SIZE]
                         if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
                         else 100
                     ) / 100
                 ) + eventPlayer.focused_player.getFacingDirection()
                 * (
                     (
-                        eventPlayer.focused_player.preferences_flux[Preference.SIZE]
+                        eventPlayer.focused_player.preferences[Preference.SIZE]
                         if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
                         else 100
                     ) / -40
@@ -270,7 +270,7 @@ def TopDownCamera():
             eventPlayer.getEyePosition() + (
                 Vector.UP * (
                     (
-                        eventPlayer.preferences_flux[Preference.SIZE]
+                        eventPlayer.preferences[Preference.SIZE]
                         if eventPlayer.preferences[Preference.PLAYER_MODE]
                         else 100
                     ) / 15
@@ -307,7 +307,7 @@ def StaticTopDownCamera():
             eventPlayer.getEyePosition() + (
                 Vector.UP * (
                     (
-                        eventPlayer.preferences_flux[Preference.SIZE]
+                        eventPlayer.preferences[Preference.SIZE]
                         if eventPlayer.preferences[Preference.PLAYER_MODE]
                         else 100
                     ) / 15
@@ -343,7 +343,7 @@ def DreamCamera():
             raycast(
                 eventPlayer.focused_player.getEyePosition(),
                 eventPlayer.focused_player.getEyePosition() + (
-                    Vector.UP * (eventPlayer.focused_player.preferences_flux[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences_flux[Preference.SIZE] / -20)
+                    Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences[Preference.SIZE] / -20)
                 ),
                 null,
                 eventPlayer,
@@ -355,7 +355,7 @@ def DreamCamera():
     else:
         eventPlayer.startCamera(
             eventPlayer.focused_player.getEyePosition() + (
-                Vector.UP * (eventPlayer.focused_player.preferences_flux[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences_flux[Preference.SIZE] / -20)
+                Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences[Preference.SIZE] / -20)
             ),
             eventPlayer.focused_player.getEyePosition(),
             5

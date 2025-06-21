@@ -48,16 +48,16 @@ def UpdateRider():
                 eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 0))
                 break
             case MountingMode.FRONT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
+                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
                 break
             case MountingMode.BACK:
-                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, -1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
+                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, -1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
                 break
             case MountingMode.LEFT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
+                eventPlayer.rider.attachTo(eventPlayer, vect(1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
                 break
             case MountingMode.RIGHT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(-1.5 * (eventPlayer.preferences_flux[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
+                eventPlayer.rider.attachTo(eventPlayer, vect(-1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
                 break
 
 

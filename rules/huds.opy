@@ -557,7 +557,7 @@ def UpdateMessage():
             + (
                 Vector.UP
                 * (
-                    (eventPlayer.preferences_flux[Preference.SIZE] / 160)
+                    (eventPlayer.preferences[Preference.SIZE] / 160)
                     if eventPlayer.preferences[Preference.PLAYER_MODE]
                     else 0.625
                 )

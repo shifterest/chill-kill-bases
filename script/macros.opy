@@ -13,9 +13,9 @@ macro orb_vector(y):
                     localPlayer.getEyePosition(),
                     localPlayer.getEyePosition()
                     + (
-                        Vector.UP * (localPlayer.preferences_flux[Preference.SIZE] / 100)
+                        Vector.UP * (localPlayer.preferences[Preference.SIZE] / 100)
                         + localPlayer.getFacingDirection()
-                        * (localPlayer.preferences_flux[Preference.SIZE] / -40)
+                        * (localPlayer.preferences[Preference.SIZE] / -40)
                         * (
                             localPlayer.preferences[Preference.THIRD_PERSON_DISTANCE]
                             / 100
@@ -98,9 +98,7 @@ macro base_in_crosshair(player):
 
 macro dynamic_preferences_index(player):
     (
-        preferences_flux_data[player.flux_i][FluxDataProperty.MAIN_PREFERENCE]
-        if player.active_base_owner != player
-        else player.preferences_index
+        player.preferences_index
         if player.isViewingAdvancedPreferences
         else quick_preferences_data[player.preferences_index]
     )
@@ -124,12 +122,12 @@ macro isOverlappingBase(vector, size, gap_size):
 macro isInMountingRange(player):
     distance(player.getRealPlayerClosestToReticle(Team.ALL), player.getPosition()) <= (
         (
-            player.preferences_flux[Preference.SIZE] * (3 / 200)
+            player.preferences[Preference.SIZE] * (3 / 200)
             if player.preferences[Preference.PLAYER_MODE]
             else 1.5
         )
         + (
-            player.getRealPlayerClosestToReticle(Team.ALL).preferences_flux[Preference.SIZE]
+            player.getRealPlayerClosestToReticle(Team.ALL).preferences[Preference.SIZE]
             * (3 / 200)
             if player.getRealPlayerClosestToReticle(Team.ALL).preferences[
                 Preference.PLAYER_MODE
@@ -204,7 +202,7 @@ macro updateHeroOutline():
 
 macro updatePitch():
     eventPlayer.startModifyingVoicelinePitch(
-        eventPlayer.preferences_flux[Preference.VOICE_PITCH] / 100, false
+        eventPlayer.preferences[Preference.VOICE_PITCH] / 100, false
     )
 
 

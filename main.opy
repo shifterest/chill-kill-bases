@@ -65,10 +65,7 @@ settings {
 #!include "rules/special.opy"
 #!include "rules/unbound.opy"
 #!include "rules/update.opy"
-#!include "rules/fluctuator.opy"
 
 rule "— Debug HUD":
     # @Disabled
     @Event eachPlayer
-
-    debug(eventPlayer.preferences_flux[Preference.VOICE_PITCH])

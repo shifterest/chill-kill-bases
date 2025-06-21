@@ -818,6 +818,5 @@ def InteractWithPreferences():
         case Preference.JUMP_SPEED:
             UpdatePhysics()
             break
-    ResetFlux()
     UpdatePreferencesHUD()
     BackupPlayer()

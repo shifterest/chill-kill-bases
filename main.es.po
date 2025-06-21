@@ -32,22 +32,22 @@ msgstr ""
 msgid "Happy chilling, {0}!"
 msgstr ""
 
-#. file base.opy, line 269, rule "— Switch hero"
+#. file base.opy, line 267, rule "— Switch hero"
 msgid "Entering hero picker..."
 msgstr ""
 
-#. file base.opy, line 301, rule "— Pack base"
+#. file base.opy, line 299, rule "— Pack base"
 msgid "Removing base..."
 msgstr ""
 
-#. file base.opy, line 347, rule "— Fast travel"
+#. file base.opy, line 345, rule "— Fast travel"
 msgid "Fast traveling to {0} {1}'s base..."
 msgstr ""
 
-#. file base.opy, line 354, rule "— Fast travel"
+#. file base.opy, line 352, rule "— Fast travel"
 msgid "Fast traveling to your base..."
 msgstr ""
 
-#. file base.opy, line 357, rule "— Fast travel"
+#. file base.opy, line 355, rule "— Fast travel"
 msgid "Fast traveling to previous position..."
 msgstr ""

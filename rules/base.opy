@@ -248,8 +248,6 @@ def ActivateFriendlyBase():
             eventPlayer.active_base_owner = eventPlayer.current_base_owner
             eventPlayer.activate_base_immediately = false
             BuffExplosionSound()
-            if eventPlayer.active_base_owner == eventPlayer:
-                ResetFlux()
         eventPlayer.base_progress = 0
     UpdateBaseEffects()
 

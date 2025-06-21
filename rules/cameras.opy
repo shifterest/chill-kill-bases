@@ -79,6 +79,8 @@ rule "— Switch shoulder":
 def UpdateCamera():
     @Name "— Update camera"
 
+    if eventPlayer.isInModeratorMode:
+        return
     if eventPlayer.isInBaseCreationMode:
         BaseCreationCamera()
     elif eventPlayer.active_base_owner == eventPlayer:

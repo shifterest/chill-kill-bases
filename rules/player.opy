@@ -30,19 +30,7 @@ rule "— Player spawned":
     @Event eachPlayer
     @Condition eventPlayer.hasSpawned()
 
-    if eventPlayer.base_vector:
-        wait(0.1)
-        if eventPlayer.previous_position_direction:
-            eventPlayer.teleport(eventPlayer.previous_position_direction[0])
-            eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
-            eventPlayer.previous_position_direction = null
-        else:
-            eventPlayer.teleport(eventPlayer.base_vector)
-        eventPlayer.activate_base_immediately = true
-        eventPlayer.startForcingPosition(eventPlayer.getPosition(), false)
-        wait(0.5)
-        eventPlayer.stopForcingPosition()
-
+    ReturnImmediately()
     if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.AMMO_OVERLOAD]:
         UpdateAmmo()
 
@@ -72,3 +60,20 @@ rule "— Player left":
     @Event playerLeft
 
     async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
+
+
+def ReturnImmediately():
+    @Name "— Return immediately"
+
+    if eventPlayer.base_vector:
+        wait(0.1)
+        if eventPlayer.previous_position_direction:
+            eventPlayer.teleport(eventPlayer.previous_position_direction[0])
+            eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
+            eventPlayer.previous_position_direction = null
+        else:
+            eventPlayer.teleport(eventPlayer.base_vector)
+        eventPlayer.activate_base_immediately = true
+        eventPlayer.startForcingPosition(eventPlayer.getPosition(), false)
+        wait(0.5)
+        eventPlayer.stopForcingPosition()

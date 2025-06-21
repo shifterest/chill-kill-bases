@@ -73,6 +73,7 @@ rule "— Switch shoulder":
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
     eventPlayer.preferences[Preference.THIRD_PERSON_OFFSET] *= -1
+    async(UpdateCamera, AsyncBehavior.RESTART)
 
 
 def UpdateCamera():
@@ -143,6 +144,31 @@ def BaseCreationCamera():
         ).getHitPosition(),
         30
     )
+    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+        wait(0.2)
+        eventPlayer.startCamera(
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.getEyePosition(),
+                    eventPlayer.getEyePosition() + (
+                        Vector.UP + eventPlayer.getFacingDirection() * eventPlayer.preferences[Preference.BASE_SIZE] * -1.5
+                    ),
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.getEyePosition(),
+                    eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            0
+        )
 
 
 def RearCamera():
@@ -195,6 +221,46 @@ def RearCamera():
         ).getHitPosition(),
         30
     )
+    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+        wait(0.2)
+        eventPlayer.startCamera(
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.getEyePosition(),
+                    eventPlayer.getEyePosition() + (
+                        Vector.UP * (
+                            (
+                                eventPlayer.preferences[Preference.SIZE]
+                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                else 100
+                            ) / 100
+                        ) + eventPlayer.getFacingDirection()
+                        * (
+                            (
+                                eventPlayer.preferences[Preference.SIZE]
+                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                else 100
+                            ) / -40
+                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                        + crossProduct(Vector.UP, eventPlayer.getFacingDirection())
+                        * eventPlayer.preferences[Preference.THIRD_PERSON_OFFSET]
+                    ),
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.getEyePosition(),
+                    eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            0
+        )
 
 def RearSpectatorCamera():
     @Name "— Enable rear spectator camera"
@@ -247,6 +313,46 @@ def RearSpectatorCamera():
         ).getHitPosition(),
         30
     )
+    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+        wait(0.2)
+        eventPlayer.startCamera(
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.focused_player.getEyePosition(),
+                    eventPlayer.focused_player.getEyePosition() + (
+                        Vector.UP * (
+                            (
+                                eventPlayer.focused_player.preferences[Preference.SIZE]
+                                if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
+                                else 100
+                            ) / 100
+                        ) + eventPlayer.focused_player.getFacingDirection()
+                        * (
+                            (
+                                eventPlayer.focused_player.preferences[Preference.SIZE]
+                                if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
+                                else 100
+                            ) / -40
+                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                        + crossProduct(Vector.UP, eventPlayer.focused_player.getFacingDirection())
+                        * eventPlayer.focused_player.preferences[Preference.THIRD_PERSON_OFFSET]
+                    ),
+                    null,
+                    eventPlayer.focused_player,
+                    false
+                ).getHitPosition()
+            ),
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.focused_player.getEyePosition(),
+                    eventPlayer.focused_player.getEyePosition() + eventPlayer.focused_player.getFacingDirection() * 100,
+                    null,
+                    eventPlayer.focused_player,
+                    false
+                ).getHitPosition()
+            ),
+            0
+        )
 
 
 def TopDownCamera():
@@ -284,6 +390,30 @@ def TopDownCamera():
         eventPlayer.getEyePosition(),
         30
     )
+    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+        wait(0.2)
+        eventPlayer.startCamera(
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.getEyePosition(),
+                    eventPlayer.getEyePosition() + (
+                        Vector.UP * (
+                            (
+                                eventPlayer.preferences[Preference.SIZE]
+                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                else 100
+                            ) / 15
+                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                        - vect(eventPlayer.getFacingDirection().x, 0, eventPlayer.getFacingDirection().z)
+                    ),
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            updateEveryFrame(eventPlayer.getEyePosition()),
+            0
+        )
 
 
 def StaticTopDownCamera():
@@ -321,6 +451,30 @@ def StaticTopDownCamera():
         eventPlayer.getEyePosition(),
         30
     )
+    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]::
+        wait(0.2)
+        eventPlayer.startCamera(
+            updateEveryFrame(
+                raycast(
+                    eventPlayer.getEyePosition(),
+                    eventPlayer.getEyePosition() + (
+                        Vector.UP * (
+                            (
+                                eventPlayer.preferences[Preference.SIZE]
+                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                else 100
+                            ) / 15
+                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                        + Vector.FORWARD
+                    ),
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            updateEveryFrame(eventPlayer.getEyePosition()),
+            0
+        )
 
 
 def DreamCamera():
@@ -350,7 +504,7 @@ def DreamCamera():
                 false
             ).getHitPosition(),
             eventPlayer.focused_player.getEyePosition(),
-            5
+            2
         )
     else:
         eventPlayer.startCamera(
@@ -358,7 +512,7 @@ def DreamCamera():
                 Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences[Preference.SIZE] / -20)
             ),
             eventPlayer.focused_player.getEyePosition(),
-            5
+            2
         )
 
 

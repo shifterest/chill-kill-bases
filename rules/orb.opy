@@ -456,7 +456,13 @@ rule "— Interact / toggle preference":
         case PreferenceType.INTERACT:
         case PreferenceType.INTERACT_BOOLEAN:
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
-            if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE:
+        case PreferenceType.KEYBOARD:
+            if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.KEYBOARD:
+                chaseInteractionProgress(
+                    0.5,
+                    not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
+                )
+            elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE:
                 chaseInteractionProgress(
                     preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0],
                     not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
@@ -474,7 +480,8 @@ rule "— Interact / toggle preference":
                         eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = true
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
                 UpdatePreferencesHUD()
-                BuffImpactSoundQuiet()
+                if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] != PreferenceType.KEYBOARD:
+                    BuffImpactSoundQuiet()
             stopChasingVariable(eventPlayer.interaction_progress)
             eventPlayer.interaction_progress = 0
             break
@@ -686,6 +693,7 @@ def InteractWithPreferences():
         case Preference.THIRD_PERSON:
         case Preference.THIRD_PERSON_DISTANCE:
         case Preference.THIRD_PERSON_OFFSET:
+        case Preference.THIRD_PERSON_SMOOTHING:
             async(UpdateCamera, AsyncBehavior.RESTART)
             break
         case Preference.SWITCH_TEAM:

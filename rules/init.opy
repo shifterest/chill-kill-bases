@@ -145,6 +145,11 @@ rule "— Populate global variables":
         PreferenceType.NUMERIC_REVERSIBLE,
         [-5, 5, 0.5, "m"]
     ]
+    preferences_data[Preference.THIRD_PERSON_SMOOTHING] = [
+        "third-person smoothing",
+        "Third-person camera smoothing is forcibly enabled in this server." if optimize else "Enable third-person camera smoothing, sacrificing accuracy.",
+        PreferenceType.BOOLEAN
+    ]
     preferences_data[Preference.SHOW_HOTKEYS] = [
         "show hotkeys",
         "Enable the display of gameplay hotkeys.",
@@ -487,17 +492,19 @@ rule "— Populate global variables":
     preferences_data[Preference.BASE_MODE] = [
         "base mode",
         [
-            "Provides protection exclusively for the player, disregarding other players.",
-            "Provides protection to other players and serves as a fast travel point for all players.",
-            "Provides protection exclusively for the player while actively repelling other players."
+            "Provides protection for the player, disregarding other players.",
+            "Provides protection and serves as a fast travel point for all players.",
+            "Provides protection for the player, actively repelling other players.",
+            "Provides protection for the player, actively damaging other players."
         ],
         PreferenceType.MULTIPLE_CHOICE,
         [
             "{} passive".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)),
             "{} friendly".format(abilityIconString(Hero.ZARYA, Button.ABILITY_1)),
-            "{} repulsive".format(iconString(Icon.NO))
+            "{} repulsive".format(iconString(Icon.NO)),
+            "{} hostile".format(abilityIconString(Hero.HAZARD, Button.ABILITY_2)),
         ],
-        [ExtendedColor.WHITE, ExtendedColor.BLUE, ExtendedColor.ORANGE]
+        [ExtendedColor.GREEN, ExtendedColor.BLUE, ExtendedColor.ORANGE, ExtendedColor.RED]
     ]
     preferences_data[Preference.BASE_COLOR] = [
         "base color",
@@ -611,6 +618,7 @@ rule "— Populate global variables":
     preferences_default[Preference.THIRD_PERSON] = ThirdPersonCamera.OFF
     preferences_default[Preference.THIRD_PERSON_DISTANCE] = 100
     preferences_default[Preference.THIRD_PERSON_OFFSET] = 1
+    preferences_default[Preference.THIRD_PERSON_SMOOTHING] = true
     preferences_default[Preference.SHOW_HOTKEYS] = true
     preferences_default[Preference.STASIS] = true
     preferences_default[Preference.STASIS_MODE] = Stasis.KNOCKED_DOWN

@@ -17,7 +17,7 @@ rule "— Prepare base":
         DestroyBase()
         async(UpdateCamera, AsyncBehavior.RESTART)
     else:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = _("Preparing base...")
+        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Preparing base..."
         eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
         chaseProgress(
             1,
@@ -117,7 +117,7 @@ def Tutorial():
         )
         eventPlayer.disableHeroHUD()
         eventPlayer.setInvisibility(Invis.ALL)
-        bigMessage(eventPlayer, _("Awesome! Now, check out the orb at the center of your base."))
+        bigMessage(eventPlayer, "Awesome! Now, check out the orb at the center of your base.")
         wait(4)
         # Look at orb
         eventPlayer.startFacing(
@@ -128,19 +128,19 @@ def Tutorial():
         )
         wait()
         eventPlayer.startCamera(eventPlayer.getEyePosition(), eventPlayer.base_vector, 30)
-        bigMessage(eventPlayer, _("You'll be able to adjust your settings here."))
+        bigMessage(eventPlayer, "You'll be able to adjust your settings here.")
         wait(4)
-        bigMessage(eventPlayer, _("Try switching things up!"))
+        bigMessage(eventPlayer, "Try switching things up!")
         wait(4)
         switch mode:
             case Mode.SLEEP:
-                bigMessage(eventPlayer, _("Sweet dreams, {}!").format(eventPlayer))
+                bigMessage(eventPlayer, "Sweet dreams, {}!".format(eventPlayer))
                 break
             case Mode.MUSIC:
-                bigMessage(eventPlayer, _("Enjoy the music, {}!").format(eventPlayer))
+                bigMessage(eventPlayer, "Enjoy the music, {}!".format(eventPlayer))
                 break
             default:
-                bigMessage(eventPlayer, _("Happy chilling, {}!").format(eventPlayer))
+                bigMessage(eventPlayer, "Happy chilling, {}!".format(eventPlayer))
                 break
         eventPlayer.stopForcingPosition()
         eventPlayer.stopFacing()
@@ -219,11 +219,30 @@ def Repel():
             Relativity.TO_WORLD,
             Impulse.CANCEL_CONTRARY_MOTION_XYZ
         )
+        if eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] == BaseMode.HOSTILE:
+            damage(
+                eventPlayer,
+                eventPlayer.current_base_owner,
+                eventPlayer.getHealth() * (
+                    eventPlayer.current_base_owner.preferences[Preference.BASE_SIZE]
+                    - distance(
+                        eventPlayer.current_base_owner.base_vector,
+                        eventPlayer.getPosition()
+                    )
+                )
+                / eventPlayer.current_base_owner.preferences[Preference.BASE_SIZE]
+            )
         wait(0.1)
     while [
         p for p in getAllPlayers()
-        if p.base_vector and eventPlayer in getPlayersInRadius(p.base_vector, p.preferences[Preference.BASE_SIZE], Team.ALL, LosCheck.OFF)
-    ][0].preferences[Preference.BASE_MODE] == BaseMode.REPULSIVE
+        if p.base_vector
+        and eventPlayer in getPlayersInRadius(
+            p.base_vector,
+            p.preferences[Preference.BASE_SIZE],
+            Team.ALL,
+            LosCheck.OFF
+        )
+    ][0].preferences[Preference.BASE_MODE] >= BaseMode.REPULSIVE
 
 
 def ActivateFriendlyBase():
@@ -264,7 +283,7 @@ rule "— Switch hero":
     @Condition eventPlayer.active_base_owner == eventPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
-    eventPlayer.progress_hud[ProgressHUD.TEXT] = _("Entering hero picker...")
+    eventPlayer.progress_hud[ProgressHUD.TEXT] = "Entering hero picker..."
     eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
     chaseProgress(
         0.6,
@@ -296,7 +315,7 @@ rule "— Pack base":
     @Condition not eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
-    eventPlayer.progress_hud[ProgressHUD.TEXT] = _("Removing base...")
+    eventPlayer.progress_hud[ProgressHUD.TEXT] = "Removing base..."
     eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
     if eventPlayer.active_base_owner == eventPlayer: 
         chaseProgress(
@@ -342,17 +361,17 @@ rule "— Fast travel":
     eventPlayer.base_to_fast_travel_owner = friendly_base_in_crosshair(eventPlayer)
 
     if eventPlayer.base_to_fast_travel_owner:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = _("Fast traveling to {} {}'s base...").format(
+        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Fast traveling to {} {}'s base...".format(
             heroIcon(eventPlayer.base_to_fast_travel_owner.getCurrentHero()),
             eventPlayer.base_to_fast_travel_owner
         )
         eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_COLOR]
     elif eventPlayer.base_vector and eventPlayer.current_base_owner != eventPlayer:
         eventPlayer.base_to_fast_travel_owner = eventPlayer
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = _("Fast traveling to your base...")
+        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Fast traveling to your base..."
         eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
     elif eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.active_base_owner and eventPlayer.previous_position:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = _("Fast traveling to previous position...")
+        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Fast traveling to previous position..."
         eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
         chaseProgress(
             0.6,

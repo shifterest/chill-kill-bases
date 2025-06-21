@@ -317,6 +317,7 @@ def UpdateAmmo():
         eventPlayer.startForcingHero(eventPlayer.last_hero)
         wait()
         eventPlayer.stopForcingCurrentHero()
+        ReturnImmediately()
         iconMessage(eventPlayer, iconString(Icon.HAPPY), "Ammo reset")
         # eventPlayer.setAmmo(0, eventPlayer.getMaxAmmo(0))
         # eventPlayer.setAmmo(1, eventPlayer.getMaxAmmo(1))

@@ -242,7 +242,7 @@ rule "— Draw global HUD":
     progressBarHud(
         localPlayer if localPlayer.progress > 0 and localPlayer.progress < 100 else null,
         localPlayer.progress,
-        _(localPlayer.progress_hud[ProgressHUD.TEXT]),
+        localPlayer.progress_hud[ProgressHUD.TEXT],
         HudPosition.TOP,
         70,
         rainbow_rgb()

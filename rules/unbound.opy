@@ -98,10 +98,10 @@ rule "— Dealt healing":
             healee.setStatusEffect(eventPlayer, Status.STUNNED, 1)
             break
         case AbilityEffect.REPEL:
-            healee.applyImpulse(directionTowards(eventPlayer.getPosition(), healee.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            healee.applyImpulse(directionTowards(eventPlayer.getPosition(), healee.getPosition()), eventHealing * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
         case AbilityEffect.ATTRACT:
-            healee.applyImpulse(directionTowards(healee.getPosition(), eventPlayer.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            healee.applyImpulse(directionTowards(healee.getPosition(), eventPlayer.getPosition()), eventHealing * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
 
     wait(0.25)

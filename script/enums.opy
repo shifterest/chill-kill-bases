@@ -50,6 +50,7 @@ enum Preference:
     THIRD_PERSON,
     THIRD_PERSON_DISTANCE,
     THIRD_PERSON_OFFSET,
+    THIRD_PERSON_SMOOTHING,
     SHOW_HOTKEYS,
     STASIS,
     STASIS_MODE,
@@ -198,7 +199,8 @@ enum PlayerMode:
 enum BaseMode:
     PASSIVE,
     FRIENDLY,
-    REPULSIVE
+    REPULSIVE,
+    HOSTILE
 
 
 enum Stasis:

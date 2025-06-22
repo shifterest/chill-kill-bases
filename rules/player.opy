@@ -43,7 +43,7 @@ rule "— Player died":
 
     if eventPlayer.death_throttle > 6:
         bigMessage(eventPlayer, "Your base probably wasn't supposed to be there.")
-        PackBase()
+        RemoveBase()
     if eventPlayer.base_vector and eventPlayer.preferences[Preference.INSTANT_RESPAWN]:
         eventPlayer.death_throttle += 1
         eventPlayer.respawn()

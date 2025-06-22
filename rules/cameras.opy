@@ -497,23 +497,23 @@ def DreamCamera():
     if eventPlayer.preferences[Preference.CLIP_CAMERA]:
         eventPlayer.startCamera(
             raycast(
-                eventPlayer.focused_player.getEyePosition(),
-                eventPlayer.focused_player.getEyePosition() + (
-                    Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences[Preference.SIZE] / -20)
+                evalOnce(eventPlayer.focused_player).getEyePosition(),
+                evalOnce(eventPlayer.focused_player).getEyePosition() + (
+                    Vector.UP * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / 100) + evalOnce(eventPlayer.focused_player).getFacingDirection() * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / -20)
                 ),
                 null,
                 eventPlayer,
                 false
             ).getHitPosition(),
-            eventPlayer.focused_player.getEyePosition(),
+            evalOnce(eventPlayer.focused_player).getEyePosition(),
             2
         )
     else:
         eventPlayer.startCamera(
-            eventPlayer.focused_player.getEyePosition() + (
-                Vector.UP * (eventPlayer.focused_player.preferences[Preference.SIZE] / 100) + eventPlayer.focused_player.getFacingDirection() * (eventPlayer.focused_player.preferences[Preference.SIZE] / -20)
+            evalOnce(eventPlayer.focused_player).getEyePosition() + (
+                Vector.UP * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / 100) + evalOnce(eventPlayer.focused_player).getFacingDirection() * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / -20)
             ),
-            eventPlayer.focused_player.getEyePosition(),
+            evalOnce(eventPlayer.focused_player).getEyePosition(),
             2
         )
 

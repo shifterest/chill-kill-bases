@@ -152,18 +152,28 @@ macro isInDifferentBase():
 
 
 macro isConfined():
-    eventPlayer.active_base_owner and eventPlayer.active_base_owner.base_vector and eventPlayer.base_vector and eventPlayer.active_base_owner == eventPlayer and eventPlayer.preferences[
-        Preference.BASE_LOCK
-    ]
+    (
+        eventPlayer.active_base_owner
+        and eventPlayer.active_base_owner.base_vector
+        and eventPlayer.base_vector
+        and eventPlayer.active_base_owner == eventPlayer
+        and eventPlayer.preferences[Preference.BASE_LOCK]
+    )
 
 
 macro isActive():
-    eventPlayer.getThrottle() != vect(
-        0, 0, 0
-    ) or eventPlayer.getFacingDirection() != eventPlayer.previous_facing_direction
+    (
+        eventPlayer.getThrottle() != vect(0, 0, 0)
+        or eventPlayer.getFacingDirection() != eventPlayer.previous_facing_direction
+    )
 
 
 # Functions
+macro recreateBase():
+    DestroyBase()
+    CreateBase()
+
+    
 macro waitLoad():
     wait(getAverageServerLoad() / 150)
 
@@ -194,7 +204,7 @@ macro updateHeroOutline():
             rainbow_rgb()
             if eventPlayer.preferences[Preference.OUTLINE_COLOR]
             == ExtendedColor.RAINBOW
-            else colors_data[eventPlayer.preferences[Preference.OUTLINE_COLOR]]
+            else extended_color_data[eventPlayer.preferences[Preference.OUTLINE_COLOR]]
         ),
         OutlineVisibility.DEFAULT
     )
@@ -236,7 +246,7 @@ macro unchaseInteractionProgress(duration):
 
 # Effects
 macro RainbowColor(color):
-    rainbow_rgb() if color == ExtendedColor.RAINBOW else colors_data[color]
+    rainbow_rgb() if color == ExtendedColor.RAINBOW else extended_color_data[color]
 
 
 macro Aura(effect, pos):
@@ -251,7 +261,7 @@ macro Aura(effect, pos):
         (
             rainbow_rgb()
             if eventPlayer.preferences[Preference.AURA_COLOR] == ExtendedColor.RAINBOW
-            else colors_data[eventPlayer.preferences[Preference.AURA_COLOR]]
+            else extended_color_data[eventPlayer.preferences[Preference.AURA_COLOR]]
         ),
         pos,
         eventPlayer.preferences[Preference.AURA_SIZE] / 100,
@@ -271,7 +281,7 @@ macro AuraHidden(effect, pos):
         (
             rainbow_rgb()
             if eventPlayer.preferences[Preference.AURA_COLOR] == ExtendedColor.RAINBOW
-            else colors_data[eventPlayer.preferences[Preference.AURA_COLOR]]
+            else extended_color_data[eventPlayer.preferences[Preference.AURA_COLOR]]
         ),
         pos,
         eventPlayer.preferences[Preference.AURA_SIZE] / 100,
@@ -286,7 +296,7 @@ macro BaseRingExplosion():
         (
             rainbow_rgb()
             if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
-            else colors_data[eventPlayer.preferences[Preference.BASE_COLOR]]
+            else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]]
         ),
         eventPlayer.base_vector,
         eventPlayer.preferences[Preference.BASE_SIZE] * 2

@@ -30,12 +30,11 @@ rule "— Dealt damage":
             victim.setStatusEffect(eventPlayer, Status.STUNNED, 1)
             break
         case AbilityEffect.REPEL:
-            victim.applyImpulse(directionTowards(eventPlayer.getPosition(), victim.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            victim.applyImpulse(directionTowards(eventPlayer.getPosition(), victim.getPosition()), min(5, eventDamage * 2), Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
         case AbilityEffect.ATTRACT:
-            victim.applyImpulse(directionTowards(victim.getPosition(), eventPlayer.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            victim.applyImpulse(directionTowards(victim.getPosition(), eventPlayer.getPosition()), min(5, eventDamage * 2), Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
-
     wait(0.25)
 
 
@@ -64,12 +63,11 @@ rule "— Received damage":
             attacker.setStatusEffect(eventPlayer, Status.STUNNED, 1)
             break
         case AbilityEffect.REPEL:
-            attacker.applyImpulse(directionTowards(eventPlayer.getPosition(), attacker.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            attacker.applyImpulse(directionTowards(eventPlayer.getPosition(), attacker.getPosition()), min(5, eventDamage * 2), Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
         case AbilityEffect.ATTRACT:
-            attacker.applyImpulse(directionTowards(attacker.getPosition(), eventPlayer.getPosition()), eventDamage * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            attacker.applyImpulse(directionTowards(attacker.getPosition(), eventPlayer.getPosition()), min(5, eventDamage * 2), Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
-
     wait(0.25)
 
 
@@ -98,10 +96,9 @@ rule "— Dealt healing":
             healee.setStatusEffect(eventPlayer, Status.STUNNED, 1)
             break
         case AbilityEffect.REPEL:
-            healee.applyImpulse(directionTowards(eventPlayer.getPosition(), healee.getPosition()), eventHealing * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            healee.applyImpulse(directionTowards(eventPlayer.getPosition(), healee.getPosition()), min(5, eventHealing * 2), Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
         case AbilityEffect.ATTRACT:
-            healee.applyImpulse(directionTowards(healee.getPosition(), eventPlayer.getPosition()), eventHealing * 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+            healee.applyImpulse(directionTowards(healee.getPosition(), eventPlayer.getPosition()), min(5, eventHealing * 2), Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
             break
-
     wait(0.25)

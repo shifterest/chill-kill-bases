@@ -19,6 +19,7 @@ enum PreferenceCategoryProperty:
 enum PreferenceType:
     CATEGORY,
     MULTIPLE_CHOICE,
+    MULTIPLE_CHOICE_RANDOMIZABLE,
     BOOLEAN,
     NUMERIC,
     NUMERIC_REVERSIBLE,
@@ -57,7 +58,7 @@ enum Preference:
     FAST_TRAVEL,
     FAST_TRAVEL_TO_OBJECTIVE,
     INSTANT_RESPAWN,
-    REMOTE_PACK_BASE,
+    REMOVE_BASE_REMOTELY,
     SWITCH_TEAM,
     RESET,
     # Hero
@@ -168,6 +169,7 @@ enum PreferencesHUD:
 
 enum OnScreenHUD:
     MAIN,
+    COLOR,
     ACTIVATION
 
 
@@ -198,6 +200,7 @@ enum PlayerMode:
 
 enum BaseMode:
     PASSIVE,
+    HIDDEN,
     FRIENDLY,
     REPULSIVE,
     HOSTILE

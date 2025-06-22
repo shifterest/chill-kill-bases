@@ -64,8 +64,7 @@ rule "— Create base":
         eventPlayer.activate_base_immediately = true
         eventPlayer.isInBaseCreationMode = false
         stopMomentum()
-        DestroyBase()
-        CreateBase()
+        recreateBase()
         BackupPlayer()
 
 
@@ -191,6 +190,7 @@ rule "— Activate base / update base mode":
                 async(ActivateFriendlyBase, AsyncBehavior.RESTART)
                 break
             case BaseMode.REPULSIVE:
+            case BaseMode.HOSTILE:
                 if eventPlayer.mount:
                     EjectFromMount()
                 async(Repel, AsyncBehavior.RESTART)
@@ -215,7 +215,7 @@ def Repel():
     do:
         eventPlayer.applyImpulse(
             directionTowards(eventPlayer.current_base_owner.base_vector, eventPlayer.getPosition()),
-            10 if eventPlayer.isOnGround() else 0.00001,
+            15,
             Relativity.TO_WORLD,
             Impulse.CANCEL_CONTRARY_MOTION_XYZ
         )
@@ -232,7 +232,7 @@ def Repel():
                 )
                 / eventPlayer.current_base_owner.preferences[Preference.BASE_SIZE]
             )
-        wait(0.1)
+        wait(0.25)
     while [
         p for p in getAllPlayers()
         if p.base_vector
@@ -293,6 +293,7 @@ rule "— Switch hero":
         or not eventPlayer.isHoldingButton(Button.RELOAD)
     )
     if eventPlayer.progress == 100:
+        Tutorial()
         if eventPlayer.rider:
             EjectRider()
         eventPlayer.previous_position_direction = [eventPlayer.getPosition(), eventPlayer.getFacingDirection()]
@@ -305,7 +306,7 @@ rule "— Switch hero":
     wait(0.5)
 
 
-rule "— Pack base":
+rule "— Remove base":
     @Event eachPlayer
     @Condition eventPlayer.progress == 0
     @Condition eventPlayer.base_vector
@@ -337,6 +338,7 @@ rule "— Pack base":
         )
     if eventPlayer.progress == 100:
         eventPlayer.base_vector = null
+        Tutorial()
         DestroyBase()
         UpdateBaseEffects()
         BackupPlayer()

@@ -11,8 +11,9 @@ globalvar player_names_backups
 globalvar base_vectors_backups
 globalvar preferences_backups
 # data
-globalvar colors_data
+globalvar extended_color_data
 globalvar keys_data
+globalvar base_mode_icon_data
 # preferences data
 globalvar preferences_data
 globalvar preferences_category_data

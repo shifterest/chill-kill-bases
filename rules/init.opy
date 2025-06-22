@@ -41,7 +41,7 @@ rule "— Populate global variables":
     ban_list = []
     moderator_list = ["{}".format(hostPlayer)]
 
-    colors_data = [
+    extended_color_data = [
         Color.WHITE,
         Color.GRAY,
         Color.BLACK,
@@ -58,6 +58,14 @@ rule "— Populate global variables":
         Color.PURPLE,
         Color.ROSE,
         "rainbow"
+    ]
+
+    base_mode_icon_data = [
+        abilityIconString(Hero.SOLDIER, Button.ABILITY_1),
+        iconString(Icon.EYE),
+        abilityIconString(Hero.ZARYA, Button.ABILITY_1),
+        iconString(Icon.NO),
+        abilityIconString(Hero.HAZARD, Button.ABILITY_2)
     ]
 
     preferences_data[Preference.GAME] = [
@@ -128,7 +136,7 @@ rule "— Populate global variables":
     preferences_data[Preference.THIRD_PERSON] = [
         "third-person camera",
         "Select a third-person camera perspective.",
-        PreferenceType.MULTIPLE_CHOICE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
         ["off", "rear", "top-down", "static top-down"],
         null,
         true
@@ -166,7 +174,7 @@ rule "— Populate global variables":
     preferences_data[Preference.STASIS_MODE] = [
         "stasis mode",
         "Select the status effect to apply during stasis.",
-        PreferenceType.MULTIPLE_CHOICE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
         ["knock down", "stun", "sleep", "freeze"],
         null,
         true
@@ -192,8 +200,8 @@ rule "— Populate global variables":
         "Initiate immediate respawn at the base after death.",
         PreferenceType.BOOLEAN
     ]
-    preferences_data[Preference.REMOTE_PACK_BASE] = [
-        "remote pack base",
+    preferences_data[Preference.REMOVE_BASE_REMOTELY] = [
+        "remove base remotely",
         "Enable remote removal of your base.",
         PreferenceType.BOOLEAN
     ]
@@ -282,7 +290,7 @@ rule "— Populate global variables":
     preferences_data[Preference.DAMAGE_EFFECT] = [
         "damage effect",
         "Select the effect applied upon dealing damage.",
-        PreferenceType.MULTIPLE_CHOICE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
@@ -298,7 +306,7 @@ rule "— Populate global variables":
     preferences_data[Preference.HEALING_EFFECT] = [
         "healing effect",
         "Select the effect applied during healing.",
-        PreferenceType.MULTIPLE_CHOICE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
@@ -322,7 +330,7 @@ rule "— Populate global variables":
     preferences_data[Preference.THORNS_EFFECT] = [
         "thorns effect",
         "Select the effect applied when reflecting damage.",
-        PreferenceType.MULTIPLE_CHOICE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
@@ -423,7 +431,7 @@ rule "— Populate global variables":
     preferences_data[Preference.AURA_EFFECT] = [
         "aura effect",
         "Select the shape of the aura effect.",
-        PreferenceType.MULTIPLE_CHOICE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
         ["sparkles", "cloud", "light shaft", "good aura", "bad aura", "ring", "sphere"],
         null,
         true
@@ -477,7 +485,7 @@ rule "— Populate global variables":
     preferences_data[Preference.MOUNTING_MODE] = [
         "mounting mode",
         "Select the preferred arrangement for mounting.",
-        PreferenceType.MULTIPLE_CHOICE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
         ["stack", "intersect", "front", "back", "left", "right"]
     ]
     preferences_data[Preference.TRAMPOLINE] = [
@@ -493,18 +501,26 @@ rule "— Populate global variables":
         "base mode",
         [
             "Provides protection for the player, disregarding other players.",
+            "Provides protection for the player, disappearing from sight.",
             "Provides protection and serves as a fast travel point for all players.",
             "Provides protection for the player, actively repelling other players.",
             "Provides protection for the player, actively damaging other players."
         ],
         PreferenceType.MULTIPLE_CHOICE,
         [
-            "{} passive".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)),
-            "{} friendly".format(abilityIconString(Hero.ZARYA, Button.ABILITY_1)),
-            "{} repulsive".format(iconString(Icon.NO)),
-            "{} hostile".format(abilityIconString(Hero.HAZARD, Button.ABILITY_2)),
+            "{} passive".format(base_mode_icon_data[BaseMode.PASSIVE]),
+            "{} hidden".format(base_mode_icon_data[BaseMode.HIDDEN]),
+            "{} friendly".format(base_mode_icon_data[BaseMode.FRIENDLY]),
+            "{} repulsive".format(base_mode_icon_data[BaseMode.REPULSIVE]),
+            "{} hostile".format(base_mode_icon_data[BaseMode.HOSTILE])
         ],
-        [ExtendedColor.GREEN, ExtendedColor.BLUE, ExtendedColor.ORANGE, ExtendedColor.RED]
+        [
+            ExtendedColor.GREEN,
+            ExtendedColor.PURPLE,
+            ExtendedColor.BLUE,
+            ExtendedColor.ORANGE,
+            ExtendedColor.RED
+        ]
     ]
     preferences_data[Preference.BASE_COLOR] = [
         "base color",
@@ -592,11 +608,13 @@ rule "— Populate global variables":
         Preference.PLAYER_MODE,
         Preference.BASE_MODE,
         Preference.THIRD_PERSON,
+        Preference.FAST_TRAVEL_TO_OBJECTIVE,
         Preference.CUSTOM_MESSAGE,
         Preference.AURA,
         Preference.SIZE,
         Preference.SPEED,
         Preference.DAMAGE,
+        Preference.HEALTH,
         Preference.THORNS,
         Preference.NOCLIP,
         Preference.INVISIBILITY,
@@ -606,13 +624,6 @@ rule "— Populate global variables":
         Preference.DREAM_MODE,
     ]
 
-    preferences_default[Preference.GAME] = null
-    preferences_default[Preference.HERO] = null
-    preferences_default[Preference.ABILITIES] = null
-    preferences_default[Preference.EFFECTS] = null
-    preferences_default[Preference.SPECIAL] = null
-    preferences_default[Preference.BASE] = null
-    preferences_default[Preference.DREAM] = null
     # Game
     preferences_default[Preference.PLAYER_MODE] = PlayerMode.CHILL
     preferences_default[Preference.THIRD_PERSON] = ThirdPersonCamera.OFF
@@ -623,11 +634,8 @@ rule "— Populate global variables":
     preferences_default[Preference.STASIS] = true
     preferences_default[Preference.STASIS_MODE] = Stasis.KNOCKED_DOWN
     preferences_default[Preference.FAST_TRAVEL] = true
-    preferences_default[Preference.FAST_TRAVEL_TO_OBJECTIVE] = null
     preferences_default[Preference.INSTANT_RESPAWN] = true
-    preferences_default[Preference.REMOTE_PACK_BASE] = true
-    preferences_default[Preference.SWITCH_TEAM] = null
-    preferences_default[Preference.RESET] = null
+    preferences_default[Preference.REMOVE_BASE_REMOTELY] = true
     # Hero
     preferences_default[Preference.OUTLINE_COLOR] = ExtendedColor.WHITE
     preferences_default[Preference.FLIGHT] = true
@@ -673,7 +681,7 @@ rule "— Populate global variables":
     preferences_default[Preference.BASE_SIZE] = 3.5
     preferences_default[Preference.BASE_GAP_SIZE] = 0
     preferences_default[Preference.BASE_LOCK] = false
-    preferences_default[Preference.BASE_NOCLIP] = null
+    preferences_default[Preference.BASE_NOCLIP] = false
     preferences_default[Preference.BASE_GRAVITY] = 100
     preferences_default[Preference.BASE_SPEED] = 100
     preferences_default[Preference.BASE_JUMP_SPEED] = 100

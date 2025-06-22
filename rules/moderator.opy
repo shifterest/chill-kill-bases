@@ -143,12 +143,12 @@ rule "— Kill / resurrect player":
                 iconMessage(eventPlayer.focused_player, iconString(Icon.SKULL), "resurrected by moderator")
             iconMessage(eventPlayer, iconString(Icon.SKULL), "{} resurrected".format(eventPlayer.focused_player))
         else:
-            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
+            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(100)
             if eventPlayer.focused_player.hasStatusEffect(Status.PHASED_OUT):
                 eventPlayer.focused_player.clearStatusEffect(Status.PHASED_OUT)
             kill(eventPlayer.focused_player, null)
-            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL or eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
+            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(0)
             DebuffImpactSoundBothFocus()
             if eventPlayer.focused_player != eventPlayer:

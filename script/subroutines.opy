@@ -14,7 +14,7 @@ subroutine HardReset
 subroutine InitializePlayer
 subroutine InteractWithPreferences
 subroutine LoadDefaultPreferences
-subroutine PackBase
+subroutine RemoveBase
 subroutine Repel
 subroutine ActivateFriendlyBase
 subroutine ActivateOwnBase
@@ -48,3 +48,4 @@ subroutine UpdateProjectiles
 subroutine UpdateRider
 subroutine UpdateSizeNoclip
 subroutine ReturnImmediately
+subroutine SwitchSpectatedPlayer

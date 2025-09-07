@@ -1,10 +1,9 @@
 #!suppressWarnings w_ow2_rule_condition_chase
-#!translations en es ja ko zh ru fr
 
 settings {
     "main": {
-        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.3] Last updated: 6/2/2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
-        "modeName": "★ Chill n' Friendly Bases ★"
+        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.62] Last updated: June 25, 2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
+        "modeName": "★ Chill Bases · Updated! ★"
     },
     "lobby": {
         "allowPlayersInQueue": true,
@@ -60,8 +59,12 @@ settings {
 #!include "rules/moderator.opy"
 #!include "rules/mount.opy"
 #!include "rules/orb.opy"
-#!include "rules/paralysis.opy"
+#!include "rules/stasis.opy"
 #!include "rules/player.opy"
 #!include "rules/special.opy"
 #!include "rules/unbound.opy"
 #!include "rules/update.opy"
+
+rule "— Debug HUD":
+    # @Disabled
+    @Event eachPlayer

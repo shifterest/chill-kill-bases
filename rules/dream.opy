@@ -11,32 +11,12 @@ def DreamMode():
     eventPlayer.previous_facing_direction = eventPlayer.getFacingDirection()
     eventPlayer.disableHeroHUD()
     UpdatePhase()
-    DreamCamera()
-
     waitUntil(eventPlayer.isHoldingButton(Button.JUMP) or isActive(), Math.INFINITY)
-
     eventPlayer.preferences[Preference.DREAM_MODE] = false
     eventPlayer.enableHeroHud()
     UpdatePhase()
     async(UpdateCamera, AsyncBehavior.RESTART)
     eventPlayer.focused_player = null
-
-
-rule "— Dream on AFK":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.AFK_TIMER] > 0
-    @Condition eventPlayer.preferences[Preference.AFK_TIMER] * 60 == eventPlayer.afk_timer
-
-    if (
-        eventPlayer.isInModeratorMode
-        or eventPlayer.isUsingKeyboard
-        or eventPlayer.preferences[Preference.DREAM_MODE]
-        or eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
-    ):
-        return
-
-    eventPlayer.preferences[Preference.DREAM_MODE] = true
-    DreamMode()
 
 
 rule "— Switch spectated player":
@@ -54,10 +34,9 @@ rule "— Switch spectated player":
                 and not p.isInvisible
             ]
         )
-
         if not eventPlayer.focused_player:
             eventPlayer.focused_player = eventPlayer
-
+        DreamCamera()
         waitUntil(
             not eventPlayer.preferences[Preference.DREAM_MODE]
             or not eventPlayer.focused_player.hasSpawned()
@@ -65,6 +44,22 @@ rule "— Switch spectated player":
             eventPlayer.preferences[Preference.SWITCH_TIMER]
         )
     while RULE_CONDITION
+
+
+rule "— Dream on AFK":
+    @Event eachPlayer
+    @Condition eventPlayer.preferences[Preference.AFK_TIMER] > 0
+    @Condition eventPlayer.preferences[Preference.AFK_TIMER] * 60 == eventPlayer.afk_timer
+
+    if (
+        eventPlayer.isInModeratorMode
+        or eventPlayer.isUsingKeyboard
+        or eventPlayer.preferences[Preference.DREAM_MODE]
+        or eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
+    ):
+        return
+    eventPlayer.preferences[Preference.DREAM_MODE] = true
+    DreamMode()
 
 
 rule "— Reset AFK timer":

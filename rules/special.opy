@@ -12,8 +12,7 @@ rule "— Trampoline mode":
     @Condition eventPlayer.isOnGround()
     @Condition not eventPlayer.isHoldingButton(Button.CROUCH)
 
-    eventPlayer.startForcingButton(Button.JUMP)
-    wait()
-    eventPlayer.stopForcingButton(Button.JUMP)
-    # eventPlayer.applyImpulse(Vector.UP, 10, Relativity.TO_PLAYER, Impulse.INCORPORATE_CONTRARY_MOTION)
-    wait(0.25)
+    do:
+        eventPlayer.applyImpulse(Vector.UP, 10, Relativity.TO_PLAYER, Impulse.CANCEL_CONTRARY_MOTION_XYZ)
+        wait(0.25)
+    while RULE_CONDITION

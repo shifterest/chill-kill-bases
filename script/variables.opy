@@ -11,8 +11,9 @@ globalvar player_names_backups
 globalvar base_vectors_backups
 globalvar preferences_backups
 # data
-globalvar colors_data
+globalvar extended_color_data
 globalvar keys_data
+globalvar base_mode_icon_data
 # preferences data
 globalvar preferences_data
 globalvar preferences_category_data
@@ -65,8 +66,8 @@ playervar isInModeratorMode
 playervar isInBaseCreationMode
 playervar isUsingKeyboard
 # status
-playervar isParalyzedByModerator
-playervar isParalyzed
+playervar isInModeratorStasis
+playervar isInStasis
 playervar isInvisible
 # chased
 playervar death_throttle
@@ -79,12 +80,11 @@ playervar mount
 playervar rider
 # IDs
 playervar chill_effect_id
-playervar sphere_effect_id
+playervar base_effect_id
 playervar icon_effect_id
 playervar description_effect_id
 playervar message_effect_id
 # miscellaneous
-playervar cubic_bezier
 playervar focused_player
 playervar previous_position
 playervar previous_position_direction

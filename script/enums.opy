@@ -19,8 +19,10 @@ enum PreferenceCategoryProperty:
 enum PreferenceType:
     CATEGORY,
     MULTIPLE_CHOICE,
+    MULTIPLE_CHOICE_RANDOMIZABLE,
     BOOLEAN,
     NUMERIC,
+    NUMERIC_REVERSIBLE,
     INTERACT, # duration
     INTERACT_MULTIPLE_CHOICE,
     INTERACT_BOOLEAN, # duration
@@ -48,13 +50,15 @@ enum Preference:
     PLAYER_MODE,
     THIRD_PERSON,
     THIRD_PERSON_DISTANCE,
+    THIRD_PERSON_OFFSET,
+    THIRD_PERSON_SMOOTHING,
     SHOW_HOTKEYS,
-    SELF_PARALYSIS,
-    PARALYSIS_MODE,
+    STASIS,
+    STASIS_MODE,
     FAST_TRAVEL,
     FAST_TRAVEL_TO_OBJECTIVE,
     INSTANT_RESPAWN,
-    REMOTE_PACK_BASE,
+    REMOVE_BASE_REMOTELY,
     SWITCH_TEAM,
     RESET,
     # Hero
@@ -110,7 +114,7 @@ enum Preference:
     DREAM_MODE,
     AFK_TIMER,
     SWITCH_TIMER,
-    CLIP_CAMERA
+    CLIP_CAMERA,
 
 
 enum AbilityEffect:
@@ -165,13 +169,16 @@ enum PreferencesHUD:
 
 enum OnScreenHUD:
     MAIN,
+    COLOR,
     ACTIVATION
 
 
 enum ExtendedColor:
     WHITE,
+    LIGHT_GRAY,
     GRAY,
     BLACK,
+    LIGHT_RED,
     RED,
     ORANGE,
     YELLOW,
@@ -181,7 +188,9 @@ enum ExtendedColor:
     TURQUOISE,
     SKY_BLUE,
     BLUE,
+    LIGHT_VIOLET,
     VIOLET,
+    LIGHT_PURPLE,
     PURPLE,
     ROSE,
     RAINBOW
@@ -195,11 +204,13 @@ enum PlayerMode:
 
 enum BaseMode:
     PASSIVE,
+    HIDDEN,
     FRIENDLY,
-    REPULSIVE
+    REPULSIVE,
+    HOSTILE
 
 
-enum Paralysis:
+enum Stasis:
     KNOCKED_DOWN,
     STUNNED,
     ASLEEP,
@@ -241,3 +252,11 @@ enum MountingMode:
 enum SpecialChar:
     BACKSPACE = 1,
     EXIT
+
+
+enum ThirdPersonCamera:
+    OFF,
+    REAR,
+    TOP_DOWN,
+    STATIC_TOP_DOWN,
+    FRONT

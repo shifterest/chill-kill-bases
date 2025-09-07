@@ -22,7 +22,7 @@ rule "— Mount to player":
     eventPlayer.mount = eventPlayer.getRealPlayerClosestToReticle(Team.ALL)
     eventPlayer.mount.rider = eventPlayer
     iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "mounted to {}".format(eventPlayer.mount))
-    BuffSound()
+    BuffExplosionSound()
     wait(1)
 
 
@@ -77,7 +77,7 @@ def EjectFromMount():
     eventPlayer.mount.rider = null
     eventPlayer.mount = null
     eventPlayer.detach()
-    BuffSound()
+    DebuffImpactSound()
 
 
 rule "— Eject from mount on kill mode / mount disconnect":
@@ -115,7 +115,7 @@ def EjectRider():
         )
     eventPlayer.rider.mount = null
     eventPlayer.rider = null
-    BuffSound()
+    DebuffImpactSound()
 
 
 rule "— Eject rider on rider disconnect":

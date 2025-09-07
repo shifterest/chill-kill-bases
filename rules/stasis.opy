@@ -1,56 +1,56 @@
 #!mainFile "../main.opy"
 
-rule "Paralysis":
+rule "Stasis":
     @Disabled
     @Delimiter
 
 
-rule "— Self-paralyze":
+rule "— Enter stasis":
     @Event eachPlayer
     @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.SELF_PARALYSIS]
+    @Condition eventPlayer.preferences[Preference.STASIS]
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
     @Condition not eventPlayer.isInModeratorMode
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isViewingPreferences
 
-    if eventPlayer.isParalyzed:
-        Unparalyze()
+    if eventPlayer.isInStasis:
+        ExitStasis()
     else:
-        eventPlayer.isParalyzed = true
-        iconMessage(eventPlayer, abilityIconString(Hero.ANA, Button.ABILITY_1), "paralyzed!")
+        eventPlayer.isInStasis = true
+        iconMessage(eventPlayer, abilityIconString(Hero.ANA, Button.ABILITY_1), "Entered stasis!")
     wait(1)
 
 
-def Unparalyze():
-    @Name "— Unparalyze"
+def ExitStasis():
+    @Name "— Exit stasis"
 
-    eventPlayer.isParalyzed = false
-    if not eventPlayer.isParalyzedByModerator:
-        switch eventPlayer.preferences[Preference.PARALYSIS_MODE]:
-            case Paralysis.KNOCKED_DOWN:
+    eventPlayer.isInStasis = false
+    if not eventPlayer.isInModeratorStasis:
+        switch eventPlayer.preferences[Preference.STASIS_MODE]:
+            case Stasis.KNOCKED_DOWN:
                 eventPlayer.clearStatusEffect(Status.KNOCKED_DOWN)
                 break
-            case Paralysis.STUNNED:
+            case Stasis.STUNNED:
                 eventPlayer.clearStatusEffect(Status.STUNNED)
                 break
-            case Paralysis.ASLEEP:
+            case Stasis.ASLEEP:
                 eventPlayer.clearStatusEffect(Status.ASLEEP)
                 break
-            case Paralysis.FROZEN:
+            case Stasis.FROZEN:
                 eventPlayer.clearStatusEffect(Status.FROZEN)
                 break
-    iconMessage(eventPlayer, iconString(Icon.BOLT), "unparalyzed!")
+    iconMessage(eventPlayer, iconString(Icon.BOLT), "Exited stasis!")
 
 
-rule "— Keep paralysis inflicted":
+rule "— Enter / remain in stasis":
     @Event eachPlayer
-    @Condition eventPlayer.isParalyzedByModerator or eventPlayer.isParalyzed
+    @Condition eventPlayer.isInModeratorStasis or eventPlayer.isInStasis
 
     do:
-        switch eventPlayer.preferences[Preference.PARALYSIS_MODE]:
-            case Paralysis.KNOCKED_DOWN:
+        switch eventPlayer.preferences[Preference.STASIS_MODE]:
+            case Stasis.KNOCKED_DOWN:
                 if not eventPlayer.hasStatusEffect(Status.KNOCKED_DOWN):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
@@ -59,7 +59,7 @@ rule "— Keep paralysis inflicted":
                     else:
                         eventPlayer.setStatusEffect(null, Status.KNOCKED_DOWN, Math.INFINITY)
                 break
-            case Paralysis.STUNNED:
+            case Stasis.STUNNED:
                 if not eventPlayer.hasStatusEffect(Status.STUNNED):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
@@ -68,7 +68,7 @@ rule "— Keep paralysis inflicted":
                     else:
                         eventPlayer.setStatusEffect(null, Status.STUNNED, Math.INFINITY)
                 break
-            case Paralysis.ASLEEP:
+            case Stasis.ASLEEP:
                 if not eventPlayer.hasStatusEffect(Status.ASLEEP):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)
@@ -77,7 +77,7 @@ rule "— Keep paralysis inflicted":
                     else:
                         eventPlayer.setStatusEffect(null, Status.ASLEEP, Math.INFINITY)
                 break
-            case Paralysis.FROZEN:
+            case Stasis.FROZEN:
                 if not eventPlayer.hasStatusEffect(Status.FROZEN):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):
                         eventPlayer.clearStatusEffect(Status.PHASED_OUT)

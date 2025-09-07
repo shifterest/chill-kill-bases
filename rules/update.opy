@@ -67,6 +67,9 @@ def UpdateBaseEffects():
     UpdateSizeNoclip()
     UpdatePhysics()
     UpdateHUD()
+    UpdateInvisibility()
+    if eventPlayer.preferences[Preference.THIRD_PERSON] != ThirdPersonCamera.OFF:
+        UpdateCamera()
 
 
 def UpdateAbilities():
@@ -220,12 +223,12 @@ def UpdateSizeNoclip():
     else:
         eventPlayer.stopScalingSize()
 
-    if eventPlayer.current_base_owner:
+    if eventPlayer.current_base_owner and eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] != BaseMode.HIDDEN:
         if eventPlayer.current_base_owner.preferences[Preference.BASE_NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()
-    elif eventPlayer.preferences[Preference.PLAYER_MODE]:
+    elif eventPlayer.preferences[Preference.PLAYER_MODE] >= PlayerMode.CHILL:
         if eventPlayer.preferences[Preference.NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
         elif eventPlayer.preferences[Preference.SIZE] > 100:
@@ -239,7 +242,7 @@ def UpdateSizeNoclip():
 def UpdatePhysics():
     @Name "— Update gravity and speeds"
 
-    if eventPlayer.current_base_owner:
+    if eventPlayer.current_base_owner and eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] != BaseMode.HIDDEN:
         eventPlayer.setGravity(eventPlayer.current_base_owner.preferences[Preference.BASE_GRAVITY])
         eventPlayer.setMoveSpeed(eventPlayer.current_base_owner.preferences[Preference.BASE_SPEED])
         eventPlayer.setJumpVerticalSpeed(eventPlayer.current_base_owner.preferences[Preference.BASE_JUMP_SPEED])
@@ -267,7 +270,13 @@ def UpdateProjectiles():
 def UpdateInvisibility():
     @Name "— Update invisibility"
 
-    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.INVISIBILITY]:
+    if (
+        eventPlayer.preferences[Preference.PLAYER_MODE]
+        and eventPlayer.preferences[Preference.INVISIBILITY]
+    ) or (
+        eventPlayer.active_base_owner == eventPlayer
+        and eventPlayer.preferences[Preference.BASE_MODE] == BaseMode.HIDDEN
+    ):
         eventPlayer.setInvisibility(Invis.ENEMIES)
         eventPlayer.isInvisible = true
     else:
@@ -281,9 +290,8 @@ def UpdatePhase():
     if eventPlayer.active_base_owner == eventPlayer:
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
     elif (
-        eventPlayer.active_base_owner.preferences[Preference.BASE_MODE]
-        == BaseMode.FRIENDLY
-        or (eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN)
+        eventPlayer.active_base_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
+        or eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN
         or eventPlayer.preferences[Preference.DREAM_MODE]
     ):
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
@@ -315,6 +323,7 @@ def UpdateAmmo():
         eventPlayer.startForcingHero(eventPlayer.last_hero)
         wait()
         eventPlayer.stopForcingCurrentHero()
+        ReturnImmediately()
         iconMessage(eventPlayer, iconString(Icon.HAPPY), "Ammo reset")
         # eventPlayer.setAmmo(0, eventPlayer.getMaxAmmo(0))
         # eventPlayer.setAmmo(1, eventPlayer.getMaxAmmo(1))

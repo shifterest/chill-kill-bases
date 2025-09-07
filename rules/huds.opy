@@ -32,7 +32,7 @@ rule "— Draw global HUD":
         if ("{}".format(localPlayer) in moderator_list.concat(god_list) or localPlayer == hostPlayer)
         and not localPlayer.preferences[Preference.DREAM_MODE]
         else null,
-        t"{} current • {} mean • {} peak".format(
+        "{} current • {} mean • {} peak".format(
             getServerLoad(), getAverageServerLoad(), getPeakServerLoad()
         ),
         HudPosition.TOP,
@@ -62,7 +62,7 @@ rule "— Draw global HUD":
         and not localPlayer.preferences[Preference.DREAM_MODE]
         else null,
         "{} + {} • toggle moderator mode\n ".format(
-            buttonString(Button.CROUCH), buttonString(Button.RELOAD)
+            buttonToString(Button.CROUCH), buttonToString(Button.RELOAD)
         ) if localPlayer.preferences[Preference.SHOW_HOTKEYS] else " ",
         HudPosition.TOP,
         2,
@@ -79,21 +79,25 @@ rule "— Draw global HUD":
         localPlayer.onscreen_hud[OnScreenHUD.MAIN],
         HudPosition.TOP,
         3,
-        colors_data[preferences_data[Preference.PLAYER_MODE][PreferenceProperty.COLORS][localPlayer.preferences[Preference.PLAYER_MODE]]],
+        rainbow_rgb()
+        if localPlayer.onscreen_hud[OnScreenHUD.COLOR] == ExtendedColor.RAINBOW
+        else localPlayer.onscreen_hud[OnScreenHUD.COLOR],
         HudReeval.VISIBILITY_STRING_AND_COLOR,
         SpecVisibility.NEVER
     )
     # moderator mode
     hudSubtext(
         localPlayer if localPlayer.isInModeratorMode else null,
-        "{} {}{} • {}".format(
+        "{} {}{} • {} • {}".format(
             heroIcon(localPlayer.focused_player.getCurrentHero()),
             localPlayer.focused_player,
             " (host)" if localPlayer.focused_player == hostPlayer
             else " (god)" if "{}".format(localPlayer.focused_player) in god_list
             else " (moderator)" if "{}".format(localPlayer.focused_player) in moderator_list
             else "",
-            preferences_data[Preference.PLAYER_MODE][PreferenceProperty.PARAMETERS][localPlayer.focused_player.preferences[Preference.PLAYER_MODE]]
+            preferences_data[Preference.PLAYER_MODE][PreferenceProperty.PARAMETERS][localPlayer.focused_player.preferences[Preference.PLAYER_MODE]],
+            preferences_data[Preference.BASE_MODE][PreferenceProperty.PARAMETERS][localPlayer.focused_player.preferences[Preference.BASE_MODE]]
+            if localPlayer.focused_player.base_vector else "no base"
         ),
         HudPosition.TOP,
         3,
@@ -103,36 +107,36 @@ rule "— Draw global HUD":
     )
     hudSubheader(
         localPlayer if localPlayer.preferences[Preference.SHOW_HOTKEYS] else null,
-        "{} {} • switch players • {} {}\n{} • paralyze / unparalyze\n{} • kill / resurrect\n{} • ban / unban text and voice chat{}\nhold {} • teleport to player\nhold {} • teleport player to you\nhold {} • remove base\nhold {} + {} • ban player".format(
-            buttonString(Button.PRIMARY_FIRE),
+        "{} {} • switch players • {} {}\n{} • apply / remove stasis\n{} • kill / resurrect\n{} • ban / unban text and voice chat{}\nhold {} • teleport to player\nhold {} • teleport player to you\nhold {} • remove base\nhold {} + {} • ban player".format(
+            buttonToString(Button.PRIMARY_FIRE),
             iconString(Icon.ARROW_LEFT),
             iconString(Icon.ARROW_RIGHT),
-            buttonString(Button.SECONDARY_FIRE),
-            buttonString(Button.JUMP),
-            buttonString(Button.RELOAD),
-            buttonString(Button.MELEE),
+            buttonToString(Button.SECONDARY_FIRE),
+            buttonToString(Button.JUMP),
+            buttonToString(Button.RELOAD),
+            buttonToString(Button.MELEE),
             "\n{} • promote player / demote moderator".format(
-                buttonString(Button.ABILITY_2)
+                buttonToString(Button.ABILITY_2)
             )
             if localPlayer == hostPlayer else "",
-            buttonString(Button.ULTIMATE),
-            buttonString(Button.INTERACT),
-            buttonString(Button.ABILITY_1),
-            buttonString(Button.CROUCH),
-            buttonString(Button.MELEE)
+            buttonToString(Button.ULTIMATE),
+            buttonToString(Button.INTERACT),
+            buttonToString(Button.ABILITY_1),
+            buttonToString(Button.CROUCH),
+            buttonToString(Button.MELEE)
         )
         if localPlayer.isInModeratorMode else
-        "{}{}{}{}{}{}{}".format(
+        "{}{}{}{}{}{}{}{}".format(
             "{} • create base\n{} • cancel\n".format(
-                buttonString(Button.PRIMARY_FIRE), buttonString(Button.INTERACT)
+                buttonToString(Button.PRIMARY_FIRE), buttonToString(Button.INTERACT)
             )
             if localPlayer.isInBaseCreationMode
-            else "hold {} • create base\n".format(buttonString(Button.INTERACT))
+            else "hold {} • create base\n".format(buttonToString(Button.INTERACT))
             if not localPlayer.base_vector
             else "",
             "{}".format(
                 "hold {} • fast travel to {} {}'s base\n".format(
-                    buttonString(Button.MELEE),
+                    buttonToString(Button.MELEE),
                     heroIcon(friendly_base_in_crosshair(localPlayer).getCurrentHero()),
                     friendly_base_in_crosshair(localPlayer)
                 )
@@ -142,7 +146,7 @@ rule "— Draw global HUD":
                     or not localPlayer.preferences[Preference.PLAYER_MODE]
                     and localPlayer.active_base_owner
                 )
-                else "hold {} • fast travel to your base\n".format(buttonString(Button.MELEE))
+                else "hold {} • fast travel to your base\n".format(buttonToString(Button.MELEE))
                 if localPlayer.base_vector
                 and localPlayer.active_base_owner != localPlayer
                 and (
@@ -150,7 +154,7 @@ rule "— Draw global HUD":
                     or not localPlayer.preferences[Preference.PLAYER_MODE]
                     and localPlayer.active_base_owner
                 )
-                else "hold {} • fast travel to last position\n".format(buttonString(Button.MELEE))
+                else "hold {} • fast travel to last position\n".format(buttonToString(Button.MELEE))
                 if localPlayer.preferences[Preference.PLAYER_MODE]
                 and localPlayer.active_base_owner == localPlayer
                 and localPlayer.previous_position
@@ -163,41 +167,47 @@ rule "— Draw global HUD":
                 # and localPlayer.active_base_owner == localPlayer
             )
             else "",
-            "hold {} • switch hero\nhold {} • pack base\n".format(
-                buttonString(Button.RELOAD), buttonString(Button.INTERACT)
+            "hold {} • switch hero\nhold {} • remove base\n".format(
+                buttonToString(Button.RELOAD), buttonToString(Button.INTERACT)
             )
             if localPlayer.active_base_owner == localPlayer
             else "",
             "{} + {} • {}\n".format(
-                buttonString(Button.CROUCH), buttonString(Button.MELEE),
-                "self-unparalyze" if localPlayer.isParalyzed else "self-paralyze"
+                buttonToString(Button.CROUCH), buttonToString(Button.MELEE),
+                "exit stasis" if localPlayer.isInStasis else "enter stasis"
             )
             if localPlayer.preferences[Preference.PLAYER_MODE]
-            and localPlayer.preferences[Preference.SELF_PARALYSIS]
+            and localPlayer.preferences[Preference.STASIS]
             else "",
-            "hold {} + {} • pack base\n".format(
-                buttonString(Button.CROUCH), buttonString(Button.INTERACT)
+            "{} + {} • switch shoulder\n".format(
+                buttonToString(Button.INTERACT), buttonToString(Button.MELEE)
+            )
+            if localPlayer.preferences[Preference.THIRD_PERSON] == ThirdPersonCamera.REAR
+            and localPlayer.preferences[Preference.THIRD_PERSON_OFFSET] != 0
+            else "",
+            "hold {} + {} • remove base\n".format(
+                buttonToString(Button.CROUCH), buttonToString(Button.INTERACT)
             )
             if localPlayer.base_vector
             and localPlayer.active_base_owner != localPlayer
-            and localPlayer.preferences[Preference.REMOTE_PACK_BASE]
+            and localPlayer.preferences[Preference.REMOVE_BASE_REMOTELY]
             else "",
             "{} + {} • eject {} {}\n".format(
-                buttonString(Button.PRIMARY_FIRE),
-                buttonString(Button.SECONDARY_FIRE),
+                buttonToString(Button.PRIMARY_FIRE),
+                buttonToString(Button.SECONDARY_FIRE),
                 heroIcon(localPlayer.rider.getCurrentHero()),
                 localPlayer.rider
             )
             if localPlayer.rider else "",
             "{} + {} • eject from {} {}".format(
-                buttonString(Button.ABILITY_1),
-                buttonString(Button.INTERACT),
+                buttonToString(Button.ABILITY_1),
+                buttonToString(Button.INTERACT),
                 heroIcon(localPlayer.mount.getCurrentHero()),
                 localPlayer.mount
             )
             if localPlayer.mount
             else "{} • ride {} {}".format(
-                buttonString(Button.INTERACT),
+                buttonToString(Button.INTERACT),
                 heroIcon(localPlayer.getRealPlayerClosestToReticle(Team.ALL).getCurrentHero()),
                 localPlayer.getRealPlayerClosestToReticle(Team.ALL)
             )
@@ -232,7 +242,7 @@ rule "— Draw global HUD":
         HudReeval.VISIBILITY,
         SpecVisibility.NEVER
     )
-    # commmon progress bar
+    # Progress HUD
     progressBarHud(
         localPlayer if localPlayer.progress > 0 and localPlayer.progress < 100 else null,
         localPlayer.progress,
@@ -241,7 +251,7 @@ rule "— Draw global HUD":
         70,
         rainbow_rgb()
         if localPlayer.progress_hud[ProgressHUD.COLOR] == ExtendedColor.RAINBOW
-        else colors_data[localPlayer.progress_hud[ProgressHUD.COLOR]],
+        else extended_color_data[localPlayer.progress_hud[ProgressHUD.COLOR]],
         Color.WHITE,
         ProgressHudReeval.VISIBILITY_VALUES_AND_COLOR,
         SpecVisibility.NEVER
@@ -256,7 +266,7 @@ rule "— Draw global HUD":
         rainbow_rgb()
         if localPlayer.current_base_owner.preferences[Preference.BASE_COLOR]
         == ExtendedColor.RAINBOW
-        else colors_data[
+        else extended_color_data[
             localPlayer.current_base_owner.preferences[Preference.BASE_COLOR]
         ],
         Color.WHITE,
@@ -332,7 +342,7 @@ rule "— Draw global HUD":
         rainbow_rgb()
         if localPlayer.active_base_owner.preferences[Preference.BASE_COLOR]
         == ExtendedColor.RAINBOW
-        else colors_data[
+        else extended_color_data[
             localPlayer.active_base_owner.preferences[Preference.BASE_COLOR]
         ],
         localPlayer.active_base_owner.base_vector,
@@ -346,30 +356,48 @@ rule "— Draw global HUD":
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
         or localPlayer.preferences[Preference.DREAM_MODE]
-        or localPlayer.cubic_bezier > 0.3
         else localPlayer,
         Effect.ORB,
         rainbow_rgb()
         if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
-        else colors_data[localPlayer.preferences[Preference.BASE_COLOR]],
+        else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
         localPlayer.base_vector,
         orb_radius,
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
+    # adjusting preferences indicator
     createEffect(
         null
         if localPlayer.active_base_owner != localPlayer
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
         or localPlayer.preferences[Preference.DREAM_MODE]
-        or localPlayer.cubic_bezier <= 0.3
+        or not localPlayer.isViewingPreferences
         else localPlayer,
-        Effect.SPHERE,
+        Effect.LIGHT_SHAFT,
         rainbow_rgb()
         if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
-        else colors_data[localPlayer.preferences[Preference.BASE_COLOR]],
+        else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
         localPlayer.base_vector,
-        orb_radius + ((localPlayer.preferences[Preference.BASE_SIZE] - orb_radius) * (localPlayer.cubic_bezier ** 3)),
+        orb_radius,
+        EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+    )
+    # advanced preferences indicator
+    createEffect(
+        null
+        if localPlayer.active_base_owner != localPlayer
+        or localPlayer.isInModeratorMode
+        or localPlayer.isUsingKeyboard
+        or localPlayer.preferences[Preference.DREAM_MODE]
+        or not localPlayer.isViewingPreferences
+        or not localPlayer.isViewingAdvancedPreferences
+        else localPlayer,
+        Effect.RING,
+        rainbow_rgb()
+        if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
+        else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
+        localPlayer.base_vector,
+        orb_radius + 0.5,
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
 
@@ -378,7 +406,10 @@ def UpdateHUD():
     @Name "— Update HUD"
 
     if eventPlayer.active_base_owner == eventPlayer:
-        eventPlayer.onscreen_hud[OnScreenHUD.MAIN] = "Look at the center orb to change your preferences"
+        eventPlayer.onscreen_hud[OnScreenHUD.MAIN] = "Your base is currently in {} mode".format(
+            preferences_data[Preference.BASE_MODE][PreferenceProperty.PARAMETERS][eventPlayer.preferences[Preference.BASE_MODE]]
+        )
+        eventPlayer.onscreen_hud[OnScreenHUD.COLOR] = extended_color_data[preferences_data[Preference.BASE_MODE][PreferenceProperty.COLORS][eventPlayer.preferences[Preference.BASE_MODE]]]
     else:
         eventPlayer.onscreen_hud[OnScreenHUD.MAIN] = "You are currently{} in {} mode".format(
             " invisible"
@@ -387,6 +418,7 @@ def UpdateHUD():
             else "",
             preferences_data[Preference.PLAYER_MODE][PreferenceProperty.PARAMETERS][eventPlayer.preferences[Preference.PLAYER_MODE]]
         )
+        eventPlayer.onscreen_hud[OnScreenHUD.COLOR] = extended_color_data[preferences_data[Preference.PLAYER_MODE][PreferenceProperty.COLORS][eventPlayer.preferences[Preference.PLAYER_MODE]]]
 
     eventPlayer.onscreen_hud[OnScreenHUD.ACTIVATION] = "entering {}{} {}...".format(
         heroIcon(eventPlayer.current_base_owner.getCurrentHero()) if eventPlayer.current_base_owner != eventPlayer else "",
@@ -395,12 +427,9 @@ def UpdateHUD():
     )
 
     if eventPlayer.base_vector:
-        eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON] = [
-            abilityIconString(Hero.SOLDIER, Button.ABILITY_1),
-            abilityIconString(Hero.ZARYA, Button.ABILITY_1),
-            iconString(Icon.NO),
-            abilityIconString(Hero.CASSIDY, Button.ULTIMATE)
-        ][eventPlayer.preferences[Preference.BASE_MODE]]
+        eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON] = base_mode_icon_data[
+            eventPlayer.preferences[Preference.BASE_MODE]
+        ]
         eventPlayer.in_world_hud[InWorldHUD.BASE_SUMMARY] = ""
         if eventPlayer.preferences[Preference.BASE_GRAVITY] != 100:
             eventPlayer.in_world_hud[InWorldHUD.BASE_SUMMARY] = "{} • {} gravity".format(
@@ -435,8 +464,8 @@ def UpdateModeratorListHUD():
         moderator_list_hud = "\n\nmoderators:{}".format(moderator_list_hud)
 
 
-def CreateBaseEffects():
-    @Name "— Create base effects"
+def CreateBase():
+    @Name "— Create base"
 
     if eventPlayer.isInBaseCreationMode:
         # base sphere
@@ -445,74 +474,124 @@ def CreateBaseEffects():
             Effect.SPHERE,
             rainbow_rgb()
             if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
-            else colors_data[eventPlayer.preferences[Preference.BASE_COLOR]],
-            updateEveryTick(eventPlayer.getPosition()),
+            else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]],
+            updateEveryFrame(eventPlayer.getPosition()),
             eventPlayer.preferences[Preference.BASE_SIZE],
             EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
         )
-        eventPlayer.sphere_effect_id = getLastCreatedEntity()
+        eventPlayer.base_effect_id = getLastCreatedEntity()
     else:
-        # base sphere
-        createEffect(
-            [p for p in getAllPlayers() if p.active_base_owner != eventPlayer],
-            Effect.SPHERE,
-            rainbow_rgb()
-            if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
-            else colors_data[eventPlayer.preferences[Preference.BASE_COLOR]],
-            eventPlayer.base_vector
-            if eventPlayer.base_vector
-            else null,
-            eventPlayer.preferences[Preference.BASE_SIZE],
-            EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
-        )
-        eventPlayer.sphere_effect_id = getLastCreatedEntity()
-        # base mode icon
-        createInWorldText(
-            [
-                p for p in getAllPlayers()
-                if p.active_base_owner != eventPlayer
-                and not p.preferences[Preference.DREAM_MODE]
-            ],
-            eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
-            eventPlayer.base_vector,
-            1.7,
-            Clip.NONE,
-            WorldTextReeval.VISIBILITY_AND_STRING,
-            Color.WHITE,
-            SpecVisibility.DEFAULT
-        )
-        eventPlayer.icon_effect_id = getLastCreatedText()
-        # base description
-        createInWorldText(
-            [
-                p for p in getAllPlayers()
-                if p.active_base_owner != eventPlayer
-                and not p.preferences[Preference.DREAM_MODE]
-            ],
-            "{} {}'s base{}".format(
-                heroIcon(eventPlayer.getCurrentHero()),
-                eventPlayer,
-                eventPlayer.in_world_hud[InWorldHUD.BASE_SUMMARY]
-            ),
-            eventPlayer.base_vector + Vector.UP * (eventPlayer.preferences[Preference.BASE_SIZE] + 0.2),
-            1,
-            Clip.SURFACES,
-            WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-            Color.WHITE,
-            SpecVisibility.DEFAULT
-        )
-        eventPlayer.description_effect_id = getLastCreatedText()
+        if eventPlayer.preferences[Preference.BASE_MODE] == BaseMode.HIDDEN:
+            # base sphere
+            createEffect(
+                eventPlayer if eventPlayer.active_base_owner != eventPlayer else null,
+                Effect.SPHERE,
+                rainbow_rgb()
+                if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
+                else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]],
+                eventPlayer.base_vector
+                if eventPlayer.base_vector
+                else null,
+                eventPlayer.preferences[Preference.BASE_SIZE],
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            eventPlayer.base_effect_id = getLastCreatedEntity()
+            # base mode icon
+            createInWorldText(
+                eventPlayer
+                if eventPlayer.active_base_owner != eventPlayer
+                and not eventPlayer.preferences[Preference.DREAM_MODE]
+                else null,
+                eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
+                eventPlayer.base_vector,
+                1.7,
+                Clip.NONE,
+                WorldTextReeval.VISIBILITY_AND_STRING,
+                Color.WHITE,
+                SpecVisibility.DEFAULT
+            )
+            eventPlayer.icon_effect_id = getLastCreatedText()
+            # base description
+            createInWorldText(
+                eventPlayer
+                if eventPlayer.active_base_owner != eventPlayer
+                and not eventPlayer.preferences[Preference.DREAM_MODE]
+                else null,
+                "{} {}'s base{}".format(
+                    heroIcon(eventPlayer.getCurrentHero()),
+                    eventPlayer,
+                    eventPlayer.in_world_hud[InWorldHUD.BASE_SUMMARY]
+                ),
+                eventPlayer.base_vector + Vector.UP * (eventPlayer.preferences[Preference.BASE_SIZE] + 0.2),
+                1,
+                Clip.SURFACES,
+                WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
+                Color.WHITE,
+                SpecVisibility.DEFAULT
+            )
+            eventPlayer.description_effect_id = getLastCreatedText()
+        else:
+            # base sphere
+            createEffect(
+                [p for p in getAllPlayers() if p.active_base_owner != eventPlayer],
+                Effect.SPHERE,
+                rainbow_rgb()
+                if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
+                else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]],
+                eventPlayer.base_vector
+                if eventPlayer.base_vector
+                else null,
+                eventPlayer.preferences[Preference.BASE_SIZE],
+                EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
+            )
+            eventPlayer.base_effect_id = getLastCreatedEntity()
+            # base mode icon
+            createInWorldText(
+                [
+                    p for p in getAllPlayers()
+                    if p.active_base_owner != eventPlayer
+                    and not p.preferences[Preference.DREAM_MODE]
+                ],
+                eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
+                eventPlayer.base_vector,
+                1.7,
+                Clip.NONE,
+                WorldTextReeval.VISIBILITY_AND_STRING,
+                Color.WHITE,
+                SpecVisibility.DEFAULT
+            )
+            eventPlayer.icon_effect_id = getLastCreatedText()
+            # base description
+            createInWorldText(
+                [
+                    p for p in getAllPlayers()
+                    if p.active_base_owner != eventPlayer
+                    and not p.preferences[Preference.DREAM_MODE]
+                ],
+                "{} {}'s base{}".format(
+                    heroIcon(eventPlayer.getCurrentHero()),
+                    eventPlayer,
+                    eventPlayer.in_world_hud[InWorldHUD.BASE_SUMMARY]
+                ),
+                eventPlayer.base_vector + Vector.UP * (eventPlayer.preferences[Preference.BASE_SIZE] + 0.2),
+                1,
+                Clip.SURFACES,
+                WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
+                Color.WHITE,
+                SpecVisibility.DEFAULT
+            )
+            eventPlayer.description_effect_id = getLastCreatedText()
 
 
-def DestroyBaseEffects():
-    @Name "— Destroy base effects"
+def DestroyBase():
+    @Name "— Destroy base"
 
     if eventPlayer.isInModeratorMode:
-        destroyEffect(eventPlayer.focused_player.sphere_effect_id)
+        destroyEffect(eventPlayer.focused_player.base_effect_id)
         destroyInWorldText(eventPlayer.focused_player.icon_effect_id)
         destroyInWorldText(eventPlayer.focused_player.description_effect_id)
     else:
-        destroyEffect(eventPlayer.sphere_effect_id)
+        destroyEffect(eventPlayer.base_effect_id)
         destroyInWorldText(eventPlayer.icon_effect_id)
         destroyInWorldText(eventPlayer.description_effect_id)
 
@@ -529,7 +608,7 @@ def UpdateMessage():
             or eventPlayer.isInvisible
             else getAllPlayers(),
             eventPlayer.preferences[Preference.CUSTOM_MESSAGE],
-            updateEveryTick(eventPlayer.getEyePosition())
+            updateEveryFrame(eventPlayer.getEyePosition())
             + (
                 Vector.UP
                 * (
@@ -543,7 +622,7 @@ def UpdateMessage():
             WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,
             rainbow_rgb()
             if eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] == ExtendedColor.RAINBOW
-            else colors_data[eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR]],
+            else extended_color_data[eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR]],
             SpecVisibility.DEFAULT
         )
 

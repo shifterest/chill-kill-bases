@@ -30,19 +30,7 @@ rule "— Player spawned":
     @Event eachPlayer
     @Condition eventPlayer.hasSpawned()
 
-    if eventPlayer.base_vector:
-        wait(0.1)
-        if eventPlayer.previous_position_direction:
-            eventPlayer.teleport(eventPlayer.previous_position_direction[0])
-            eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
-            eventPlayer.previous_position_direction = null
-        else:
-            eventPlayer.teleport(eventPlayer.base_vector)
-        eventPlayer.activate_base_immediately = true
-        eventPlayer.startForcingPosition(eventPlayer.getPosition(), false)
-        wait(0.5)
-        eventPlayer.stopForcingPosition()
-
+    ReturnImmediately()
     if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.AMMO_OVERLOAD]:
         UpdateAmmo()
 
@@ -52,11 +40,10 @@ rule "— Player died":
 
     eventPlayer.current_base_owner = null
     eventPlayer.active_base_owner = null
-    eventPlayer.cubic_bezier = 1
 
     if eventPlayer.death_throttle > 6:
         bigMessage(eventPlayer, "Your base probably wasn't supposed to be there.")
-        PackBase()
+        RemoveBase()
     if eventPlayer.base_vector and eventPlayer.preferences[Preference.INSTANT_RESPAWN]:
         eventPlayer.death_throttle += 1
         eventPlayer.respawn()
@@ -73,3 +60,20 @@ rule "— Player left":
     @Event playerLeft
 
     async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
+
+
+def ReturnImmediately():
+    @Name "— Return immediately"
+
+    if eventPlayer.base_vector:
+        wait(0.1)
+        if eventPlayer.previous_position_direction:
+            eventPlayer.teleport(eventPlayer.previous_position_direction[0])
+            eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
+            eventPlayer.previous_position_direction = null
+        else:
+            eventPlayer.teleport(eventPlayer.base_vector)
+        eventPlayer.activate_base_immediately = true
+        eventPlayer.startForcingPosition(eventPlayer.getPosition(), false)
+        wait(0.5)
+        eventPlayer.stopForcingPosition()

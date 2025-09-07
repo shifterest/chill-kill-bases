@@ -33,20 +33,18 @@ rule "— Populate global variables":
 
     switch mode:
         case Mode.SHIFTEREST:
-            god_list = ["shifterest", "Cage", "aerhysu", "IAmNoOb", "Bastion", "Quiver", "Forgive", "Zeshirow"]
+            god_usernames = ["shifterest", "Cage", "aerhysu", "IAmNoOb", "Bastion", "Quiver", "Forgive", "Zeshirow"]
             break
         default:
-            god_list = []
+            god_usernames = []
             break
-    ban_list = []
-    moderator_list = ["{}".format(hostPlayer)]
+    ban_usernames = []
+    mod_usernames = [f"{hostPlayer}"]
 
     extended_color_data = [
         Color.WHITE,
-        Color.LIGHT_GRAY,
         Color.GRAY,
         Color.BLACK,
-        Color.LIGHT_RED,
         Color.RED,
         Color.ORANGE,
         Color.YELLOW,
@@ -56,9 +54,7 @@ rule "— Populate global variables":
         Color.TURQUOISE,
         Color.SKY_BLUE,
         Color.BLUE,
-        Color.LIGHT_VIOLET,
         Color.VIOLET,
-        Color.LIGHT_PURPLE,
         Color.PURPLE,
         Color.ROSE,
         "rainbow"
@@ -131,9 +127,9 @@ rule "— Populate global variables":
         ],
         PreferenceType.MULTIPLE_CHOICE,
         [
-            "{} kill".format(iconString(Icon.SKULL)),
-            "{} chill".format(abilityIconString(Hero.MEI, Button.ULTIMATE)),
-            "{} zen".format(abilityIconString(Hero.ZENYATTA, Button.ULTIMATE))
+            f"{iconString(Icon.SKULL)} kill",
+            f"{abilityIconString(Hero.MEI, Button.ULTIMATE)} chill",
+            f"{abilityIconString(Hero.ZENYATTA, Button.ULTIMATE)} zen"
         ],
         [ExtendedColor.RED, ExtendedColor.SKY_BLUE, ExtendedColor.GREEN]
     ]
@@ -141,9 +137,7 @@ rule "— Populate global variables":
         "third-person camera",
         "Select a third-person camera perspective.",
         PreferenceType.MULTIPLE_CHOICE_RANDOM,
-        ["off", "rear", "top-down", "static top-down"],
-        null,
-        true
+        ["off", "rear", "top-down", "static top-down"]
     ]
     preferences_data[Preference.THIRD_PERSON_DISTANCE] = [
         "third-person camera distance",
@@ -374,7 +368,7 @@ rule "— Populate global variables":
             "Hold for repeated use."
         ],
         PreferenceType.MULTIPLE_CHOICE,
-        ["normal", "no cooldown", "infinite"] if optimize else ["normal", "no cooldown", "infinite", "hold to spam"],
+        ["normal", "no cooldown"] if optimize else ["normal", "no cooldown", "infinite", "hold to spam"],
         null,
         true
     ]
@@ -637,7 +631,7 @@ rule "— Populate global variables":
 
     # Game
     preferences_default[Preference.PLAYER_MODE] = PlayerMode.CHILL
-    preferences_default[Preference.THIRD_PERSON] = ThirdPersonCamera.OFF
+    preferences_default[Preference.THIRD_PERSON] = ThirdPersonCamera.REAR
     preferences_default[Preference.THIRD_PERSON_DISTANCE] = 100
     preferences_default[Preference.THIRD_PERSON_OFFSET] = 1
     preferences_default[Preference.THIRD_PERSON_SMOOTHING] = true
@@ -665,9 +659,9 @@ rule "— Populate global variables":
     preferences_default[Preference.THORNS] = 100
     preferences_default[Preference.THORNS_EFFECT] = AbilityEffect.NONE
     preferences_default[Preference.ABILITY_MODE] = AbilityMode.NO_COOLDOWN
-    preferences_default[Preference.ABILITY_SPAM_DELAY] = 0.01
+    preferences_default[Preference.ABILITY_SPAM_DELAY] = 0.05
     preferences_default[Preference.ULTIMATE_MODE] = UltimateMode.NO_COOLDOWN
-    preferences_default[Preference.ULTIMATE_SPAM_DELAY] = 0.01
+    preferences_default[Preference.ULTIMATE_SPAM_DELAY] = 0.05
     preferences_default[Preference.KNOCKBACK] = 100
     preferences_default[Preference.PROJECTILE_SPEED] = 100
     preferences_default[Preference.PROJECTILE_GRAVITY] = 100
@@ -734,23 +728,23 @@ rule "— Initialize player":
         eventPlayer.disableScoreboard()
     if eventPlayer.preferences:
         HardReset()
-    if "{}".format(eventPlayer) in moderator_list:
+    if f"{eventPlayer}" in mod_usernames:
         async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
-    if player_names_backups.index("{}".format(eventPlayer)) >= 0:
-        if base_vectors_backups[player_names_backups.index("{}".format(eventPlayer))] and not isOverlappingBase(
-            base_vectors_backups[player_names_backups.index("{}".format(eventPlayer))],
-            preferences_backups[player_names_backups.index("{}".format(eventPlayer))][Preference.BASE_SIZE],
-            preferences_backups[player_names_backups.index("{}".format(eventPlayer))][Preference.BASE_GAP_SIZE]
+    if player_names_backups.index(f"{eventPlayer}") >= 0:
+        if base_vectors_backups[player_names_backups.index(f"{eventPlayer}")] and not isOverlappingBase(
+            base_vectors_backups[player_names_backups.index(f"{eventPlayer}")],
+            preferences_backups[player_names_backups.index(f"{eventPlayer}")][Preference.BASE_SIZE],
+            preferences_backups[player_names_backups.index(f"{eventPlayer}")][Preference.BASE_GAP_SIZE]
         ):
-            eventPlayer.base_vector = base_vectors_backups[player_names_backups.index("{}".format(eventPlayer))]
+            eventPlayer.base_vector = base_vectors_backups[player_names_backups.index(f"{eventPlayer}")]
             eventPlayer.has_created_base_once = true
             CreateBase()
-        eventPlayer.preferences = preferences_backups[player_names_backups.index("{}".format(eventPlayer))]
+        eventPlayer.preferences = preferences_backups[player_names_backups.index(f"{eventPlayer}")]
     else:
         LoadDefaultPreferences()
 
         # loadouts
-        switch "{}".format(eventPlayer):
+        switch f"{eventPlayer}":
             case "shifterest":
                 eventPlayer.has_created_base_once = true
                 eventPlayer.preferences[Preference.PLAYER_MODE] = PlayerMode.CHILL
@@ -765,7 +759,7 @@ rule "— Initialize player":
                 eventPlayer.preferences[Preference.HEALTH] = 1000
                 eventPlayer.preferences[Preference.DAMAGE_EFFECT] = AbilityEffect.SLEEP
                 eventPlayer.preferences[Preference.THORNS_EFFECT] = AbilityEffect.SLEEP
-                eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = "hey there!"
+                eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = "uwu"
                 eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] = ExtendedColor.RAINBOW
                 eventPlayer.preferences[Preference.AURA_EFFECT] = ChillEffect.SPARKLES
                 eventPlayer.preferences[Preference.AURA_COLOR] = ExtendedColor.RAINBOW
@@ -790,7 +784,7 @@ rule "— Initialize player":
 
     wait(0.25)
 
-    if player_names_backups.index("{}".format(eventPlayer)) < 0:
+    if player_names_backups.index(f"{eventPlayer}") < 0:
         bigMessage(eventPlayer, "welcome to chill / kill bases!")
 
         wait(4)
@@ -835,6 +829,9 @@ def LoadDefaultPreferences():
 def HardReset():
     @Name "— Hard reset"
 
+    # Find: playervar\s+(\w+)
+    # Replace: eventPlayer.$1 = null
+
     eventPlayer.progress_hud = null
     eventPlayer.in_world_hud = null
     eventPlayer.preferences_hud = null
@@ -853,9 +850,9 @@ def HardReset():
     eventPlayer.base_to_fast_travel_owner = null
     eventPlayer.preferences_index = null
     eventPlayer.preferences = null
+    eventPlayer.preference_adjustment = null
     eventPlayer.isViewingAdvancedPreferences = null
     eventPlayer.isViewingPreferences = null
-    eventPlayer.isAdjustingPreference = null
     eventPlayer.isInModeratorMode = null
     eventPlayer.isInBaseCreationMode = null
     eventPlayer.isUsingKeyboard = null

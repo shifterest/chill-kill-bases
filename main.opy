@@ -2,7 +2,7 @@
 
 settings {
     "main": {
-        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.62] Last updated: June 25, 2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
+        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.62] Last updated: September 7, 2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
         "modeName": "★ Chill Bases · Updated! ★"
     },
     "lobby": {

@@ -5,26 +5,41 @@ rule "Abilities":
     @Delimiter
 
 
-rule "— Ability mode • No cooldown • Primary fire":
+rule "— Ability mode • No cooldown":
     @Event eachPlayer
     @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
     @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.getAbilityCooldown(Button.PRIMARY_FIRE) > 0
 
     do:
-        eventPlayer.setAbilityCooldown(Button.PRIMARY_FIRE, 0)
+        resetCooldown(Button.PRIMARY_FIRE)
+        resetCooldown(Button.SECONDARY_FIRE)
+        resetCooldown(Button.ABILITY_1)
+        resetCooldown(Button.ABILITY_2)
+        resetCooldown(Button.CROUCH)
+        # resetCooldown(Button.INTERACT)
+        resetCooldown(Button.JUMP)
+
+        switch eventPlayer.getCurrentHero():
+            case Hero.TRACER:
+            case Hero.JUNKRAT:
+                if eventPlayer.getAbilityCharge(Button.ABILITY_1) < 2:
+                    eventPlayer.setAbilityCharge(Button.ABILITY_1, 3)
+                break
+            case Hero.BRIGITTE:
+                if eventPlayer.getAbilityCharge(Button.ABILITY_2) < 2:
+                    eventPlayer.setAbilityCharge(Button.ABILITY_2, 2)
+                break
+            case Hero.ROADHOG:
+                if eventPlayer.getAbilityResource(Button.ABILITY_2) < 50:
+                    eventPlayer.setAbilityResource(Button.ABILITY_2, 100)
+                break
+            case Hero.DVA:
+                if eventPlayer.getAbilityResource(Button.SECONDARY_FIRE) < 50:
+                    eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 100)
+                break
+
         waitLoad()
     while RULE_CONDITION
-
-
-rule "— Ability mode • No cooldown • Primary fire (Moira)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.getCurrentHero() == Hero.MOIRA
-    @Condition eventPlayer.getAbilityResource(Button.PRIMARY_FIRE) < 50
-
-    eventPlayer.setAbilityResource(Button.PRIMARY_FIRE, 100)
 
 
 rule "— Ability mode • Hold to spam • Primary fire (Brigitte)":
@@ -52,18 +67,7 @@ rule "— Ability mode • Hold to spam • Primary fire (Brigitte)":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Secondary fire":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.NO_COOLDOWN
-    @Condition eventPlayer.getAbilityCooldown(Button.SECONDARY_FIRE) > 0 or (
-        eventPlayer.getAbilityCooldown(Button.SECONDARY_FIRE) == 0 and eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
-    )
 
-    do:
-        eventPlayer.setAbilityCooldown(Button.SECONDARY_FIRE, 0)
-        waitLoad()
-    while RULE_CONDITION
 
 
 rule "— Ability mode • Hold to spam • Secondary fire":
@@ -93,30 +97,6 @@ rule "— Ability mode • Hold to spam • Secondary fire":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Secondary fire (Illari)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.getCurrentHero() == Hero.ILLARI
-    @Condition eventPlayer.getAbilityResource(Button.SECONDARY_FIRE) > 50
-
-    eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 0)
-
-
-rule "— Ability mode • No cooldown • Ability 1":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.NO_COOLDOWN
-    @Condition eventPlayer.getAbilityCooldown(Button.ABILITY_1) > 0 or (
-        eventPlayer.getAbilityCooldown(Button.ABILITY_1) == 0 and eventPlayer.isHoldingButton(Button.ABILITY_1)
-    )
-
-    do:
-        eventPlayer.setAbilityCooldown(Button.ABILITY_1, 0)
-        waitLoad()
-    while RULE_CONDITION
-
-
 rule "— Ability mode • Hold to spam • Ability 1":
     @Event eachPlayer
     @Condition not optimize
@@ -137,30 +117,6 @@ rule "— Ability mode • Hold to spam • Ability 1":
         wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
         eventPlayer.cancelPrimaryAction()
         wait()
-    while RULE_CONDITION
-
-
-rule "— Ability mode • No cooldown • Ability 1 (Tracer, Junkrat)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.getCurrentHero() == Hero.TRACER or eventPlayer.getCurrentHero() == Hero.JUNKRAT
-    @Condition eventPlayer.getAbilityCharge(Button.ABILITY_1) < 2
-
-    eventPlayer.setAbilityCharge(Button.ABILITY_1, 3)
-
-
-rule "— Ability mode • No cooldown • Ability 2":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.NO_COOLDOWN
-    @Condition eventPlayer.getAbilityCooldown(Button.ABILITY_2) > 0 or (
-        eventPlayer.getAbilityCooldown(Button.ABILITY_2) == 0 and eventPlayer.isHoldingButton(Button.ABILITY_2)
-    )
-
-    do:
-        eventPlayer.setAbilityCooldown(Button.ABILITY_2, 0)
-        waitLoad()
     while RULE_CONDITION
 
 
@@ -189,142 +145,32 @@ rule "— Ability mode • Hold to spam • Ability 2":
     while RULE_CONDITION
 
 
-rule "— Ability mode • No cooldown • Ability 2 (Brigitte)":
+rule "— Ammo overload":
     @Event eachPlayer
     @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.getCurrentHero() == Hero.BRIGITTE
-    @Condition eventPlayer.getAbilityCharge(Button.ABILITY_2) < 2
-
-    eventPlayer.setAbilityCharge(Button.ABILITY_2, 2)
-
-
-rule "— Ability mode • No cooldown • Crouch":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.getAbilityCooldown(Button.CROUCH) > 0 or (
-        eventPlayer.getAbilityCooldown(Button.CROUCH) == 0 and eventPlayer.isHoldingButton(Button.CROUCH)
-    )
+    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
 
     do:
-        eventPlayer.setAbilityCooldown(Button.CROUCH, 0)
-        waitLoad()
+        switch eventPlayer.getCurrentHero():
+            case Hero.ORISA:
+                eventPlayer.setAmmo(0, 100)
+                break
+            case Hero.MOIRA:
+                if eventPlayer.getAbilityResource(Button.PRIMARY_FIRE) < 50:
+                    eventPlayer.setAbilityResource(Button.PRIMARY_FIRE, 100)
+                break
+            case Hero.ILLARI:
+                if eventPlayer.getAbilityResource(Button.SECONDARY_FIRE) > 50:
+                    eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 0)
+                break
+            default:
+                if eventPlayer.getAmmo(0) <= 50:
+                    eventPlayer.setAmmo(0, 1000)
+                if eventPlayer.getAmmo(1) <= 50:
+                    eventPlayer.setAmmo(1, 1000)
+                break
+        wait(1, Wait.ABORT_WHEN_FALSE)
     while RULE_CONDITION
-
-
-rule "— Ability mode • No cooldown • Interact":
-    @Disabled
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.getAbilityCooldown(Button.INTERACT) > 0 or (
-        eventPlayer.getAbilityCooldown(Button.INTERACT) == 0 and eventPlayer.isHoldingButton(Button.INTERACT)
-    )
-
-    do:
-        eventPlayer.setAbilityCooldown(Button.INTERACT, 0)
-        waitLoad()
-    while RULE_CONDITION
-
-
-rule "— Ability mode • No cooldown • Jump":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
-    @Condition eventPlayer.isHoldingButton(Button.JUMP) or (
-        eventPlayer.getAbilityCooldown(Button.JUMP) == 0 and eventPlayer.isHoldingButton(Button.JUMP)
-    )
-
-    do:
-        eventPlayer.setAbilityCooldown(Button.JUMP, 0)
-        waitLoad()
-    while RULE_CONDITION
-
-
-rule "— Ability mode • Hold to spam • Jump (Hanzo, Lifeweaver)":
-    @Disabled
-    @Event eachPlayer
-    @Condition not optimize
-    @Condition not isOverloaded
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.HOLD_TO_SPAM
-    @Condition eventPlayer.getCurrentHero() == Hero.HANZO or eventPlayer.getCurrentHero() == Hero.LIFEWEAVER
-    @Condition eventPlayer.isHoldingButton(Button.JUMP)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
-
-    do:
-        eventPlayer.setAbilityCooldown(Button.JUMP, 0)
-        wait()
-        eventPlayer.forceButtonPress(Button.JUMP)
-        wait()
-        eventPlayer.stopForcingButton(Button.JUMP)
-        wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
-        eventPlayer.cancelPrimaryAction()
-        wait()
-    while RULE_CONDITION
-
-
-rule "— Ammo overload (clip 0)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
-    @Condition eventPlayer.getAmmo(0) <= 50
-
-    eventPlayer.setAmmo(0, 1000)
-
-
-rule "— Ammo overload (clip 1)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
-    @Condition eventPlayer.getAmmo(1) <= 50
-
-    eventPlayer.setAmmo(1, 1000)
-
-
-rule "— Ammo overload (Orisa)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
-    @Condition eventPlayer.getCurrentHero() == Hero.ORISA
-
-    do:
-        eventPlayer.setAmmo(0, 100)
-        wait(3)
-    while RULE_CONDITION
-
-
-rule "— Ammo overload (D.Va)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
-    @Condition eventPlayer.getCurrentHero() == Hero.DVA
-    @Condition eventPlayer.getAbilityResource(Button.SECONDARY_FIRE) < 50
-
-    eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 100)
-
-
-rule "— Ammo overload (Moira)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
-    @Condition eventPlayer.getCurrentHero() == Hero.MOIRA
-    @Condition eventPlayer.getAbilityResource(Button.PRIMARY_FIRE) < 50
-
-    eventPlayer.setAbilityResource(Button.PRIMARY_FIRE, 100)
-
-
-rule "— Ammo overload (Illari)":
-    @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
-    @Condition eventPlayer.getCurrentHero() == Hero.ILLARI
-    @Condition eventPlayer.getAbilityResource(Button.SECONDARY_FIRE) > 50
-
-    eventPlayer.setAbilityResource(Button.SECONDARY_FIRE, 0)
 
 
 rule "— Ultimate mode • No cooldown":
@@ -342,18 +188,22 @@ rule "— Ultimate mode • No cooldown":
 
 rule "— Ultimate mode • Infinite":
     @Event eachPlayer
+    @Condition not optimize
+    @Condition not isOverloaded
     @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
     @Condition eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
     @Condition not eventPlayer.isUsingUltimate()
+    @Condition not eventPlayer.isViewingPreferences
+    @Condition not eventPlayer.isInModeratorMode
+    @Condition not eventPlayer.isUsingKeyboard
 
     do:
         switch eventPlayer.getCurrentHero():
             case Hero.WINSTON:
-                eventPlayer.setUltCharge(100)
-                eventPlayer.forceButtonPress(Button.ULTIMATE)
-                wait(5)
-                if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE:
-                    goto RULE_START
+                while eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE:
+                    eventPlayer.setUltCharge(100)
+                    eventPlayer.forceButtonPress(Button.ULTIMATE)
+                    wait(5)
                 break
             default:
                 eventPlayer.setUltCharge(100)

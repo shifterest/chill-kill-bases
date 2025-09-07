@@ -536,177 +536,105 @@ rule "— Interact / toggle preference":
             break
 
 
-rule "— Go to next preference":
+rule "— Navigate preferences":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+
+    eventPlayer.preference_adjustment = -1 if eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) else 1
 
     if eventPlayer.isViewingAdvancedPreferences:
-        if eventPlayer.preferences_index < len(preferences_data) - 1:
-            eventPlayer.preferences_index += 1
-        else:
-            eventPlayer.preferences_index = 0
+        eventPlayer.preferences_index = (
+            eventPlayer.preferences_index
+            + eventPlayer.preference_adjustment
+            + len(preferences_data) + 1
+        ) % (
+            len(preferences_data) + 1
+        )
     else:
-        if eventPlayer.preferences_index < len(quick_preferences_data) - 1:
-            eventPlayer.preferences_index += 1
-        else:
-            eventPlayer.preferences_index = 0
+        eventPlayer.preferences_index = (
+            eventPlayer.preferences_index
+            + eventPlayer.preference_adjustment
+            + len(quick_preferences_data) + 1
+        ) % (
+            len(quick_preferences_data) + 1
+        )
 
     UpdatePreferencesHUD()
     BuffExplosionSoundQuiet()
 
 
-rule "— Go to previous preference":
+rule "— Adjust preference, go to next/previous option":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) or eventPlayer.isHoldingButton(Button.ABILITY_2)
 
-    if eventPlayer.isViewingAdvancedPreferences:
-        if eventPlayer.preferences_index > 0:
-            eventPlayer.preferences_index -= 1
-        else:
-            eventPlayer.preferences_index = len(preferences_data) - 1
-    else:
-        if eventPlayer.preferences_index > 0:
-            eventPlayer.preferences_index -= 1
-        else:
-            eventPlayer.preferences_index = len(quick_preferences_data) - 1
+    do:
+        eventPlayer.preference_adjustment = -1 if eventPlayer.isHoldingButton(Button.ABILITY_1) else 1
 
-    UpdatePreferencesHUD()
-    BuffExplosionSoundQuiet()
-
-
-rule "— Go to next option / increase preference":
-    @Event eachPlayer
-    @Condition eventPlayer.isViewingPreferences
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
-    @Condition not eventPlayer.isHoldingButton(Button.ABILITY_1)
-
-    switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
-        case PreferenceType.NUMERIC:
-        case PreferenceType.NUMERIC_REVERSIBLE:
-            if eventPlayer.isHoldingButton(Button.CROUCH):
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]
-                async(InteractWithPreferences, AsyncBehavior.RESTART)
-                BaseRingExplosion()
-                BuffImpactSound()
-            elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX]:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
+        switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
+            case PreferenceType.NUMERIC:
+            case PreferenceType.NUMERIC_REVERSIBLE:
+                eventPlayer.preference_adjustment *= (
+                    preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
+                    * (10 if eventPlayer.isHoldingButton(Button.CROUCH) else 1)
+                )
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = (
+                    max(
+                        preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN],
+                        min(
+                            preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MAX],
+                            eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + eventPlayer.preference_adjustment
+                        )
+                    )
+                )
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
                 BuffImpactSoundQuiet()
-            else:
-                BaseRingExplosion()
-                DebuffImpactSound()
-                return
-            break
-        case PreferenceType.COLOR_PICKER:
-            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(extended_color_data) - 1:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
-            else:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
-            async(InteractWithPreferences, AsyncBehavior.RESTART)
-            BuffImpactSoundQuiet()
-            break
-        case PreferenceType.MULTIPLE_CHOICE:
-        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
-            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
-            else:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
-            async(InteractWithPreferences, AsyncBehavior.RESTART)
-            BuffImpactSoundQuiet()
-            break
-        case PreferenceType.INTERACT_MULTIPLE_CHOICE:
-        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
-            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
-            else:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
-            async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
-            BuffImpactSoundQuiet()
-            break
-                
-    if not eventPlayer.isAdjustingPreference:
-        waitUntil(not eventPlayer.isHoldingButton(Button.ABILITY_2), 0.4)
-
-    if eventPlayer.isHoldingButton(Button.ABILITY_2):
-        if not eventPlayer.isAdjustingPreference:
-            eventPlayer.isAdjustingPreference = true
-    else:
-        if eventPlayer.isAdjustingPreference:
-            eventPlayer.isAdjustingPreference = false
-        return
-
-    wait(0.12)
-
-    goto RULE_START
-
-
-rule "— Go to previous option / decrease preference":
-    @Event eachPlayer
-    @Condition eventPlayer.isViewingPreferences
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1)
-    @Condition not eventPlayer.isHoldingButton(Button.ABILITY_2)
-
-    switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
-        case PreferenceType.NUMERIC:
-        case PreferenceType.NUMERIC_REVERSIBLE:
-            if eventPlayer.isHoldingButton(Button.CROUCH):
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]
-                async(InteractWithPreferences, AsyncBehavior.RESTART)
-                BaseRingExplosion()
-                BuffImpactSound()
-            elif eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.MIN]:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.STEP]
+                break
+            case PreferenceType.COLOR_PICKER:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = (
+                    (
+                        eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]
+                        + eventPlayer.preference_adjustment
+                        + len(extended_color_data)
+                    ) % (
+                        len(extended_color_data)
+                    )
+                )
                 async(InteractWithPreferences, AsyncBehavior.RESTART)
                 BuffImpactSoundQuiet()
-            else:
-                BaseRingExplosion()
-                DebuffImpactSound()
-                return
-            break
-        case PreferenceType.COLOR_PICKER:
-            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
-            else:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(extended_color_data) - 1
-            async(InteractWithPreferences, AsyncBehavior.RESTART)
-            BuffImpactSoundQuiet()
-            break
-        case PreferenceType.MULTIPLE_CHOICE:
-        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
-            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
-            else:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1
-            async(InteractWithPreferences, AsyncBehavior.RESTART)
-            BuffImpactSoundQuiet()
-            break
-        case PreferenceType.INTERACT_MULTIPLE_CHOICE:
-        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
-            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
-            else:
-                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1
-            async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
-            BuffImpactSoundQuiet()
-            break
+                break
+            case PreferenceType.MULTIPLE_CHOICE:
+            case PreferenceType.MULTIPLE_CHOICE_RANDOM:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = (
+                    (
+                        eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]
+                        + eventPlayer.preference_adjustment
+                        + len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS])
+                    ) % (
+                        len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS])
+                    )
+                )
+                async(InteractWithPreferences, AsyncBehavior.RESTART)
+                BuffImpactSoundQuiet()
+                break
+            case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+            case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
+                eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = (
+                    (
+                        eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]
+                        + eventPlayer.preference_adjustment
+                        + len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1])
+                    ) % (
+                        len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1])
+                    )
+                )
+                async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
+                BuffImpactSoundQuiet()
+                break
 
-    if not eventPlayer.isAdjustingPreference:
-        waitUntil(not eventPlayer.isHoldingButton(Button.ABILITY_1), 0.4)
-
-    if eventPlayer.isHoldingButton(Button.ABILITY_1):
-        if not eventPlayer.isAdjustingPreference:
-            eventPlayer.isAdjustingPreference = true
-    else:
-        if eventPlayer.isAdjustingPreference:
-            eventPlayer.isAdjustingPreference = false
-        return
-
-    wait(0.12)
-
-    goto RULE_START
-
+        wait(0.15, Wait.ABORT_WHEN_FALSE)
+    while RULE_CONDITION
 
 rule "— Reset preference":
     @Event eachPlayer

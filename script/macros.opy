@@ -178,10 +178,6 @@ macro waitLoad():
     wait(getAverageServerLoad() / 150)
 
 
-macro waitLoadMore():
-    wait(getAverageServerLoad() / 100)
-
-
 macro iconMessage(visibility, icon, message):
     smallMessage(visibility, "   {}  {}".format(icon, message))
     # smallMessage(visibility, _("   {}  "message).format(icon))
@@ -242,6 +238,28 @@ macro unchaseInteractionProgress(duration):
     chaseOverTime(
         eventPlayer.interaction_progress, 0, (duration / 4), ChaseTimeReeval.NONE
     )
+
+
+macro resetCooldown(button):
+    if (
+        eventPlayer.getAbilityCooldown(button) > 0 
+        or (
+            eventPlayer.getAbilityCooldown(button) == 0
+            and eventPlayer.isHoldingButton(button)
+        )
+    ):
+        eventPlayer.setAbilityCooldown(button, 0)
+
+
+macro spamAbility(button):
+    eventPlayer.setAbilityCooldown(button, 0)
+    wait()
+    eventPlayer.forceButtonPress(button)
+    wait()
+    eventPlayer.stopForcingButton(button)
+    wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
+    eventPlayer.cancelPrimaryAction()
+    wait()
 
 
 # Effects

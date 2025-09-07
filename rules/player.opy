@@ -8,12 +8,13 @@ rule "Player":
 rule "— Player joined":
     @Event playerJoined
 
+    async(UpdateGodModList, AsyncBehavior.RESTART)
     async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
 
 
 rule "— Ban player comms":
     @Event eachPlayer
-    @Condition "{}".format(eventPlayer) in comms_ban_list
+    @Condition f"{eventPlayer}" in comms_ban_usernames
 
     eventPlayer.disableTextChat()
     eventPlayer.disableVoiceChat(true, true, true)
@@ -21,7 +22,7 @@ rule "— Ban player comms":
 
 rule "— Kick banned player":
     @Event eachPlayer
-    @Condition "{}".format(eventPlayer) in ban_list
+    @Condition f"{eventPlayer}" in ban_usernames
 
     removeFromGame(eventPlayer)
 
@@ -59,6 +60,7 @@ rule "— Player died":
 rule "— Player left":
     @Event playerLeft
 
+    async(UpdateGodModList, AsyncBehavior.RESTART)
     async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
 
 

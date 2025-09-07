@@ -133,13 +133,13 @@ def Tutorial():
         wait(4)
         switch mode:
             case Mode.SLEEP:
-                bigMessage(eventPlayer, "Sweet dreams, {}!".format(eventPlayer))
+                bigMessage(eventPlayer, f"Sweet dreams, {eventPlayer}!")
                 break
             case Mode.MUSIC:
-                bigMessage(eventPlayer, "Enjoy the music, {}!".format(eventPlayer))
+                bigMessage(eventPlayer, f"Enjoy the music, {eventPlayer}!")
                 break
             default:
-                bigMessage(eventPlayer, "Happy chilling, {}!".format(eventPlayer))
+                bigMessage(eventPlayer, f"Happy chilling, {eventPlayer}!")
                 break
         eventPlayer.stopForcingPosition()
         eventPlayer.stopFacing()
@@ -298,7 +298,7 @@ rule "— Switch hero":
             EjectRider()
         eventPlayer.previous_position_direction = [eventPlayer.getPosition(), eventPlayer.getFacingDirection()]
         eventPlayer.setAllowedHeroes(getAllHeroes().exclude(eventPlayer.getCurrentHero()))
-        if "{}".format(eventPlayer) in ["DJBASTION", "Bastion"]:
+        if f"{eventPlayer}" in ["DJBASTION", "Bastion"]:
             eventPlayer.setAllowedHeroes(Hero.BASTION)
         else:
             eventPlayer.resetHeroAvailability()
@@ -422,31 +422,30 @@ rule "— Fast travel":
 def Confine():
     @Name "— Confine to base"
 
-    eventPlayer.applyImpulse(
-        directionTowards(
-            eventPlayer.getPosition(),
-            eventPlayer.active_base_owner.base_vector
-        ),
-        10 if eventPlayer.isOnGround() else 0.00001,
-        Relativity.TO_WORLD,
-        Impulse.CANCEL_CONTRARY_MOTION_XYZ
-    )
-    if not eventPlayer in getPlayersInRadius(
-        eventPlayer.active_base_owner.base_vector,
-        eventPlayer.active_base_owner.preferences[Preference.BASE_SIZE] + 3,
-        Team.ALL,
-        LosCheck.OFF
-    ):
-        eventPlayer.cancelPrimaryAction()
-        eventPlayer.teleport(
+    do:
+        eventPlayer.applyImpulse(
             directionTowards(
-                eventPlayer.active_base_owner.base_vector,
-                eventPlayer.getPosition()
-            )
-            * (eventPlayer.active_base_owner.preferences[Preference.BASE_SIZE])
-            + eventPlayer.active_base_owner.base_vector
+                eventPlayer.getPosition(),
+                eventPlayer.active_base_owner.base_vector
+            ),
+            10 if eventPlayer.isOnGround() else 0.00001,
+            Relativity.TO_WORLD,
+            Impulse.CANCEL_CONTRARY_MOTION_XYZ
         )
-    wait(0.1)
-    if isInDifferentBase():
-        if isConfined():
-            goto RULE_START
+        if not eventPlayer in getPlayersInRadius(
+            eventPlayer.active_base_owner.base_vector,
+            eventPlayer.active_base_owner.preferences[Preference.BASE_SIZE] + 3,
+            Team.ALL,
+            LosCheck.OFF
+        ):
+            eventPlayer.cancelPrimaryAction()
+            eventPlayer.teleport(
+                directionTowards(
+                    eventPlayer.active_base_owner.base_vector,
+                    eventPlayer.getPosition()
+                )
+                * (eventPlayer.active_base_owner.preferences[Preference.BASE_SIZE])
+                + eventPlayer.active_base_owner.base_vector
+            )
+        wait(0.1)
+    while isInDifferentBase() and isConfined()

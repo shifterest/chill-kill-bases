@@ -2,10 +2,11 @@
 
 # GLOBAL VARIABLES
 # player lists
-globalvar god_list
-globalvar moderator_list
-globalvar ban_list
-globalvar comms_ban_list
+globalvar god_usernames
+globalvar mod_usernames
+globalvar ban_usernames
+globalvar comms_ban_usernames
+globalvar god_mod_list
 # backup lists
 globalvar player_names_backups
 globalvar base_vectors_backups
@@ -58,9 +59,9 @@ playervar base_to_fast_travel_owner
 # preferences
 playervar preferences_index
 playervar preferences
+playervar preference_adjustment
 playervar isViewingAdvancedPreferences
 playervar isViewingPreferences
-playervar isAdjustingPreference
 # mode
 playervar isInModeratorMode
 playervar isInBaseCreationMode

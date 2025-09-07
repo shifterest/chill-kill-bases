@@ -177,10 +177,8 @@ enum OnScreenHUD:
 
 enum ExtendedColor:
     WHITE,
-    LIGHT_GRAY,
     GRAY,
     BLACK,
-    LIGHT_RED,
     RED,
     ORANGE,
     YELLOW,
@@ -190,9 +188,7 @@ enum ExtendedColor:
     TURQUOISE,
     SKY_BLUE,
     BLUE,
-    LIGHT_VIOLET,
     VIOLET,
-    LIGHT_PURPLE,
     PURPLE,
     ROSE,
     RAINBOW

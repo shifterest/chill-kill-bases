@@ -6,15 +6,22 @@ rule "Moderator":
 
 
 rule "— Give host moderator":
-    @Condition not "{}".format(hostPlayer) in moderator_list
+    @Condition not "{}".format(hostPlayer) in mod_usernames
 
-    moderator_list.append("{}".format(hostPlayer))
+    mod_usernames.append("{}".format(hostPlayer))
+    async(UpdateGodModList, AsyncBehavior.RESTART)
     async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
+
+
+def UpdateGodModList():
+    @Name "— Update god/mod list"
+
+    god_mod_list = [p for p in getAllPlayers() if "{}".format(p) in mod_usernames.concat(god_usernames)].concat(hostPlayer)
 
 
 rule "— Toggle moderator mode":
     @Event eachPlayer
-    @Condition eventPlayer in [p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)].concat(hostPlayer)
+    @Condition eventPlayer in god_mod_list
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
     @Condition not eventPlayer.isViewingPreferences
@@ -33,7 +40,7 @@ rule "— Toggle moderator mode":
     UpdateAbilities()
 
     waitUntil(
-        not eventPlayer in [p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)].concat(hostPlayer)
+        not eventPlayer in god_mod_list
         or eventPlayer.isHoldingButton(Button.CROUCH)
         and eventPlayer.isHoldingButton(Button.RELOAD),
         Math.INFINITY
@@ -84,7 +91,7 @@ rule "— Apply / remove stasis from player":
 
     if (
         eventPlayer.focused_player
-        in [p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)].concat(hostPlayer).exclude(eventPlayer)
+        in god_mod_list.exclude(eventPlayer)
         or eventPlayer.focused_player.isDead()
         or not eventPlayer.focused_player.hasSpawned()
     ):
@@ -120,7 +127,7 @@ rule "— Apply / remove stasis from player":
                 iconMessage(eventPlayer.focused_player, abilityIconString(Hero.ANA, Button.ABILITY_1), "stasis applied by moderator")
             iconMessage(eventPlayer, abilityIconString(Hero.ANA, Button.ABILITY_1), "removed stasis from {}".format(eventPlayer.focused_player))
             DebuffImpactSoundBothFocus()
-    waitLoad()
+    wait(0.5)
 
 
 rule "— Kill / resurrect player":
@@ -130,7 +137,7 @@ rule "— Kill / resurrect player":
 
     if (
         eventPlayer.focused_player
-        in [p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)].concat(hostPlayer).exclude(eventPlayer)
+        in god_mod_list.exclude(eventPlayer)
         or not eventPlayer.focused_player.hasSpawned()
     ):
         DebuffImpactSoundPlayerFocus()
@@ -154,7 +161,7 @@ rule "— Kill / resurrect player":
             if eventPlayer.focused_player != eventPlayer:
                 iconMessage(eventPlayer.focused_player, iconString(Icon.SKULL), "killed by moderator")
             iconMessage(eventPlayer, iconString(Icon.SKULL), "{} killed".format(eventPlayer.focused_player))
-    waitLoad()
+    wait(0.5)
 
 
 rule "— Remove base":
@@ -166,7 +173,7 @@ rule "— Remove base":
     @Condition not eventPlayer.isHoldingButton(Button.ULTIMATE)
 
     if eventPlayer.focused_player in [
-        p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)
+        p for p in getAllPlayers() if "{}".format(p) in mod_usernames.concat(god_usernames)
     ].concat(hostPlayer).exclude(eventPlayer):
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't remove {}'s base".format(eventPlayer.focused_player))
@@ -192,7 +199,7 @@ rule "— Remove base":
                 iconMessage(eventPlayer.focused_player, iconString(Icon.TRASHCAN), "base removed by moderator")
             iconMessage(eventPlayer, iconString(Icon.TRASHCAN), "{}'s base removed".format(eventPlayer.focused_player))
         unchaseProgress(1)
-    waitLoad()
+    wait(0.5)
 
 
 rule "— Teleport player to you":
@@ -204,7 +211,7 @@ rule "— Teleport player to you":
     @Condition not eventPlayer.isHoldingButton(Button.ULTIMATE)
 
     if eventPlayer.focused_player == eventPlayer or eventPlayer.focused_player in [
-        p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)
+        p for p in getAllPlayers() if "{}".format(p) in mod_usernames.concat(god_usernames)
     ].concat(hostPlayer):
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't teleport {} to you".format(eventPlayer.focused_player))
@@ -225,7 +232,7 @@ rule "— Teleport player to you":
             iconMessage(eventPlayer.focused_player, abilityIconString(Hero.SOMBRA, Button.ABILITY_2), "teleported by moderator")
             iconMessage(eventPlayer, abilityIconString(Hero.SOMBRA, Button.ABILITY_2), "{} teleported".format(eventPlayer.focused_player))
         unchaseProgress(0.6)
-    waitLoad()
+    wait(0.5)
 
 
 rule "— Teleport to player":
@@ -255,7 +262,7 @@ rule "— Teleport to player":
             BuffImpactSound()
             iconMessage(eventPlayer, abilityIconString(Hero.SOMBRA, Button.ABILITY_2), "teleported to {}".format(eventPlayer.focused_player))
         unchaseProgress(0.6)
-    waitLoad()
+    wait(0.5)
 
 
 rule "— Ban player comms":
@@ -264,23 +271,23 @@ rule "— Ban player comms":
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
     @Condition not eventPlayer.isHoldingButton(Button.CROUCH)
 
-    if eventPlayer.focused_player in [p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)].concat(hostPlayer):
+    if eventPlayer.focused_player in god_mod_list:
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't ban {}'s comms".format(eventPlayer.focused_player))
     else:
-        if "{}".format(eventPlayer.focused_player) in comms_ban_list:
-            comms_ban_list.remove("{}".format(eventPlayer.focused_player))
+        if "{}".format(eventPlayer.focused_player) in comms_ban_usernames:
+            comms_ban_usernames.remove("{}".format(eventPlayer.focused_player))
             eventPlayer.focused_player.enableTextChat()
             eventPlayer.focused_player.enableVoiceChat()
             BuffImpactSoundBothFocus()
             iconMessage(eventPlayer.focused_player, iconString(Icon.SKULL), "comms unbanned by moderator")
             iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "{}'s' comms unbanned".format(eventPlayer.focused_player))
         else:
-            comms_ban_list.append("{}".format(eventPlayer.focused_player))
+            comms_ban_usernames.append("{}".format(eventPlayer.focused_player))
             DebuffImpactSoundBothFocus()
             iconMessage(eventPlayer.focused_player, iconString(Icon.SKULL), "comms banned by moderator")
             iconMessage(eventPlayer, iconString(Icon.CROSS), "{}'s' comms banned".format(eventPlayer.focused_player))
-    waitLoad()
+    wait(0.5)
 
 
 rule "— Ban player":
@@ -292,7 +299,7 @@ rule "— Ban player":
     @Condition not eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition not eventPlayer.isHoldingButton(Button.ULTIMATE)
 
-    if eventPlayer.focused_player in [p for p in getAllPlayers() if "{}".format(p) in moderator_list.concat(god_list)].concat(hostPlayer):
+    if eventPlayer.focused_player in god_mod_list:
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't ban {}".format(eventPlayer.focused_player))
     else:
@@ -305,35 +312,36 @@ rule "— Ban player":
             or not eventPlayer.isHoldingButton(Button.MELEE)
         )
         if eventPlayer.progress == 100:
-            ban_list.append(eventPlayer.name_to_ban)
+            ban_usernames.append(eventPlayer.name_to_ban)
             DebuffImpactSoundPlayerFocus()
             iconMessage(eventPlayer, iconString(Icon.CROSS), "{} banned".format(eventPlayer.name_to_ban))
         unchaseProgress(1.5)
         eventPlayer.name_to_ban = null
-    waitLoad()
+    wait(0.5)
 
 
-rule "— Promote player / demote moderator":
+rule "— Promote / demote player":
     @Event eachPlayer
     @Condition eventPlayer.isInModeratorMode
     @Condition eventPlayer == hostPlayer
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
 
-    if eventPlayer.focused_player in [p for p in getAllPlayers() if "{}".format(p) in god_list]:
+    if eventPlayer.focused_player in [p for p in getAllPlayers() if "{}".format(p) in god_usernames]:
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't promote gods... you don't need to")
     elif eventPlayer.focused_player == hostPlayer:
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't demote yourself")
-    elif eventPlayer.focused_player in [p for p in getAllPlayers() if "{}".format(p) in moderator_list]:
-        moderator_list.remove("{}".format(eventPlayer.focused_player))
+    elif eventPlayer.focused_player in [p for p in getAllPlayers() if "{}".format(p) in mod_usernames]:
+        mod_usernames.remove("{}".format(eventPlayer.focused_player))
         DebuffImpactSoundBothFocus()
         iconMessage(eventPlayer, iconString(Icon.ARROW_DOWN), "{} demoted to player".format(eventPlayer.focused_player))
         bigMessage(eventPlayer.focused_player, "you were demoted.")
     else:
-        moderator_list.append("{}".format(eventPlayer.focused_player))
+        mod_usernames.append("{}".format(eventPlayer.focused_player))
         BuffImpactSoundBothFocus()
         iconMessage(eventPlayer, iconString(Icon.BOLT), "{} promoted to moderator".format(eventPlayer.focused_player))
         bigMessage(eventPlayer.focused_player, "you were promoted to moderator!")
+    async(UpdateGodModList, AsyncBehavior.RESTART)
     async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
-    waitLoad()
+    wait(0.5)

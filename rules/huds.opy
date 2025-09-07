@@ -29,7 +29,7 @@ rule "— Draw global HUD":
     # server load
     hudSubheader(
         localPlayer
-        if ("{}".format(localPlayer) in moderator_list.concat(god_list) or localPlayer == hostPlayer)
+        if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
         and not localPlayer.preferences[Preference.DREAM_MODE]
         else null,
         "{} current • {} mean • {} peak".format(
@@ -43,7 +43,7 @@ rule "— Draw global HUD":
     )
     hudSubheader(
         localPlayer
-        if ("{}".format(localPlayer) in moderator_list.concat(god_list) or localPlayer == hostPlayer)
+        if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
         and localPlayer.isInModeratorMode
         else null,
         "{} entities • {} text • {} dmg mods • {} heal mods".format(
@@ -58,7 +58,7 @@ rule "— Draw global HUD":
     # moderator mode hotkey
     hudSubheader(
         localPlayer
-        if ("{}".format(localPlayer) in moderator_list.concat(god_list) or localPlayer == hostPlayer)
+        if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
         and not localPlayer.preferences[Preference.DREAM_MODE]
         else null,
         "{} + {} • toggle moderator mode\n ".format(
@@ -92,8 +92,8 @@ rule "— Draw global HUD":
             heroIcon(localPlayer.focused_player.getCurrentHero()),
             localPlayer.focused_player,
             " (host)" if localPlayer.focused_player == hostPlayer
-            else " (god)" if "{}".format(localPlayer.focused_player) in god_list
-            else " (moderator)" if "{}".format(localPlayer.focused_player) in moderator_list
+            else " (god)" if "{}".format(localPlayer.focused_player) in god_usernames
+            else " (moderator)" if "{}".format(localPlayer.focused_player) in mod_usernames
             else "",
             preferences_data[Preference.PLAYER_MODE][PreferenceProperty.PARAMETERS][localPlayer.focused_player.preferences[Preference.PLAYER_MODE]],
             preferences_data[Preference.BASE_MODE][PreferenceProperty.PARAMETERS][localPlayer.focused_player.preferences[Preference.BASE_MODE]]
@@ -456,9 +456,9 @@ def UpdateModeratorListHUD():
 
     moderator_list_hud = ""
 
-    for moderator_list_hud_counter in range(len(moderator_list)):
-        if moderator_list[moderator_list_hud_counter] in ["{}".format(p) for p in getAllPlayers().exclude(hostPlayer)]:
-            moderator_list_hud = "{}{}   • {}".format(moderator_list_hud, "\n", moderator_list[moderator_list_hud_counter])
+    for moderator_list_hud_counter in range(len(mod_usernames)):
+        if mod_usernames[moderator_list_hud_counter] in ["{}".format(p) for p in getAllPlayers().exclude(hostPlayer)]:
+            moderator_list_hud = "{}{}   • {}".format(moderator_list_hud, "\n", mod_usernames[moderator_list_hud_counter])
 
     if moderator_list_hud != "":
         moderator_list_hud = "\n\nmoderators:{}".format(moderator_list_hud)

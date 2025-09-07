@@ -9,31 +9,31 @@ rule "— Transition rainbow color":
     @Condition isGameInProgress()
 
     # based on u/Halex000's RGB rainbow cycling HUD text (code CZ97D)
-    chase(rainbow_green, 255, duration = 1, ChaseReeval.NONE)
-    wait(1)
-    stopChasingVariable(rainbow_green)
+    do:
+        chase(rainbow_green, 255, duration = 1, ChaseReeval.NONE)
+        wait(1)
+        stopChasingVariable(rainbow_green)
 
-    chase(rainbow_blue, 0, duration = 1, ChaseReeval.NONE)
-    wait(1)
-    stopChasingVariable(rainbow_blue)
+        chase(rainbow_blue, 0, duration = 1, ChaseReeval.NONE)
+        wait(1)
+        stopChasingVariable(rainbow_blue)
 
-    chase(rainbow_red, 255, duration = 1, ChaseReeval.NONE)
-    wait(1)
-    stopChasingVariable(rainbow_red)
+        chase(rainbow_red, 255, duration = 1, ChaseReeval.NONE)
+        wait(1)
+        stopChasingVariable(rainbow_red)
 
-    chase(rainbow_green, 0, duration = 1, ChaseReeval.NONE)
-    wait(1)
-    stopChasingVariable(rainbow_green)
+        chase(rainbow_green, 0, duration = 1, ChaseReeval.NONE)
+        wait(1)
+        stopChasingVariable(rainbow_green)
 
-    chase(rainbow_blue, 255, duration = 1, ChaseReeval.NONE)
-    wait(1)
-    stopChasingVariable(rainbow_blue)
+        chase(rainbow_blue, 255, duration = 1, ChaseReeval.NONE)
+        wait(1)
+        stopChasingVariable(rainbow_blue)
 
-    chase(rainbow_red, 0, duration = 1, ChaseReeval.NONE)
-    wait(1)
-    stopChasingVariable(rainbow_red)
-
-    goto RULE_START
+        chase(rainbow_red, 0, duration = 1, ChaseReeval.NONE)
+        wait(1)
+        stopChasingVariable(rainbow_red)
+    while RULE_CONDITION
 
 
 rule "— Rainbow hero outline":

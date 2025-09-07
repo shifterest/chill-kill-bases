@@ -43,6 +43,7 @@ rule "— Received damage":
     @Condition eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL
     @Condition eventPlayer != attacker
 
+    damage(attacker, eventPlayer, eventDamage * max(eventPlayer.preferences[Preference.THORNS] / 100, 0.01))
     switch eventPlayer.preferences[Preference.THORNS_EFFECT]:
         case AbilityEffect.SLEEP:
             attacker.setStatusEffect(eventPlayer, Status.ASLEEP, 1)

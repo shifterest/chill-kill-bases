@@ -28,7 +28,7 @@ rule "— Avoid server crashes":
 
 
 rule "— Populate global variables":
-    mode = createWorkshopSetting(enum["default", "music", "sleep", "shifterest"], "game preferences", "lobby mode", 0, 0)
+    mode = createWorkshopSetting(enum["Default", "Music", "Sleep", "shifterest"], "game preferences", "lobby mode", 0, 0)
     optimize = createWorkshopSetting(bool, "game preferences", "optimize server load", false, 2)
 
     switch mode:
@@ -43,8 +43,10 @@ rule "— Populate global variables":
 
     extended_color_data = [
         Color.WHITE,
+        Color.LIGHT_GRAY,
         Color.GRAY,
         Color.BLACK,
+        Color.LIGHT_RED,
         Color.RED,
         Color.ORANGE,
         Color.YELLOW,
@@ -54,7 +56,9 @@ rule "— Populate global variables":
         Color.TURQUOISE,
         Color.SKY_BLUE,
         Color.BLUE,
+        Color.LIGHT_VIOLET,
         Color.VIOLET,
+        Color.LIGHT_PURPLE,
         Color.PURPLE,
         Color.ROSE,
         "rainbow"

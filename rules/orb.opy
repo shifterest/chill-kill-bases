@@ -608,6 +608,7 @@ rule "— Go to next option / increase preference":
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = 0
+            async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
             BuffImpactSoundQuiet()
             break
                 
@@ -672,6 +673,7 @@ rule "— Go to previous option / decrease preference":
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
             else:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1
+            async(UpdatePreferencesHUD, AsyncBehavior.RESTART)
             BuffImpactSoundQuiet()
             break
 

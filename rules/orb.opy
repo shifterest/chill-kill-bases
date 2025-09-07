@@ -238,6 +238,14 @@ rule "— Draw preferences HUD":
             buttonToString(Button.INTERACT)
         )
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE
+        else "{} {} {}   |  {} • random  |  {} • interact".format(
+            buttonToString(Button.ABILITY_1),
+            localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
+            buttonToString(Button.ABILITY_2),
+            buttonToString(Button.RELOAD),
+            buttonToString(Button.INTERACT)
+        )
+        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM
         else "{} • toggle".format(buttonToString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.BOOLEAN
         else "{0} {1} • {2} {3}  |  {4} + {0} {5} • {6} {4} + {3}  |  {7} • reset".format(
@@ -274,7 +282,7 @@ rule "— Draw preferences HUD":
             buttonToString(Button.RELOAD),
             buttonToString(Button.INTERACT)
         )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE
+        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.MULTIPLE_CHOICE_RANDOM
         else "hold {} • interact".format(buttonToString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT
         or localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.KEYBOARD
@@ -350,11 +358,12 @@ def UpdatePreferencesHUD():
                 eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "off"
             break
         case PreferenceType.MULTIPLE_CHOICE:
-        case PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE:
+        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
             eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
             eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]), iconString(Icon.ARROW_RIGHT))
             break
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
             eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
             eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]), iconString(Icon.ARROW_RIGHT))
             break
@@ -476,13 +485,17 @@ rule "— Interact / toggle preference":
         case PreferenceType.INTERACT:
         case PreferenceType.INTERACT_BOOLEAN:
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
         case PreferenceType.KEYBOARD:
             if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.KEYBOARD:
                 chaseInteractionProgress(
                     0.5,
                     not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
-            elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE:
+            elif (
+                preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE
+                or preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM
+            ):
                 chaseInteractionProgress(
                     preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0],
                     not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
@@ -505,7 +518,7 @@ rule "— Interact / toggle preference":
             stopChasingVariable(eventPlayer.interaction_progress)
             eventPlayer.interaction_progress = 0
             break
-        case PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE:
+        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
             eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = random.randint(
                 0,
                 len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1
@@ -595,7 +608,7 @@ rule "— Go to next option / increase preference":
             BuffImpactSoundQuiet()
             break
         case PreferenceType.MULTIPLE_CHOICE:
-        case PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE:
+        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]) - 1:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
             else:
@@ -604,6 +617,7 @@ rule "— Go to next option / increase preference":
             BuffImpactSoundQuiet()
             break
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] < len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] += 1
             else:
@@ -660,7 +674,7 @@ rule "— Go to previous option / decrease preference":
             BuffImpactSoundQuiet()
             break
         case PreferenceType.MULTIPLE_CHOICE:
-        case PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE:
+        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
             else:
@@ -669,6 +683,7 @@ rule "— Go to previous option / decrease preference":
             BuffImpactSoundQuiet()
             break
         case PreferenceType.INTERACT_MULTIPLE_CHOICE:
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
             if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] > 0:
                 eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] -= 1
             else:
@@ -700,7 +715,7 @@ rule "— Reset preference":
 
     switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
         case PreferenceType.MULTIPLE_CHOICE:
-        case PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE:
+        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
         case PreferenceType.COLOR_PICKER:
         case PreferenceType.NUMERIC:
         case PreferenceType.NUMERIC_REVERSIBLE:
@@ -709,12 +724,25 @@ rule "— Reset preference":
             BaseRingExplosion()
             BuffImpactSound()
             break
+        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
+            eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] = random.randint(
+                0,
+                len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]) - 1
+            )
+            BuffImpactSoundQuiet()
+            UpdatePreferencesHUD()
+            break   
 
 
 def InteractWithPreferences():
     @Name "— Preferences interactions"
 
     switch dynamic_preferences_index(eventPlayer):
+        case Preference.SWITCH_HERO:
+            eventPlayer.startForcingHero(getAllHeroes()[eventPlayer.preferences[Preference.SWITCH_HERO]])
+            wait()
+            eventPlayer.stopForcingCurrentHero()
+            break
         case Preference.FAST_TRAVEL_TO_OBJECTIVE:
             if (
                 eventPlayer.preferences[Preference.PLAYER_MODE]

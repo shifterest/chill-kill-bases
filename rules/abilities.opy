@@ -361,7 +361,7 @@ rule "— Ultimate mode • Infinite":
                 waitLoad()
                 waitUntil(
                     not eventPlayer.preferences[Preference.PLAYER_MODE]
-                    or not eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
+                    or eventPlayer.preferences[Preference.ULTIMATE_MODE] != UltimateMode.INFINITE
                     or not eventPlayer.isUsingUltimate(),
                     Math.INFINITY
                 )

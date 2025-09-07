@@ -453,7 +453,7 @@ def StaticTopDownCamera():
         eventPlayer.getEyePosition(),
         30
     )
-    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]::
+    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(

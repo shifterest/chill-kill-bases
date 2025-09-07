@@ -140,7 +140,7 @@ rule "— Populate global variables":
     preferences_data[Preference.THIRD_PERSON] = [
         "third-person camera",
         "Select a third-person camera perspective.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOM,
         ["off", "rear", "top-down", "static top-down"],
         null,
         true
@@ -162,6 +162,12 @@ rule "— Populate global variables":
         "Third-person camera smoothing is forcibly enabled in this server." if optimize else "Enable third-person camera smoothing, sacrificing accuracy.",
         PreferenceType.BOOLEAN
     ]
+    preferences_data[Preference.SWITCH_HERO] = [
+        "Switch hero",
+        "Switch heroes (in case of bugs in the Overwatch hero picker).",
+        PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM,
+        [0.6, [f"{heroIcon(hero)} {hero}" for hero in getAllHeroes()]]
+    ]
     preferences_data[Preference.SHOW_HOTKEYS] = [
         "show hotkeys",
         "Enable the display of gameplay hotkeys.",
@@ -178,7 +184,7 @@ rule "— Populate global variables":
     preferences_data[Preference.STASIS_MODE] = [
         "stasis mode",
         "Select the status effect to apply during stasis.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOM,
         ["knock down", "stun", "sleep", "freeze"],
         null,
         true
@@ -195,7 +201,7 @@ rule "— Populate global variables":
         "fast travel to objective",
         "Quickly jump to objectives.",
         PreferenceType.INTERACT_MULTIPLE_CHOICE,
-        [1, ["first", "second", "third"]],
+        [0.6, ["first", "second", "third"]],
         null,
         true
     ]
@@ -294,7 +300,7 @@ rule "— Populate global variables":
     preferences_data[Preference.DAMAGE_EFFECT] = [
         "damage effect",
         "Select the effect applied upon dealing damage.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOM,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
@@ -310,7 +316,7 @@ rule "— Populate global variables":
     preferences_data[Preference.HEALING_EFFECT] = [
         "healing effect",
         "Select the effect applied during healing.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOM,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
@@ -334,7 +340,7 @@ rule "— Populate global variables":
     preferences_data[Preference.THORNS_EFFECT] = [
         "thorns effect",
         "Select the effect applied when reflecting damage.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOM,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
@@ -435,7 +441,7 @@ rule "— Populate global variables":
     preferences_data[Preference.AURA_EFFECT] = [
         "aura effect",
         "Select the shape of the aura effect.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOM,
         ["sparkles", "cloud", "light shaft", "good aura", "bad aura", "ring", "sphere"],
         null,
         true
@@ -489,7 +495,7 @@ rule "— Populate global variables":
     preferences_data[Preference.MOUNTING_MODE] = [
         "mounting mode",
         "Select the preferred arrangement for mounting.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOMIZABLE,
+        PreferenceType.MULTIPLE_CHOICE_RANDOM,
         ["stack", "intersect", "front", "back", "left", "right"]
     ]
     preferences_data[Preference.TRAMPOLINE] = [
@@ -612,6 +618,7 @@ rule "— Populate global variables":
         Preference.PLAYER_MODE,
         Preference.BASE_MODE,
         Preference.THIRD_PERSON,
+        Preference.SWITCH_HERO,
         Preference.FAST_TRAVEL_TO_OBJECTIVE,
         Preference.CUSTOM_MESSAGE,
         Preference.AURA,
@@ -797,7 +804,7 @@ rule "— Initialize player":
                 bigMessage(eventPlayer, "then, join match voice chat for some music!".format(buttonToString(Button.INTERACT)))
                 break
     else:
-        bigMessage(eventPlayer, "welcome back!")
+        bigMessage(eventPlayer, "welcome back! Your settings have been restored.")
 
 
 rule "— End game":

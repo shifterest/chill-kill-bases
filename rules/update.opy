@@ -118,6 +118,7 @@ def UpdateAbilities():
             case Hero.CASSIDY:
             case Hero.RAMATTRA:
             case Hero.JUNO:
+                # case Hero.WUYANG:
                 eventPlayer.setAbility1Enabled(true)
                 break
             case Hero.WINSTON:

@@ -18,7 +18,7 @@ rule "— ADS in third-person":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
 
     eventPlayer.stopCamera()
 
@@ -45,7 +45,7 @@ rule "— Ultimate in third-person":
     @Condition eventPlayer.isUsingUltimate()
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
 
     eventPlayer.stopCamera()
 
@@ -67,7 +67,7 @@ rule "— Switch shoulder":
     @Condition eventPlayer.preferences[Preference.THIRD_PERSON_OFFSET] != 0
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)

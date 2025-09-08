@@ -64,7 +64,10 @@ settings {
 #!include "rules/special.opy"
 #!include "rules/unbound.opy"
 #!include "rules/update.opy"
+#!include "rules/uno.opy"
 
 rule "— Debug HUD":
     # @Disabled
     @Event eachPlayer
+
+    eventPlayer.isPlayingUno = true

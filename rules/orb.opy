@@ -9,7 +9,8 @@ rule "— Draw preferences HUD":
     @Condition isGameInProgress()
     @Condition isInitialized
 
-    # cursor
+    # --- Keyboard HUD ---
+    # Cursor
     createInWorldText(
         localPlayer if localPlayer.isUsingKeyboard else null,
         "▲",
@@ -31,7 +32,7 @@ rule "— Draw preferences HUD":
         Color.ORANGE,
         SpecVisibility.NEVER
     )
-    # keyboard
+    # Keyboard
     # createInWorldText(
     #     localPlayer if localPlayer.isUsingKeyboard else null,
     #     "{} | {}".format(
@@ -128,9 +129,9 @@ rule "— Draw preferences HUD":
         Color.WHITE,
         SpecVisibility.NEVER
     )
-    
-    # PREFERENCES
-    # preferences category
+
+    # --- Preferences ---
+    # Category
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         "viewing quick settings | {} • go to advanced settings".format(buttonToString(Button.MELEE))
@@ -149,7 +150,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
 
-    # preferences title
+    # Title
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         localPlayer.preferences_hud[PreferencesHUD.TITLE],
@@ -160,7 +161,7 @@ rule "— Draw preferences HUD":
         Color.WHITE,
         SpecVisibility.NEVER
     )
-    # preferences counter, previous / next preference hotkeys
+    # Preference counter and hotkeys
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         "{} {} • {} of {} • {} {}".format(
@@ -180,7 +181,7 @@ rule "— Draw preferences HUD":
         else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER
     )
-    # player preference
+    # Parameter
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         localPlayer.preferences_hud[PreferencesHUD.PARAMETER],
@@ -193,12 +194,11 @@ rule "— Draw preferences HUD":
         else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR]],
         SpecVisibility.NEVER
     )
-    # preference interaction progress
+    # Interaction progress
     createProgressBarInWorldText(
-        localPlayer
-        if localPlayer.isViewingPreferences
-        and localPlayer.interaction_progress > 0
-        else null,
+        localPlayer if (
+            localPlayer.isViewingPreferences or localPlayer.isPlayingUno
+        ) and localPlayer.interaction_progress > 0 else null,
         localPlayer.interaction_progress,
         null,
         orb_vector(0.4),
@@ -211,7 +211,7 @@ rule "— Draw preferences HUD":
         ProgressWorldTextReeval.VISIBILITY_POSITION_VALUES_AND_COLOR,
         SpecVisibility.NEVER
     )
-    # player preference counter hotkeys
+    # Parameter counter and hotkeys
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         "{} • jump".format(buttonToString(Button.INTERACT))
@@ -298,7 +298,7 @@ rule "— Draw preferences HUD":
         else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER
     )
-    # preference description
+    # Description
     createInWorldText(
         localPlayer if localPlayer.isViewingPreferences else null,
         localPlayer.preferences_hud[PreferencesHUD.DESCRIPTION],
@@ -309,13 +309,13 @@ rule "— Draw preferences HUD":
         Color.WHITE,
         SpecVisibility.NEVER
     )
-    # chill or zen mode required
+    # Chill or zen mode required
     createInWorldText(
         localPlayer
         if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED]
         and localPlayer.isViewingPreferences
         else null,
-        "chill / zen required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] and not localPlayer.preferences[Preference.PLAYER_MODE]
+        "Chill / zen required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] and not localPlayer.preferences[Preference.PLAYER_MODE]
         else "",
         localPlayer.base_vector,
         0.9,
@@ -325,7 +325,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
 
-    
+
 def UpdatePreferencesHUD():
     @Name "— Update preferences HUD"
 
@@ -396,7 +396,7 @@ rule "— View / hide preferences":
     @Condition eventPlayer.active_base_owner == eventPlayer
     @Condition not eventPlayer.isInModeratorMode
     @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition distance(
         eventPlayer.getEyePosition()
         + distance(eventPlayer.getEyePosition(), eventPlayer.base_vector)
@@ -411,7 +411,7 @@ rule "— View / hide preferences":
     waitUntil(
         eventPlayer.active_base_owner != eventPlayer
         or eventPlayer.isUsingKeyboard
-        or eventPlayer.preferences[Preference.DREAM_MODE]
+        or eventPlayer.isInDreamMode
         # or eventPlayer.isCommunicatingEmote()
         or distance(
             eventPlayer.getEyePosition()
@@ -659,7 +659,7 @@ rule "— Reset preference":
             )
             BuffImpactSoundQuiet()
             UpdatePreferencesHUD()
-            break   
+            break
 
 
 def InteractWithPreferences():

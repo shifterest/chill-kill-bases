@@ -41,6 +41,8 @@ rule "— Populate global variables":
     ban_usernames = []
     mod_usernames = [f"{hostPlayer}"]
 
+    uno_timer_duration = createWorkshopSetting(int[10:60], "game preferences", "UNO timer duration", 30)
+
     extended_color_data = [
         Color.WHITE,
         Color.GRAY,
@@ -68,12 +70,42 @@ rule "— Populate global variables":
         abilityIconString(Hero.HAZARD, Button.ABILITY_2)
     ]
 
+    uno_icon_data = [
+        [UnoCardKind.SKIP, iconString(Icon.NO)],
+        [UnoCardKind.REVERSE, abilityIconString(Hero.BASTION, Button.ABILITY_1)],
+        [UnoCardKind.DRAW_TWO, "+2"],
+        [UnoCardKind.WILD, iconString(Icon.SPIRAL)],
+        [UnoCardKind.WILD_DRAW_FOUR, "+4"]
+    ]
+
+    uno_color_data = [
+        ExtendedColor.RED,
+        ExtendedColor.YELLOW,
+        ExtendedColor.GREEN,
+        ExtendedColor.BLUE
+    ]
+
+    uno_card_data = [
+        [UnoCardKind.SKIP, "Skip"],
+        [UnoCardKind.REVERSE, "Reverse"],
+        [UnoCardKind.DRAW_TWO, "Draw Two"],
+        [UnoCardKind.WILD, "Wild"],
+        [UnoCardKind.WILD_DRAW_FOUR, "Wild Draw Four"]
+    ]
+
     preferences_data[Preference.GAME] = [
         "game preferences",
         "Customize various game settings.",
         PreferenceType.CATEGORY,
         null,
         ExtendedColor.GREEN
+    ]
+    preferences_data[Preference.MINIGAMES] = [
+        "Minigames",
+        "Play some games!",
+        PreferenceType.CATEGORY,
+        null,
+        ExtendedColor.RAINBOW
     ]
     preferences_data[Preference.HERO] = [
         "hero preferences",
@@ -220,6 +252,19 @@ rule "— Populate global variables":
         "Reset all your settings.",
         PreferenceType.INTERACT,
         1
+    ]
+    # Minigames
+    preferences_data[Preference.PLAY_UNO] = [
+        "Play UNO!",
+        "Initiate or join a game of UNO.",
+        PreferenceType.INTERACT,
+        0.6
+    ]
+    preferences_data[Preference.UNO_LEADERBOARD] = [
+        "UNO leaderboard",
+        "View the UNO leaderboard.",
+        PreferenceType.INTERACT,
+        0.6
     ]
     # Hero
     preferences_data[Preference.OUTLINE_COLOR] = [
@@ -600,6 +645,7 @@ rule "— Populate global variables":
     preferences_category_data = [
         [-1, Preference.GAME, Preference.DREAM, ExtendedColor.ORANGE],
         [Preference.GAME, Preference.PLAYER_MODE, Preference.RESET, ExtendedColor.GREEN],
+        [Preference.MINIGAMES, Preference.PLAY_UNO, Preference.UNO_LEADERBOARD, ExtendedColor.RAINBOW],
         [Preference.HERO, Preference.OUTLINE_COLOR, Preference.VOICE_PITCH, ExtendedColor.YELLOW],
         [Preference.ABILITIES, Preference.DAMAGE, Preference.AMMO_OVERLOAD, ExtendedColor.PURPLE],
         [Preference.EFFECTS, Preference.CUSTOM_MESSAGE, Preference.HIDE_AURA_IN_FIRST_PERSON, ExtendedColor.VIOLET],
@@ -614,6 +660,7 @@ rule "— Populate global variables":
         Preference.THIRD_PERSON,
         Preference.SWITCH_HERO,
         Preference.FAST_TRAVEL_TO_OBJECTIVE,
+        Preference.PLAY_UNO,
         Preference.CUSTOM_MESSAGE,
         Preference.AURA,
         Preference.SIZE,
@@ -691,7 +738,6 @@ rule "— Populate global variables":
     preferences_default[Preference.BASE_SPEED] = 100
     preferences_default[Preference.BASE_JUMP_SPEED] = 100
     # Dream
-    preferences_default[Preference.DREAM_MODE] = false
     preferences_default[Preference.AFK_TIMER] = 0
     preferences_default[Preference.SWITCH_TIMER] = 10
     preferences_default[Preference.CLIP_CAMERA] = true

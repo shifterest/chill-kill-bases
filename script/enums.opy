@@ -41,6 +41,7 @@ enum Numeric:
 enum Preference:
     # Main
     GAME,
+    MINIGAMES,
     HERO,
     ABILITIES,
     EFFECTS,
@@ -63,6 +64,9 @@ enum Preference:
     REMOVE_BASE_REMOTELY,
     SWITCH_TEAM,
     RESET,
+    # Minigames
+    PLAY_UNO,
+    UNO_LEADERBOARD,
     # Hero
     OUTLINE_COLOR,
     FLIGHT,
@@ -258,3 +262,53 @@ enum ThirdPersonCamera:
     TOP_DOWN,
     STATIC_TOP_DOWN,
     FRONT
+
+
+enum UnoCard:
+    COLOR,
+    KIND,
+    VALUE
+
+
+enum UnoCardKind:
+    NUMBER,
+    SKIP,
+    REVERSE,
+    DRAW_TWO,
+    WILD,
+    WILD_DRAW_FOUR
+
+
+enum GlobalUnoHUD:
+    TOP_CARD,
+    TOP_CARD_COLOR,
+
+
+enum UnoHUD:
+    CURRENT_TURN_DETAILS,
+    CURRENT_CARD,
+    CURRENT_TOTAL_CARDS,
+    CURRENT_CARD_COLOR,
+    DETAILS,
+    CYCLE_COLOR,
+    PLAY,
+    DRAW,
+    SKIP,
+    CHALLENGE,
+    CALL,
+    CATCH
+
+
+enum UnoDirection:
+    COUNTERCLOCKWISE = -1,
+    CLOCKWISE = 1
+
+
+enum IconData:
+    KIND,
+    ICON
+
+
+enum CardData:
+    KIND,
+    NAME

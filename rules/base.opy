@@ -276,7 +276,7 @@ rule "— Switch hero":
     @Condition eventPlayer.progress == 0
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isInModeratorStasis
     @Condition not eventPlayer.isInStasis
     @Condition not eventPlayer.isViewingPreferences
@@ -312,7 +312,7 @@ rule "— Remove base":
     @Condition eventPlayer.base_vector
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
@@ -322,7 +322,7 @@ rule "— Remove base":
         chaseProgress(
             1,
             eventPlayer.isInModeratorMode
-            or eventPlayer.preferences[Preference.DREAM_MODE]
+            or eventPlayer.isInDreamMode
             or eventPlayer.isViewingPreferences
             or eventPlayer.active_base_owner != eventPlayer
             or not eventPlayer.isHoldingButton(Button.INTERACT)
@@ -331,7 +331,7 @@ rule "— Remove base":
         chaseProgress(
             1,
             eventPlayer.isInModeratorMode
-            or eventPlayer.preferences[Preference.DREAM_MODE]
+            or eventPlayer.isInDreamMode
             or eventPlayer.active_base_owner == eventPlayer
             or not eventPlayer.isHoldingButton(Button.CROUCH)
             or not eventPlayer.isHoldingButton(Button.INTERACT)
@@ -351,7 +351,7 @@ rule "— Fast travel":
     @Condition eventPlayer.progress == 0
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.mount
     @Condition eventPlayer.preferences[Preference.FAST_TRAVEL]

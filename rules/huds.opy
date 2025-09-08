@@ -30,7 +30,7 @@ rule "— Draw global HUD":
     hudSubheader(
         localPlayer
         if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
-        and not localPlayer.preferences[Preference.DREAM_MODE]
+        and not localPlayer.isInDreamMode
         else null,
         "{} current • {} mean • {} peak".format(
             getServerLoad(), getAverageServerLoad(), getPeakServerLoad()
@@ -59,7 +59,7 @@ rule "— Draw global HUD":
     hudSubheader(
         localPlayer
         if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
-        and not localPlayer.preferences[Preference.DREAM_MODE]
+        and not localPlayer.isInDreamMode
         else null,
         "{} + {} • toggle moderator mode\n ".format(
             buttonToString(Button.CROUCH), buttonToString(Button.RELOAD)
@@ -74,7 +74,7 @@ rule "— Draw global HUD":
     hudSubtext(
         null
         if localPlayer.isInModeratorMode
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         else localPlayer,
         localPlayer.onscreen_hud[OnScreenHUD.MAIN],
         HudPosition.TOP,
@@ -224,7 +224,7 @@ rule "— Draw global HUD":
             localPlayer.isViewingPreferences
             or localPlayer.isInModeratorMode
             or localPlayer.isUsingKeyboard
-            or localPlayer.preferences[Preference.DREAM_MODE]
+            or localPlayer.isInDreamMode
         ) else "",
         HudPosition.TOP,
         4,
@@ -355,7 +355,7 @@ rule "— Draw global HUD":
         if localPlayer.active_base_owner != localPlayer
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         else localPlayer,
         Effect.ORB,
         rainbow_rgb()
@@ -371,7 +371,7 @@ rule "— Draw global HUD":
         if localPlayer.active_base_owner != localPlayer
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         or not localPlayer.isViewingPreferences
         else localPlayer,
         Effect.LIGHT_SHAFT,
@@ -388,7 +388,7 @@ rule "— Draw global HUD":
         if localPlayer.active_base_owner != localPlayer
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         or not localPlayer.isViewingPreferences
         or not localPlayer.isViewingAdvancedPreferences
         else localPlayer,
@@ -500,7 +500,7 @@ def CreateBase():
             createInWorldText(
                 eventPlayer
                 if eventPlayer.active_base_owner != eventPlayer
-                and not eventPlayer.preferences[Preference.DREAM_MODE]
+                and not eventPlayer.isInDreamMode
                 else null,
                 eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
                 eventPlayer.base_vector,
@@ -515,7 +515,7 @@ def CreateBase():
             createInWorldText(
                 eventPlayer
                 if eventPlayer.active_base_owner != eventPlayer
-                and not eventPlayer.preferences[Preference.DREAM_MODE]
+                and not eventPlayer.isInDreamMode
                 else null,
                 "{} {}'s base{}".format(
                     heroIcon(eventPlayer.getCurrentHero()),
@@ -550,7 +550,7 @@ def CreateBase():
                 [
                     p for p in getAllPlayers()
                     if p.active_base_owner != eventPlayer
-                    and not p.preferences[Preference.DREAM_MODE]
+                    and not p.isInDreamMode
                 ],
                 eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
                 eventPlayer.base_vector,
@@ -566,7 +566,7 @@ def CreateBase():
                 [
                     p for p in getAllPlayers()
                     if p.active_base_owner != eventPlayer
-                    and not p.preferences[Preference.DREAM_MODE]
+                    and not p.isInDreamMode
                 ],
                 "{} {}'s base{}".format(
                     heroIcon(eventPlayer.getCurrentHero()),

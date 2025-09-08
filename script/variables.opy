@@ -15,6 +15,9 @@ globalvar preferences_backups
 globalvar extended_color_data
 globalvar keys_data
 globalvar base_mode_icon_data
+globalvar uno_icon_data
+globalvar uno_color_data
+globalvar uno_card_data
 # preferences data
 globalvar preferences_data
 globalvar preferences_category_data
@@ -24,10 +27,30 @@ globalvar preferences_default
 # HUD
 globalvar moderator_list_hud
 globalvar moderator_list_hud_counter
+globalvar global_uno_hud
 # chased
 globalvar rainbow_red
 globalvar rainbow_green
 globalvar rainbow_blue
+# UNO
+globalvar uno_unshuffled_deck
+globalvar uno_i
+globalvar uno_j
+globalvar uno_deck
+globalvar uno_discard_pile
+globalvar uno_top_card              # color, kind, value
+globalvar uno_players
+globalvar uno_leavers
+globalvar uno_player_index
+globalvar uno_direction
+globalvar uno_pending_penalty_draw
+globalvar uno_pending_draw
+globalvar uno_must_call_player      # player who has only one card left
+globalvar uno_challenge_players     # challenger, challengee
+globalvar unoIsBusy
+globalvar uno_timer
+globalvar uno_timer_duration
+globalvar uno_winner
 # miscellaneous
 globalvar orb_radius
 globalvar mode
@@ -41,6 +64,7 @@ playervar progress_hud
 playervar in_world_hud
 playervar preferences_hud
 playervar onscreen_hud
+playervar uno_hud
 # moderator
 playervar name_to_ban
 # base
@@ -63,6 +87,7 @@ playervar preference_adjustment
 playervar isViewingAdvancedPreferences
 playervar isViewingPreferences
 # mode
+playervar isInDreamMode
 playervar isInModeratorMode
 playervar isInBaseCreationMode
 playervar isUsingKeyboard
@@ -85,6 +110,13 @@ playervar base_effect_id
 playervar icon_effect_id
 playervar description_effect_id
 playervar message_effect_id
+# UNO
+playervar isPlayingUno
+playervar isTakingTurn
+playervar isChallenging
+playervar uno_hand
+playervar uno_selected_card
+playervar uno_points
 # miscellaneous
 playervar focused_player
 playervar previous_position

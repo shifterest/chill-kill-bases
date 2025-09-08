@@ -23,6 +23,9 @@ subroutine RearSpectatorCamera
 subroutine RemoveBase
 subroutine Repel
 subroutine ReturnImmediately
+subroutine UnoBeginDiscardPile
+subroutine UnoStartTurn
+subroutine UnoStartGame
 subroutine StaticTopDownCamera
 subroutine StopCamera
 subroutine SwitchSpectatedPlayer

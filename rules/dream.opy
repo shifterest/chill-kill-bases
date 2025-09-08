@@ -12,7 +12,7 @@ def DreamMode():
     eventPlayer.disableHeroHUD()
     UpdatePhase()
     waitUntil(eventPlayer.isHoldingButton(Button.JUMP) or isActive(), Math.INFINITY)
-    eventPlayer.preferences[Preference.DREAM_MODE] = false
+    eventPlayer.isInDreamMode = false
     eventPlayer.enableHeroHud()
     UpdatePhase()
     async(UpdateCamera, AsyncBehavior.RESTART)
@@ -21,7 +21,7 @@ def DreamMode():
 
 rule "— Switch spectated player":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition eventPlayer.isInDreamMode
 
     do:
         eventPlayer.focused_player = random.choice(
@@ -38,7 +38,7 @@ rule "— Switch spectated player":
             eventPlayer.focused_player = eventPlayer
         DreamCamera()
         waitUntil(
-            not eventPlayer.preferences[Preference.DREAM_MODE]
+            not eventPlayer.isInDreamMode
             or not eventPlayer.focused_player.hasSpawned()
             or eventPlayer.focused_player.isInvisible,
             eventPlayer.preferences[Preference.SWITCH_TIMER]
@@ -54,11 +54,11 @@ rule "— Dream on AFK":
     if (
         eventPlayer.isInModeratorMode
         or eventPlayer.isUsingKeyboard
-        or eventPlayer.preferences[Preference.DREAM_MODE]
+        or eventPlayer.isInDreamMode
         or eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
     ):
         return
-    eventPlayer.preferences[Preference.DREAM_MODE] = true
+    eventPlayer.isInDreamMode = true
     DreamMode()
 
 

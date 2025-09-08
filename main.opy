@@ -1,4 +1,5 @@
 #!suppressWarnings w_ow2_rule_condition_chase
+#!suppressWarnings w_wait_until
 
 settings {
     "main": {
@@ -67,7 +68,7 @@ settings {
 #!include "rules/uno.opy"
 
 rule "— Debug HUD":
-    # @Disabled
+    @Disabled
     @Event eachPlayer
 
     eventPlayer.isPlayingUno = true

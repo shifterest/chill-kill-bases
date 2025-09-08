@@ -71,11 +71,11 @@ rule "— Populate global variables":
     ]
 
     uno_icon_data = [
-        [UnoCardKind.SKIP, iconString(Icon.NO)],
-        [UnoCardKind.REVERSE, abilityIconString(Hero.BASTION, Button.ABILITY_1)],
-        [UnoCardKind.DRAW_TWO, "+2"],
-        [UnoCardKind.WILD, iconString(Icon.SPIRAL)],
-        [UnoCardKind.WILD_DRAW_FOUR, "+4"]
+        [UnoCardType.SKIP, iconString(Icon.NO)],
+        [UnoCardType.REVERSE, abilityIconString(Hero.BASTION, Button.ABILITY_1)],
+        [UnoCardType.DRAW_TWO, "+2"],
+        [UnoCardType.WILD, iconString(Icon.SPIRAL)],
+        [UnoCardType.WILD_DRAW_FOUR, "+4"]
     ]
 
     uno_color_data = [
@@ -86,11 +86,11 @@ rule "— Populate global variables":
     ]
 
     uno_card_data = [
-        [UnoCardKind.SKIP, "Skip"],
-        [UnoCardKind.REVERSE, "Reverse"],
-        [UnoCardKind.DRAW_TWO, "Draw Two"],
-        [UnoCardKind.WILD, "Wild"],
-        [UnoCardKind.WILD_DRAW_FOUR, "Wild Draw Four"]
+        [UnoCardType.SKIP, "Skip"],
+        [UnoCardType.REVERSE, "Reverse"],
+        [UnoCardType.DRAW_TWO, "Draw Two"],
+        [UnoCardType.WILD, "Wild"],
+        [UnoCardType.WILD_DRAW_FOUR, "Wild Draw Four"]
     ]
 
     preferences_data[Preference.GAME] = [
@@ -768,6 +768,9 @@ rule "— Initialize game":
 rule "— Initialize player":
     @Event eachPlayer
     @Condition isInitialized
+
+    # UNO
+    eventPlayer.uno_points = 0 # TODO: backup
 
     eventPlayer.disableGamemodeHud()
     if not createWorkshopSetting(bool, "match preferences", "enable scoreboard", true, 2):

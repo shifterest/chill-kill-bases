@@ -26,6 +26,7 @@ subroutine ReturnImmediately
 subroutine UnoBeginDiscardPile
 subroutine UnoStartTurn
 subroutine UnoStartGame
+subroutine UnoDrawChallenged
 subroutine StaticTopDownCamera
 subroutine StopCamera
 subroutine SwitchSpectatedPlayer
@@ -53,3 +54,6 @@ subroutine UpdatePreferencesHUD
 subroutine UpdateProjectiles
 subroutine UpdateRider
 subroutine UpdateSizeNoclip
+subroutine UnoDrawCaught
+subroutine UnoReshuffle
+subroutine UnoFixPlayerState

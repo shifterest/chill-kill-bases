@@ -4,393 +4,6 @@ rule "Preferences":
     @Disabled
     @Delimiter
 
-
-rule "— Draw preferences HUD":
-    @Condition isGameInProgress()
-    @Condition isInitialized
-
-    # --- Keyboard HUD ---
-    # Cursor
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "▲",
-        updateEveryFrame(
-            localPlayer.getEyePosition()
-            + vect(
-                min(43.5, max(-43.5, angleDifference(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()))) / 35
-                * cosDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
-                + sinDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1])),
-                -min(27, max(-21.7, angleDifference(verticalAngleOfDirection( localPlayer.previous_position_direction[1]), localPlayer.getVerticalFacingAngle()))) / 35,
-                -min(43.5, max(-43.5, angleDifference(horizontalAngleOfDirection( localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()))) / 35
-                * sinDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
-                + cosDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
-            )
-        ),
-        2,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.ORANGE,
-        SpecVisibility.NEVER
-    )
-    # Keyboard
-    # createInWorldText(
-    #     localPlayer if localPlayer.isUsingKeyboard else null,
-    #     "{} | {}".format(
-    #         angleDifference(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()),
-    #         angleDifference(verticalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getVerticalFacingAngle())
-    #     ),
-    #     menu_vector(0, 0.35),
-    #     1,
-    #     Clip.NONE,
-    #     WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-    #     Color.WHITE,
-    #     SpecVisibility.NEVER
-    # )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "{}{}".format(
-            localPlayer.preferences[Preference.CUSTOM_MESSAGE],
-            "|" if getTotalTimeElapsed() % 1 <= 0.5 else " "
-        ),
-        menu_vector(0, 0.3),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "♥     ♡     ツ     ♪     ★     ▲     ▼",
-        menu_vector(0, 0.15),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "~     !     @     #     $     %     ^     &     *     (     )     _     +     backspace",
-        menu_vector(0, 0.05),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "`     1     2     3     4     5     6     7     8     9     0     -     =     {     [     |     ",
-        menu_vector(0, -0.05),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "q     w     e     r     t     y     u     i     o     p          }     ]     \\",
-        menu_vector(0, -0.2),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "a     s     d     f     g     h     j     k     l     :     ;     \"     '",
-        menu_vector(0, -0.3),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "          z     x     c     v     b     n     m     <     >     ,     .     ?     /",
-        menu_vector(0, -0.4),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
-        "space     •     exit",
-        menu_vector(0, -0.55),
-        2.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_AND_POSITION,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-
-    # --- Preferences ---
-    # Category
-    createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
-        "viewing quick settings | {} • go to advanced settings".format(buttonToString(Button.MELEE))
-        if not localPlayer.isViewingAdvancedPreferences
-        else "viewing advanced settings | {} • go to quick settings".format(buttonToString(Button.MELEE))
-        if (localPlayer.preferences_index >= preferences_category_data[0][PreferenceCategoryProperty.STARTING_INDEX]
-        and localPlayer.preferences_index <= preferences_category_data[0][PreferenceCategoryProperty.ENDING_INDEX])
-        else "viewing advanced settings | {} • go to categories".format(buttonToString(Button.MELEE)),
-        orb_vector(0.9),
-        0.9,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
-        if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
-        else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
-        SpecVisibility.NEVER
-    )
-
-    # Title
-    createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
-        localPlayer.preferences_hud[PreferencesHUD.TITLE],
-        orb_vector(0.8),
-        1.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    # Preference counter and hotkeys
-    createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
-        "{} {} • {} of {} • {} {}".format(
-            buttonToString(Button.PRIMARY_FIRE),
-            iconString(Icon.ARROW_LEFT),
-            localPlayer.preferences_hud[PreferencesHUD.CURRENT_PREFERENCE],
-            localPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES],
-            iconString(Icon.ARROW_RIGHT),
-            buttonToString(Button.SECONDARY_FIRE)
-        ),
-        orb_vector(0.7),
-        0.9,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
-        if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
-        else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
-        SpecVisibility.NEVER
-    )
-    # Parameter
-    createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
-        localPlayer.preferences_hud[PreferencesHUD.PARAMETER],
-        orb_vector(0.5),
-        1.5,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
-        if localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] == ExtendedColor.RAINBOW
-        else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR]],
-        SpecVisibility.NEVER
-    )
-    # Interaction progress
-    createProgressBarInWorldText(
-        localPlayer if (
-            localPlayer.isViewingPreferences or localPlayer.isPlayingUno
-        ) and localPlayer.interaction_progress > 0 else null,
-        localPlayer.interaction_progress,
-        null,
-        orb_vector(0.4),
-        0.8,
-        Clip.NONE,
-        rainbow_rgb()
-        if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
-        else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
-        null,
-        ProgressWorldTextReeval.VISIBILITY_POSITION_VALUES_AND_COLOR,
-        SpecVisibility.NEVER
-    )
-    # Parameter counter and hotkeys
-    createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
-        "{} • jump".format(buttonToString(Button.INTERACT))
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.CATEGORY
-        else "{} {} {}  |  {} • reset".format(
-            buttonToString(Button.ABILITY_1),
-            localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
-            buttonToString(Button.ABILITY_2),
-            buttonToString(Button.RELOAD)
-        )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.MULTIPLE_CHOICE
-        else "{} {} {}  |  {} • random  |  {} • reset".format(
-            buttonToString(Button.ABILITY_1),
-            localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
-            buttonToString(Button.ABILITY_2),
-            buttonToString(Button.INTERACT),
-            buttonToString(Button.RELOAD)
-        )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.COLOR_PICKER
-        else "{} {} {}  |  {} • interact".format(
-            buttonToString(Button.ABILITY_1),
-            localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
-            buttonToString(Button.ABILITY_2),
-            buttonToString(Button.INTERACT)
-        )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE
-        else "{} {} {}   |  {} • random  |  {} • interact".format(
-            buttonToString(Button.ABILITY_1),
-            localPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS],
-            buttonToString(Button.ABILITY_2),
-            buttonToString(Button.RELOAD),
-            buttonToString(Button.INTERACT)
-        )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM
-        else "{} • toggle".format(buttonToString(Button.INTERACT))
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.BOOLEAN
-        else "{0} {1} • {2} {3}  |  {4} + {0} {5} • {6} {4} + {3}  |  {7} • reset".format(
-            buttonToString(Button.ABILITY_1),
-            iconString(Icon.ARROW_DOWN),
-            iconString(Icon.ARROW_UP),
-            buttonToString(Button.ABILITY_2),
-            buttonToString(Button.CROUCH),
-            iconString(Icon.ARROW_LEFT),
-            iconString(Icon.ARROW_RIGHT),
-            buttonToString(Button.RELOAD)
-        )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.NUMERIC
-        else "{0} {1} • {2} {3}  |  {4} + {0} {5} • {6} {4} + {3}  |  {8} • reverse  |  {7} • reset".format(
-            buttonToString(Button.ABILITY_1),
-            iconString(Icon.ARROW_DOWN),
-            iconString(Icon.ARROW_UP),
-            buttonToString(Button.ABILITY_2),
-            buttonToString(Button.CROUCH),
-            iconString(Icon.ARROW_LEFT),
-            iconString(Icon.ARROW_RIGHT),
-            buttonToString(Button.RELOAD),
-            buttonToString(Button.INTERACT)
-        )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.NUMERIC_REVERSIBLE
-        else "{0} {1} • {2} {3}  |  {4} + {0} {5} • {6} {4} + {3}  |  {8} • random  |  {7} • reset".format(
-            buttonToString(Button.ABILITY_1),
-            iconString(Icon.ARROW_DOWN),
-            iconString(Icon.ARROW_UP),
-            buttonToString(Button.ABILITY_2),
-            buttonToString(Button.CROUCH),
-            iconString(Icon.ARROW_LEFT),
-            iconString(Icon.ARROW_RIGHT),
-            buttonToString(Button.RELOAD),
-            buttonToString(Button.INTERACT)
-        )
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.MULTIPLE_CHOICE_RANDOM
-        else "hold {} • interact".format(buttonToString(Button.INTERACT))
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT
-        or localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.KEYBOARD
-        else "hold {} • enable".format(buttonToString(Button.INTERACT))
-        if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.INTERACT_BOOLEAN
-        else "",
-        orb_vector(0.4),
-        0.9,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
-        if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
-        else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
-        SpecVisibility.NEVER
-    )
-    # Description
-    createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
-        localPlayer.preferences_hud[PreferencesHUD.DESCRIPTION],
-        orb_vector(0.2),
-        0.9,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-        Color.WHITE,
-        SpecVisibility.NEVER
-    )
-    # Chill or zen mode required
-    createInWorldText(
-        localPlayer
-        if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED]
-        and localPlayer.isViewingPreferences
-        else null,
-        "Chill / zen required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] and not localPlayer.preferences[Preference.PLAYER_MODE]
-        else "",
-        localPlayer.base_vector,
-        0.9,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-        Color.ORANGE,
-        SpecVisibility.NEVER
-    )
-
-
-def UpdatePreferencesHUD():
-    @Name "— Update preferences HUD"
-
-    eventPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] = [
-        cat[PreferenceCategoryProperty.COLOR] for cat in preferences_category_data
-        if (dynamic_preferences_index(eventPlayer) >= cat[PreferenceCategoryProperty.STARTING_INDEX]
-        and dynamic_preferences_index(eventPlayer) <= cat[PreferenceCategoryProperty.ENDING_INDEX])
-    ][0]
-    eventPlayer.preferences_hud[PreferencesHUD.TITLE] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TITLE]
-    eventPlayer.preferences_hud[PreferencesHUD.CURRENT_PREFERENCE] = eventPlayer.preferences_index + 1
-    if eventPlayer.isViewingAdvancedPreferences:
-        eventPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES] = len(preferences_data)
-    else:
-        eventPlayer.preferences_hud[PreferencesHUD.TOTAL_PREFERENCES] = len(quick_preferences_data)
-    eventPlayer.preferences_hud[PreferencesHUD.TYPE] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]
-    eventPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.CHILL_REQUIRED]
-    if not eventPlayer.preferences[Preference.PLAYER_MODE] and preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.CHILL_REQUIRED]:
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = ExtendedColor.GRAY
-    elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]:
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
-    elif preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS]:
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.COLORS]
-    else:
-        eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = ExtendedColor.WHITE
-    switch eventPlayer.preferences_hud[PreferencesHUD.TYPE]:
-        case PreferenceType.BOOLEAN:
-            if eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]:
-                eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "on"
-            else:
-                eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "off"
-            break
-        case PreferenceType.MULTIPLE_CHOICE:
-        case PreferenceType.MULTIPLE_CHOICE_RANDOM:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
-            eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS]), iconString(Icon.ARROW_RIGHT))
-            break
-        case PreferenceType.INTERACT_MULTIPLE_CHOICE:
-        case PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
-            eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][1]), iconString(Icon.ARROW_RIGHT))
-            break
-        case PreferenceType.COLOR_PICKER:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] = eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = extended_color_data[eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
-            eventPlayer.preferences_hud[PreferencesHUD.CURRENT_TOTAL_PARAMETERS] = "{} • {} of {} • {}".format(iconString(Icon.ARROW_LEFT), eventPlayer.preferences[dynamic_preferences_index(eventPlayer)] + 1, len(extended_color_data), iconString(Icon.ARROW_RIGHT))
-            break
-        case PreferenceType.CATEGORY:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "• • •"
-            break
-        case PreferenceType.NUMERIC:
-        case PreferenceType.NUMERIC_REVERSIBLE:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = "{}{}".format(eventPlayer.preferences[dynamic_preferences_index(eventPlayer)], preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.SUFFIX] if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][Numeric.SUFFIX] else " units")
-            break
-        case PreferenceType.KEYBOARD:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = eventPlayer.preferences[Preference.CUSTOM_MESSAGE]
-            break
-        default:
-            eventPlayer.preferences_hud[PreferencesHUD.PARAMETER] = ""
-            break
-    if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.DESCRIPTIONS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]:
-        eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.DESCRIPTIONS][eventPlayer.preferences[dynamic_preferences_index(eventPlayer)]]
-    else:
-        eventPlayer.preferences_hud[PreferencesHUD.DESCRIPTION] = preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.DESCRIPTIONS]
-
-
 rule "— View / hide preferences":
     @Event eachPlayer
     @Condition eventPlayer.active_base_owner == eventPlayer
@@ -430,6 +43,7 @@ rule "— View / hide preferences":
 rule "— Switch between quick and advanced preferences":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
+    @Condition not eventPlayer.isPlayingUno
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
     if eventPlayer.isViewingAdvancedPreferences:
@@ -457,6 +71,7 @@ rule "— Switch between quick and advanced preferences":
 rule "— Interact / toggle preference":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
+    @Condition not eventPlayer.isPlayingUno
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
     switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
@@ -539,6 +154,7 @@ rule "— Interact / toggle preference":
 rule "— Navigate preferences":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
+    @Condition not eventPlayer.isPlayingUno
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
 
     eventPlayer.preference_adjustment = -1 if eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) else 1
@@ -567,6 +183,7 @@ rule "— Navigate preferences":
 rule "— Adjust preference, go to next/previous option":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
+    @Condition not eventPlayer.isPlayingUno
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) or eventPlayer.isHoldingButton(Button.ABILITY_2)
 
     do:
@@ -639,6 +256,7 @@ rule "— Adjust preference, go to next/previous option":
 rule "— Reset preference":
     @Event eachPlayer
     @Condition eventPlayer.isViewingPreferences
+    @Condition not eventPlayer.isPlayingUno
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
     switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
@@ -666,6 +284,15 @@ def InteractWithPreferences():
     @Name "— Preferences interactions"
 
     switch dynamic_preferences_index(eventPlayer):
+        case Preference.PLAY_UNO:
+            if eventPlayer in uno_leavers:
+                iconMessage(eventPlayer, Icon.WARNING, "You left this game. You may join the next one.")
+            else:
+                waitUntil(not unoIsBusy, 1)
+                uno_player_queue.append(eventPlayer)
+                eventPlayer.isPlayingUno = true
+                iconMessage(eventPlayer, Icon.CHECKMARK, "Joined UNO")
+            break
         case Preference.SWITCH_HERO:
             eventPlayer.startForcingHero(getAllHeroes()[eventPlayer.preferences[Preference.SWITCH_HERO]])
             wait()

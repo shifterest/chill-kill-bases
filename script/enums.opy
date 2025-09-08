@@ -266,11 +266,11 @@ enum ThirdPersonCamera:
 
 enum UnoCard:
     COLOR,
-    KIND,
+    TYPE,
     VALUE
 
 
-enum UnoCardKind:
+enum UnoCardType:
     NUMBER,
     SKIP,
     REVERSE,
@@ -305,10 +305,10 @@ enum UnoDirection:
 
 
 enum IconData:
-    KIND,
+    TYPE,
     ICON
 
 
 enum CardData:
-    KIND,
+    TYPE,
     NAME

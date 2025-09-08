@@ -1,57 +1,61 @@
 #!mainFile "../main.opy"
 
-# GLOBAL VARIABLES
-# player lists
+# --- Global Variables ---
+# Player lists
 globalvar god_usernames
 globalvar mod_usernames
 globalvar ban_usernames
 globalvar comms_ban_usernames
 globalvar god_mod_list
-# backup lists
+# Backup lists
 globalvar player_names_backups
 globalvar base_vectors_backups
 globalvar preferences_backups
-# data
+# Data
 globalvar extended_color_data
 globalvar keys_data
 globalvar base_mode_icon_data
 globalvar uno_icon_data
 globalvar uno_color_data
 globalvar uno_card_data
-# preferences data
+# Preferences data
 globalvar preferences_data
 globalvar preferences_category_data
 globalvar quick_preferences_data
-# default preferences
+# Default preferences
 globalvar preferences_default
 # HUD
 globalvar moderator_list_hud
 globalvar moderator_list_hud_counter
 globalvar global_uno_hud
-# chased
+# Chased
 globalvar rainbow_red
 globalvar rainbow_green
 globalvar rainbow_blue
 # UNO
+globalvar unoHasStarted
+globalvar unoIsBusy
+globalvar unoChallengeIsSuccessful
+globalvar unoCalled
+globalvar uno_direction
+globalvar uno_winner
 globalvar uno_unshuffled_deck
-globalvar uno_i
-globalvar uno_j
 globalvar uno_deck
 globalvar uno_discard_pile
-globalvar uno_top_card              # color, kind, value
+globalvar uno_top_card              # color, type, value
 globalvar uno_players
+globalvar uno_player_queue
 globalvar uno_leavers
 globalvar uno_player_index
-globalvar uno_direction
+globalvar uno_previous_player
 globalvar uno_pending_penalty_draw
 globalvar uno_pending_draw
-globalvar uno_must_call_player      # player who has only one card left
-globalvar uno_challenge_players     # challenger, challengee
-globalvar unoIsBusy
 globalvar uno_timer
 globalvar uno_timer_duration
-globalvar uno_winner
-# miscellaneous
+globalvar uno_i
+globalvar uno_j
+globalvar uno_temp
+# Miscellaneous
 globalvar orb_radius
 globalvar mode
 globalvar optimize
@@ -117,6 +121,7 @@ playervar isChallenging
 playervar uno_hand
 playervar uno_selected_card
 playervar uno_points
+playervar uno_i
 # miscellaneous
 playervar focused_player
 playervar previous_position

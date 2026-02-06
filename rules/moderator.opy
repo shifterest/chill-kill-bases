@@ -181,11 +181,11 @@ rule "— Remove base":
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "{} doesn't have a base".format(eventPlayer.focused_player))
     else:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "remove {} {}'s base...".format(
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "remove {} {}'s base...".format(
             heroIcon(eventPlayer.focused_player.getCurrentHero()),
             eventPlayer.focused_player
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = ExtendedColor.RED
+        eventPlayer.progress_hud[ProgHUD.COLOR] = ExtendedColor.RED
         chaseProgress(
             1,
             not eventPlayer.focused_player.base_vector
@@ -216,11 +216,11 @@ rule "— Teleport player to you":
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't teleport {} to you".format(eventPlayer.focused_player))
     else:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "teleporting {} {} to you...".format(
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "teleporting {} {} to you...".format(
             heroIcon(eventPlayer.focused_player.getCurrentHero()),
             eventPlayer.focused_player
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
         chaseProgress(
             0.6,
             not eventPlayer.focused_player.hasSpawned()
@@ -247,11 +247,11 @@ rule "— Teleport to player":
         DebuffImpactSoundPlayerFocus()
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't teleport to {}".format(eventPlayer.focused_player))
     else:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "teleporting to {} {}...".format(
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "teleporting to {} {}...".format(
             heroIcon(eventPlayer.focused_player.getCurrentHero()),
             eventPlayer.focused_player
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
         chaseProgress(
             0.6,
             not eventPlayer.focused_player.hasSpawned()
@@ -304,8 +304,8 @@ rule "— Ban player":
         iconMessage(eventPlayer, iconString(Icon.WARNING), "you can't ban {}".format(eventPlayer.focused_player))
     else:
         eventPlayer.name_to_ban = "{}".format(eventPlayer.focused_player)
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "banning {}...".format(eventPlayer.name_to_ban)
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = ExtendedColor.RED
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "banning {}...".format(eventPlayer.name_to_ban)
+        eventPlayer.progress_hud[ProgHUD.COLOR] = ExtendedColor.RED
         chaseProgress(
             1.5,
             not eventPlayer.isHoldingButton(Button.CROUCH)

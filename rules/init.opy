@@ -691,7 +691,6 @@ rule "— Populate global variables":
     preferences_default[Preference.BASE_SPEED] = 100
     preferences_default[Preference.BASE_JUMP_SPEED] = 100
     # Dream
-    preferences_default[Preference.DREAM_MODE] = false
     preferences_default[Preference.AFK_TIMER] = 0
     preferences_default[Preference.SWITCH_TIMER] = 10
     preferences_default[Preference.CLIP_CAMERA] = true

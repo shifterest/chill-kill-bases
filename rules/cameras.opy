@@ -8,7 +8,7 @@ rule "Cameras":
 rule "— ADS in third-person":
     @Event eachPlayer
     @Condition not optimize
-    @Condition eventPlayer.preferences[Preference.THIRD_PERSON]
+    @Condition pref(Preference.THIRD_PERSON)
     @Condition (
         eventPlayer.getCurrentHero() == Hero.ANA
         or eventPlayer.getCurrentHero() == Hero.ASHE
@@ -18,7 +18,7 @@ rule "— ADS in third-person":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
 
     eventPlayer.stopCamera()
 
@@ -37,7 +37,7 @@ rule "— ADS in third-person":
 rule "— Ultimate in third-person":
     @Event eachPlayer
     @Condition not optimize
-    @Condition eventPlayer.preferences[Preference.THIRD_PERSON]
+    @Condition pref(Preference.THIRD_PERSON)
     @Condition (
         eventPlayer.getCurrentHero() == Hero.BASTION
         or eventPlayer.getCurrentHero() == Hero.JUNKRAT
@@ -45,7 +45,7 @@ rule "— Ultimate in third-person":
     @Condition eventPlayer.isUsingUltimate()
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
 
     eventPlayer.stopCamera()
 
@@ -63,16 +63,16 @@ rule "— Ultimate in third-person":
 
 rule "— Switch shoulder":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.THIRD_PERSON] == ThirdPersonCamera.REAR
-    @Condition eventPlayer.preferences[Preference.THIRD_PERSON_OFFSET] != 0
+    @Condition pref(Preference.THIRD_PERSON) == ThirdPersonCamera.REAR
+    @Condition pref(Preference.THIRD_PERSON_OFFSET) != 0
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
-    eventPlayer.preferences[Preference.THIRD_PERSON_OFFSET] *= -1
+    pref(Preference.THIRD_PERSON_OFFSET) = pref(Preference.THIRD_PERSON_OFFSET) * -1
     async(UpdateCamera, AsyncBehavior.RESTART)
 
 
@@ -84,7 +84,7 @@ def UpdateCamera():
     if eventPlayer.isInBaseCreationMode:
         BaseCreationCamera()
     elif eventPlayer.active_base_owner == eventPlayer:
-        switch eventPlayer.preferences[Preference.THIRD_PERSON]:
+        switch pref(Preference.THIRD_PERSON):
             default:
             case ThirdPersonCamera.REAR:
                 RearCamera()
@@ -93,7 +93,7 @@ def UpdateCamera():
                 StopCamera()
                 break
     else:
-        switch eventPlayer.preferences[Preference.THIRD_PERSON]:
+        switch pref(Preference.THIRD_PERSON):
             default:
             case ThirdPersonCamera.REAR:
                 RearCamera()
@@ -116,10 +116,10 @@ def BaseCreationCamera():
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
     eventPlayer.startCamera(
-        eventPlayer.getEyePosition(), 
+        eye(), 
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
@@ -129,31 +129,31 @@ def BaseCreationCamera():
     wait()
     eventPlayer.startCamera(
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + (
-                Vector.UP + eventPlayer.getFacingDirection() * eventPlayer.preferences[Preference.BASE_SIZE] * -1.5
+            eye(),
+            eye() + (
+                Vector.UP + face() * pref(Preference.BASE_SIZE) * -1.5
             ),
             null,
             eventPlayer,
             false
         ).getHitPosition(),
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
         ).getHitPosition(),
         30
     )
-    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
                 raycast(
-                    eventPlayer.getEyePosition(),
-                    eventPlayer.getEyePosition() + (
-                        Vector.UP + eventPlayer.getFacingDirection() * eventPlayer.preferences[Preference.BASE_SIZE] * -1.5
+                    eye(),
+                    eye() + (
+                        Vector.UP + face() * pref(Preference.BASE_SIZE) * -1.5
                     ),
                     null,
                     eventPlayer,
@@ -162,8 +162,8 @@ def BaseCreationCamera():
             ),
             updateEveryFrame(
                 raycast(
-                    eventPlayer.getEyePosition(),
-                    eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+                    eye(),
+                    eye() + face() * 100,
                     null,
                     eventPlayer,
                     false
@@ -178,10 +178,10 @@ def RearCamera():
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
     eventPlayer.startCamera(
-        eventPlayer.getEyePosition(), 
+        eye(), 
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
@@ -191,61 +191,61 @@ def RearCamera():
     wait()
     eventPlayer.startCamera(
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + (
+            eye(),
+            eye() + (
                 Vector.UP * (
                     (
-                        eventPlayer.preferences[Preference.SIZE]
-                        if eventPlayer.preferences[Preference.PLAYER_MODE]
+                        pref(Preference.SIZE)
+                        if pref(Preference.PLAYER_MODE)
                         else 100
                     ) / 100
-                ) + eventPlayer.getFacingDirection()
+                ) + face()
                 * (
                     (
-                        eventPlayer.preferences[Preference.SIZE]
-                        if eventPlayer.preferences[Preference.PLAYER_MODE]
+                        pref(Preference.SIZE)
+                        if pref(Preference.PLAYER_MODE)
                         else 100
                     ) / -40
-                ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
-                + crossProduct(Vector.UP, eventPlayer.getFacingDirection())
-                * eventPlayer.preferences[Preference.THIRD_PERSON_OFFSET]
+                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                + crossProduct(Vector.UP, face())
+                * pref(Preference.THIRD_PERSON_OFFSET)
             ),
             null,
             eventPlayer,
             false
         ).getHitPosition(),
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
         ).getHitPosition(),
         30
     )
-    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
                 raycast(
-                    eventPlayer.getEyePosition(),
-                    eventPlayer.getEyePosition() + (
+                    eye(),
+                    eye() + (
                         Vector.UP * (
                             (
-                                eventPlayer.preferences[Preference.SIZE]
-                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                pref(Preference.SIZE)
+                                if pref(Preference.PLAYER_MODE)
                                 else 100
                             ) / 100
-                        ) + eventPlayer.getFacingDirection()
+                        ) + face()
                         * (
                             (
-                                eventPlayer.preferences[Preference.SIZE]
-                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                pref(Preference.SIZE)
+                                if pref(Preference.PLAYER_MODE)
                                 else 100
                             ) / -40
-                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
-                        + crossProduct(Vector.UP, eventPlayer.getFacingDirection())
-                        * eventPlayer.preferences[Preference.THIRD_PERSON_OFFSET]
+                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                        + crossProduct(Vector.UP, face())
+                        * pref(Preference.THIRD_PERSON_OFFSET)
                     ),
                     null,
                     eventPlayer,
@@ -254,8 +254,8 @@ def RearCamera():
             ),
             updateEveryFrame(
                 raycast(
-                    eventPlayer.getEyePosition(),
-                    eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+                    eye(),
+                    eye() + face() * 100,
                     null,
                     eventPlayer,
                     false
@@ -269,10 +269,10 @@ def RearSpectatorCamera():
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
     eventPlayer.startCamera(
-        eventPlayer.getEyePosition(), 
+        eye(), 
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
@@ -298,7 +298,7 @@ def RearSpectatorCamera():
                         if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
                         else 100
                     ) / -40
-                ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
                 + crossProduct(Vector.UP, eventPlayer.focused_player.getFacingDirection())
                 * eventPlayer.focused_player.preferences[Preference.THIRD_PERSON_OFFSET]
             ),
@@ -315,7 +315,7 @@ def RearSpectatorCamera():
         ).getHitPosition(),
         30
     )
-    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
@@ -335,7 +335,7 @@ def RearSpectatorCamera():
                                 if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
                                 else 100
                             ) / -40
-                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
                         + crossProduct(Vector.UP, eventPlayer.focused_player.getFacingDirection())
                         * eventPlayer.focused_player.preferences[Preference.THIRD_PERSON_OFFSET]
                     ),
@@ -361,10 +361,10 @@ def TopDownCamera():
     @Name "— Enable top-down camera"
 
     eventPlayer.startCamera(
-        eventPlayer.getEyePosition(), 
+        eye(), 
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
@@ -374,46 +374,46 @@ def TopDownCamera():
     wait()
     eventPlayer.startCamera(
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + (
+            eye(),
+            eye() + (
                 Vector.UP * (
                     (
-                        eventPlayer.preferences[Preference.SIZE]
-                        if eventPlayer.preferences[Preference.PLAYER_MODE]
+                        pref(Preference.SIZE)
+                        if pref(Preference.PLAYER_MODE)
                         else 100
                     ) / 15
-                ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
-                - vect(eventPlayer.getFacingDirection().x, 0, eventPlayer.getFacingDirection().z)
+                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                - vect(face().x, 0, face().z)
             ),
             null,
             eventPlayer,
             false
         ).getHitPosition(),
-        eventPlayer.getEyePosition(),
+        eye(),
         30
     )
-    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
                 raycast(
-                    eventPlayer.getEyePosition(),
-                    eventPlayer.getEyePosition() + (
+                    eye(),
+                    eye() + (
                         Vector.UP * (
                             (
-                                eventPlayer.preferences[Preference.SIZE]
-                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                pref(Preference.SIZE)
+                                if pref(Preference.PLAYER_MODE)
                                 else 100
                             ) / 15
-                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
-                        - vect(eventPlayer.getFacingDirection().x, 0, eventPlayer.getFacingDirection().z)
+                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                        - vect(face().x, 0, face().z)
                     ),
                     null,
                     eventPlayer,
                     false
                 ).getHitPosition()
             ),
-            updateEveryFrame(eventPlayer.getEyePosition()),
+            updateEveryFrame(eye()),
             0
         )
 
@@ -422,10 +422,10 @@ def StaticTopDownCamera():
     @Name "— Enable static top-down camera"
 
     eventPlayer.startCamera(
-        eventPlayer.getEyePosition(), 
+        eye(), 
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
@@ -435,38 +435,38 @@ def StaticTopDownCamera():
     wait()
     eventPlayer.startCamera(
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + (
+            eye(),
+            eye() + (
                 Vector.UP * (
                     (
-                        eventPlayer.preferences[Preference.SIZE]
-                        if eventPlayer.preferences[Preference.PLAYER_MODE]
+                        pref(Preference.SIZE)
+                        if pref(Preference.PLAYER_MODE)
                         else 100
                     ) / 15
-                ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
                 + Vector.FORWARD
             ),
             null,
             eventPlayer,
             false
         ).getHitPosition(),
-        eventPlayer.getEyePosition(),
+        eye(),
         30
     )
-    if not optimize and not eventPlayer.preferences[Preference.THIRD_PERSON_SMOOTHING]:
+    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
                 raycast(
-                    eventPlayer.getEyePosition(),
-                    eventPlayer.getEyePosition() + (
+                    eye(),
+                    eye() + (
                         Vector.UP * (
                             (
-                                eventPlayer.preferences[Preference.SIZE]
-                                if eventPlayer.preferences[Preference.PLAYER_MODE]
+                                pref(Preference.SIZE)
+                                if pref(Preference.PLAYER_MODE)
                                 else 100
                             ) / 15
-                        ) * (eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE] / 100)
+                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
                         + Vector.FORWARD
                     ),
                     null,
@@ -474,7 +474,7 @@ def StaticTopDownCamera():
                     false
                 ).getHitPosition()
             ),
-            updateEveryFrame(eventPlayer.getEyePosition()),
+            updateEveryFrame(eye()),
             0
         )
 
@@ -483,10 +483,10 @@ def DreamCamera():
     @Name "— Enable dream camera"
 
     eventPlayer.startCamera(
-        eventPlayer.getEyePosition(), 
+        eye(), 
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false
@@ -494,7 +494,7 @@ def DreamCamera():
         1
     )
     wait()
-    if eventPlayer.preferences[Preference.CLIP_CAMERA]:
+    if pref(Preference.CLIP_CAMERA):
         eventPlayer.startCamera(
             raycast(
                 evalOnce(eventPlayer.focused_player).getEyePosition(),
@@ -522,10 +522,10 @@ def StopCamera():
     @Name "— Stop camera"
 
     eventPlayer.startCamera(
-        eventPlayer.getEyePosition(), 
+        eye(), 
         raycast(
-            eventPlayer.getEyePosition(),
-            eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+            eye(),
+            eye() + face() * 100,
             null,
             eventPlayer,
             false

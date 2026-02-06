@@ -7,8 +7,8 @@ rule "Abilities":
 
 rule "— Ability mode • No cooldown":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE]
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ABILITY_MODE)
 
     do:
         resetCooldown(Button.PRIMARY_FIRE)
@@ -46,8 +46,8 @@ rule "— Ability mode • Hold to spam • Primary fire (Brigitte)":
     @Event eachPlayer
     @Condition not optimize
     @Condition not isOverloaded
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.HOLD_TO_SPAM
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ABILITY_MODE) == AbilityMode.HOLD_TO_SPAM
     @Condition eventPlayer.getCurrentHero() == Hero.BRIGITTE
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
@@ -61,7 +61,7 @@ rule "— Ability mode • Hold to spam • Primary fire (Brigitte)":
         eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
         wait()
         eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
-        wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
+        wait(pref(Preference.ABILITY_SPAM_DELAY))
         eventPlayer.cancelPrimaryAction()
         wait()
     while RULE_CONDITION
@@ -74,8 +74,8 @@ rule "— Ability mode • Hold to spam • Secondary fire":
     @Event eachPlayer
     @Condition not optimize
     @Condition not isOverloaded
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.HOLD_TO_SPAM
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ABILITY_MODE) == AbilityMode.HOLD_TO_SPAM
     @Condition not (
         eventPlayer.getCurrentHero() == Hero.REINHARDT
         or eventPlayer.getCurrentHero() == Hero.BRIGITTE
@@ -91,7 +91,7 @@ rule "— Ability mode • Hold to spam • Secondary fire":
         eventPlayer.forceButtonPress(Button.SECONDARY_FIRE)
         wait()
         eventPlayer.stopForcingButton(Button.SECONDARY_FIRE)
-        wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
+        wait(pref(Preference.ABILITY_SPAM_DELAY))
         eventPlayer.cancelPrimaryAction()
         wait()
     while RULE_CONDITION
@@ -101,8 +101,8 @@ rule "— Ability mode • Hold to spam • Ability 1":
     @Event eachPlayer
     @Condition not optimize
     @Condition not isOverloaded
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.HOLD_TO_SPAM
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ABILITY_MODE) == AbilityMode.HOLD_TO_SPAM
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1)
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
@@ -114,7 +114,7 @@ rule "— Ability mode • Hold to spam • Ability 1":
         eventPlayer.forceButtonPress(Button.ABILITY_1)
         wait()
         eventPlayer.stopForcingButton(Button.ABILITY_1)
-        wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
+        wait(pref(Preference.ABILITY_SPAM_DELAY))
         eventPlayer.cancelPrimaryAction()
         wait()
     while RULE_CONDITION
@@ -124,8 +124,8 @@ rule "— Ability mode • Hold to spam • Ability 2":
     @Event eachPlayer
     @Condition not optimize
     @Condition not isOverloaded
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ABILITY_MODE] == AbilityMode.HOLD_TO_SPAM
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ABILITY_MODE) == AbilityMode.HOLD_TO_SPAM
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
@@ -139,7 +139,7 @@ rule "— Ability mode • Hold to spam • Ability 2":
         eventPlayer.forceButtonPress(Button.ABILITY_2)
         wait()
         eventPlayer.stopForcingButton(Button.ABILITY_2)
-        wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
+        wait(pref(Preference.ABILITY_SPAM_DELAY))
         eventPlayer.cancelPrimaryAction()
         wait()
     while RULE_CONDITION
@@ -147,8 +147,8 @@ rule "— Ability mode • Hold to spam • Ability 2":
 
 rule "— Ammo overload":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.AMMO_OVERLOAD]
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.AMMO_OVERLOAD)
 
     do:
         switch eventPlayer.getCurrentHero():
@@ -175,9 +175,9 @@ rule "— Ammo overload":
 
 rule "— Ultimate mode • No cooldown":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ULTIMATE_MODE]
-    @Condition eventPlayer.preferences[Preference.ULTIMATE_MODE] != UltimateMode.HOLD_TO_SPAM
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ULTIMATE_MODE)
+    @Condition pref(Preference.ULTIMATE_MODE) != UltimateMode.HOLD_TO_SPAM
     @Condition eventPlayer.getUltCharge() < 100
 
     do:
@@ -190,8 +190,8 @@ rule "— Ultimate mode • Infinite":
     @Event eachPlayer
     @Condition not optimize
     @Condition not isOverloaded
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ULTIMATE_MODE) == UltimateMode.INFINITE
     @Condition not eventPlayer.isUsingUltimate()
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
@@ -200,7 +200,7 @@ rule "— Ultimate mode • Infinite":
     do:
         switch eventPlayer.getCurrentHero():
             case Hero.WINSTON:
-                while eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.INFINITE:
+                while pref(Preference.PLAYER_MODE) and pref(Preference.ULTIMATE_MODE) == UltimateMode.INFINITE:
                     eventPlayer.setUltCharge(100)
                     eventPlayer.forceButtonPress(Button.ULTIMATE)
                     wait(5)
@@ -210,8 +210,8 @@ rule "— Ultimate mode • Infinite":
                 eventPlayer.forceButtonPress(Button.ULTIMATE)
                 waitLoad()
                 waitUntil(
-                    not eventPlayer.preferences[Preference.PLAYER_MODE]
-                    or eventPlayer.preferences[Preference.ULTIMATE_MODE] != UltimateMode.INFINITE
+                    not pref(Preference.PLAYER_MODE)
+                    or pref(Preference.ULTIMATE_MODE) != UltimateMode.INFINITE
                     or not eventPlayer.isUsingUltimate(),
                     Math.INFINITY
                 )
@@ -223,8 +223,8 @@ rule "— Ultimate mode • Hold to spam":
     @Event eachPlayer
     @Condition not optimize
     @Condition not isOverloaded
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.ULTIMATE_MODE] == UltimateMode.HOLD_TO_SPAM
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.ULTIMATE_MODE) == UltimateMode.HOLD_TO_SPAM
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.isInModeratorMode
@@ -236,7 +236,7 @@ rule "— Ultimate mode • Hold to spam":
         eventPlayer.forceButtonPress(Button.ULTIMATE)
         wait()
         eventPlayer.stopForcingButton(Button.ULTIMATE)
-        wait(eventPlayer.preferences[Preference.ULTIMATE_SPAM_DELAY])
+        wait(pref(Preference.ULTIMATE_SPAM_DELAY))
         eventPlayer.cancelPrimaryAction()
         wait()
     while RULE_CONDITION

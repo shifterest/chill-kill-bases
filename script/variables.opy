@@ -65,6 +65,7 @@ playervar isViewingPreferences
 # mode
 playervar isInModeratorMode
 playervar isInBaseCreationMode
+playervar isInDreamMode
 playervar isUsingKeyboard
 # status
 playervar isInModeratorStasis

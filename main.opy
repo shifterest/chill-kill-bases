@@ -1,8 +1,9 @@
 #!suppressWarnings w_ow2_rule_condition_chase
+#!suppressWarnings w_wait_until
 
 settings {
     "main": {
-        "description": "Chill / Kill Bases (by shifterest)\r\n» [v4.62] Last updated: September 7, 2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n» Chill Zone Base Creator by AlaskaWolf • ARYD2\r\n» Chill/Kill by QueenWolf • Y239C\r\n» Base Wars by Zezombye • 14WON",
+        "description": "Chill / Kill Bases (by shifterest)\r\n\u00bb [v4.7] Last updated: September 25, 2025\r\n\r\nCode: TSX53\r\n\r\nA chill or kill gamemode designed with AFKing in mind.\r\n\r\nBased on:\r\n\u00bb Chill Zone Base Creator by AlaskaWolf \u2022 ARYD2\r\n\u00bb Chill/Kill by QueenWolf \u2022 Y239C\r\n\u00bb Base Wars by Zezombye \u2022 14WON",
         "modeName": "★ Chill Bases · Updated! ★"
     },
     "lobby": {

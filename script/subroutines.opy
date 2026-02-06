@@ -34,7 +34,7 @@ subroutine UpdateAmmo
 subroutine UpdateAura
 subroutine UpdateBaseEffects
 subroutine UpdateCamera
-subroutine UpdateCurrentBaseOwner
+subroutine UpdateBaseOwner
 subroutine UpdateFlight
 subroutine UpdateGodModList
 subroutine UpdateHero

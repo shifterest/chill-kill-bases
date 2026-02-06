@@ -9,7 +9,7 @@ rule "— Draw global HUD":
     @Condition isGameInProgress()
     @Condition isInitialized
 
-    # LEFT
+    # --- Left ---
     hudSubheader(
         localPlayer,
         "lobby {} • hosted by {} {}{}\n ".format(
@@ -25,12 +25,12 @@ rule "— Draw global HUD":
         SpecVisibility.DEFAULT
     )
 
-    # TOP
-    # server load
+    # --- TOP ---
+    # Server load
     hudSubheader(
         localPlayer
         if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
-        and not localPlayer.preferences[Preference.DREAM_MODE]
+        and not localPlayer.isInDreamMode
         else null,
         "{} current • {} mean • {} peak".format(
             getServerLoad(), getAverageServerLoad(), getPeakServerLoad()
@@ -55,11 +55,11 @@ rule "— Draw global HUD":
         HudReeval.VISIBILITY_AND_STRING,
         SpecVisibility.NEVER
     )
-    # moderator mode hotkey
+    # Moderator mode hotkey
     hudSubheader(
         localPlayer
         if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
-        and not localPlayer.preferences[Preference.DREAM_MODE]
+        and not localPlayer.isInDreamMode
         else null,
         "{} + {} • toggle moderator mode\n ".format(
             buttonToString(Button.CROUCH), buttonToString(Button.RELOAD)
@@ -70,11 +70,11 @@ rule "— Draw global HUD":
         HudReeval.VISIBILITY_AND_STRING,
         SpecVisibility.NEVER
     )
-    # main info
+    # Main info
     hudSubtext(
         null
         if localPlayer.isInModeratorMode
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         else localPlayer,
         localPlayer.onscreen_hud[OnScreenHUD.MAIN],
         HudPosition.TOP,
@@ -85,7 +85,7 @@ rule "— Draw global HUD":
         HudReeval.VISIBILITY_STRING_AND_COLOR,
         SpecVisibility.NEVER
     )
-    # moderator mode
+    # Moderator mode
     hudSubtext(
         localPlayer if localPlayer.isInModeratorMode else null,
         "{} {}{} • {} • {}".format(
@@ -224,7 +224,7 @@ rule "— Draw global HUD":
             localPlayer.isViewingPreferences
             or localPlayer.isInModeratorMode
             or localPlayer.isUsingKeyboard
-            or localPlayer.preferences[Preference.DREAM_MODE]
+            or localPlayer.isInDreamMode
         ) else "",
         HudPosition.TOP,
         4,
@@ -232,7 +232,7 @@ rule "— Draw global HUD":
         HudReeval.VISIBILITY_AND_STRING,
         SpecVisibility.NEVER
     )
-    # padding
+    # Padding
     hudSubheader(
         localPlayer,
         " ",
@@ -246,17 +246,17 @@ rule "— Draw global HUD":
     progressBarHud(
         localPlayer if localPlayer.progress > 0 and localPlayer.progress < 100 else null,
         localPlayer.progress,
-        localPlayer.progress_hud[ProgressHUD.TEXT],
+        localPlayer.progress_hud[ProgHUD.TEXT],
         HudPosition.TOP,
         70,
         rainbow_rgb()
-        if localPlayer.progress_hud[ProgressHUD.COLOR] == ExtendedColor.RAINBOW
-        else extended_color_data[localPlayer.progress_hud[ProgressHUD.COLOR]],
+        if localPlayer.progress_hud[ProgHUD.COLOR] == ExtendedColor.RAINBOW
+        else extended_color_data[localPlayer.progress_hud[ProgHUD.COLOR]],
         Color.WHITE,
         ProgressHudReeval.VISIBILITY_VALUES_AND_COLOR,
         SpecVisibility.NEVER
     )
-    # base activation progress bar
+    # Base activation progress bar
     progressBarHud(
         localPlayer if localPlayer.base_progress > 0 and localPlayer.base_progress < 100 else null,
         localPlayer.base_progress,
@@ -274,8 +274,8 @@ rule "— Draw global HUD":
         SpecVisibility.NEVER
     )
 
-    # RIGHT
-    # game info
+    # --- Right ---
+    # Game info
     switch mode:
         case Mode.MUSIC:
             hudSubheader(
@@ -322,8 +322,8 @@ rule "— Draw global HUD":
             )
             break
 
-    # IN-WORLD
-    # base indicator
+    # --- In-world ---
+    # Base indicator
     createIcon(
         localPlayer
         if localPlayer.base_vector
@@ -335,7 +335,7 @@ rule "— Draw global HUD":
         Color.WHITE,
         true
     )
-    # base outline
+    # Base outline
     createEffect(
         localPlayer if localPlayer.active_base_owner else null,
         Effect.RING,
@@ -349,13 +349,13 @@ rule "— Draw global HUD":
         localPlayer.active_base_owner.preferences[Preference.BASE_SIZE],
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
-    # center orb
+    # Center orb
     createEffect(
         null
         if localPlayer.active_base_owner != localPlayer
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         else localPlayer,
         Effect.ORB,
         rainbow_rgb()
@@ -365,13 +365,13 @@ rule "— Draw global HUD":
         orb_radius,
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
-    # adjusting preferences indicator
+    # Adjusting preferences indicator
     createEffect(
         null
         if localPlayer.active_base_owner != localPlayer
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         or not localPlayer.isViewingPreferences
         else localPlayer,
         Effect.LIGHT_SHAFT,
@@ -382,13 +382,13 @@ rule "— Draw global HUD":
         orb_radius,
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
-    # advanced preferences indicator
+    # Advanced preferences indicator
     createEffect(
         null
         if localPlayer.active_base_owner != localPlayer
         or localPlayer.isInModeratorMode
         or localPlayer.isUsingKeyboard
-        or localPlayer.preferences[Preference.DREAM_MODE]
+        or localPlayer.isInDreamMode
         or not localPlayer.isViewingPreferences
         or not localPlayer.isViewingAdvancedPreferences
         else localPlayer,
@@ -468,7 +468,7 @@ def CreateBase():
     @Name "— Create base"
 
     if eventPlayer.isInBaseCreationMode:
-        # base sphere
+        # Base sphere
         createEffect(
             eventPlayer if eventPlayer.isInBaseCreationMode else null,
             Effect.SPHERE,
@@ -482,7 +482,7 @@ def CreateBase():
         eventPlayer.base_effect_id = getLastCreatedEntity()
     else:
         if eventPlayer.preferences[Preference.BASE_MODE] == BaseMode.HIDDEN:
-            # base sphere
+            # Base sphere
             createEffect(
                 eventPlayer if eventPlayer.active_base_owner != eventPlayer else null,
                 Effect.SPHERE,
@@ -496,11 +496,11 @@ def CreateBase():
                 EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
             )
             eventPlayer.base_effect_id = getLastCreatedEntity()
-            # base mode icon
+            # Base mode icon
             createInWorldText(
                 eventPlayer
                 if eventPlayer.active_base_owner != eventPlayer
-                and not eventPlayer.preferences[Preference.DREAM_MODE]
+                and not eventPlayer.isInDreamMode
                 else null,
                 eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
                 eventPlayer.base_vector,
@@ -511,11 +511,11 @@ def CreateBase():
                 SpecVisibility.DEFAULT
             )
             eventPlayer.icon_effect_id = getLastCreatedText()
-            # base description
+            # Base description
             createInWorldText(
                 eventPlayer
                 if eventPlayer.active_base_owner != eventPlayer
-                and not eventPlayer.preferences[Preference.DREAM_MODE]
+                and not eventPlayer.isInDreamMode
                 else null,
                 "{} {}'s base{}".format(
                     heroIcon(eventPlayer.getCurrentHero()),
@@ -531,7 +531,7 @@ def CreateBase():
             )
             eventPlayer.description_effect_id = getLastCreatedText()
         else:
-            # base sphere
+            # Base sphere
             createEffect(
                 [p for p in getAllPlayers() if p.active_base_owner != eventPlayer],
                 Effect.SPHERE,
@@ -550,7 +550,7 @@ def CreateBase():
                 [
                     p for p in getAllPlayers()
                     if p.active_base_owner != eventPlayer
-                    and not p.preferences[Preference.DREAM_MODE]
+                    and not p.isInDreamMode
                 ],
                 eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
                 eventPlayer.base_vector,
@@ -561,12 +561,12 @@ def CreateBase():
                 SpecVisibility.DEFAULT
             )
             eventPlayer.icon_effect_id = getLastCreatedText()
-            # base description
+            # Base description
             createInWorldText(
                 [
                     p for p in getAllPlayers()
                     if p.active_base_owner != eventPlayer
-                    and not p.preferences[Preference.DREAM_MODE]
+                    and not p.isInDreamMode
                 ],
                 "{} {}'s base{}".format(
                     heroIcon(eventPlayer.getCurrentHero()),

@@ -1,6 +1,20 @@
 #!mainFile "../main.opy"
 
 
+# Shorthand
+macro pref(preference):
+    eventPlayer.preferences[preference]
+
+macro pos():
+    eventPlayer.getPosition()
+
+macro eye():
+    eventPlayer.getEyePosition()
+
+macro face():
+    eventPlayer.getFacingDirection()
+
+
 # Constants
 macro orb_vector(y):
     localPlayer.base_vector + (

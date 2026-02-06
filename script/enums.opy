@@ -146,7 +146,7 @@ enum Key:
     HALF_WIDTH
 
 
-enum ProgressHUD:
+enum ProgHUD:
     TEXT,
     COLOR
 

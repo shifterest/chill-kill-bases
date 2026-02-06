@@ -17,8 +17,8 @@ rule "— Prepare base":
         DestroyBase()
         async(UpdateCamera, AsyncBehavior.RESTART)
     else:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Preparing base..."
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "Preparing base..."
+        eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
         chaseProgress(
             1,
             eventPlayer.isInModeratorMode
@@ -48,9 +48,9 @@ rule "— Create base":
         return
         
     if isOverlappingBase(
-        eventPlayer.getPosition(),
-        eventPlayer.preferences[Preference.BASE_SIZE],
-        eventPlayer.preferences[Preference.BASE_GAP_SIZE]
+        pos(),
+        pref(Preference.BASE_SIZE),
+        pref(Preference.BASE_GAP_SIZE)
     ):
         smallMessage(eventPlayer, "Can't place a base here")
         # iconMessage(eventPlayer, iconString(Icon.WARNING), t"can't place a base here")
@@ -60,7 +60,7 @@ rule "— Create base":
         smallMessage(eventPlayer, "Base created successfully")
         # iconMessage(eventPlayer, iconString(Icon.CHECKMARK), t"base created successfully")
         async(Tutorial, AsyncBehavior.RESTART)
-        eventPlayer.base_vector = eventPlayer.getPosition()
+        eventPlayer.base_vector = pos()
         eventPlayer.activate_base_immediately = true
         eventPlayer.isInBaseCreationMode = false
         stopMomentum()
@@ -75,10 +75,10 @@ def Tutorial():
         eventPlayer.has_created_base_once = true
         # Camera
         eventPlayer.startCamera(
-            eventPlayer.getEyePosition(), 
+            eye(), 
             raycast(
-                eventPlayer.getEyePosition(),
-                eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 100,
+                eye(),
+                eye() + face() * 100,
                 null,
                 eventPlayer,
                 false
@@ -89,7 +89,7 @@ def Tutorial():
         eventPlayer.startCamera(
             raycast(
                 eventPlayer.base_vector,
-                eventPlayer.base_vector + (Vector.UP * eventPlayer.preferences[Preference.BASE_SIZE] * 2) + (Vector.BACKWARD / 2),
+                eventPlayer.base_vector + (Vector.UP * pref(Preference.BASE_SIZE) * 2) + (Vector.BACKWARD / 2),
                 null,
                 eventPlayer,
                 false
@@ -101,7 +101,7 @@ def Tutorial():
         eventPlayer.startForcingPosition(
             raycast(
                 eventPlayer.base_vector,
-                eventPlayer.base_vector + Vector.BACKWARD * min(1, eventPlayer.preferences[Preference.BASE_SIZE]),
+                eventPlayer.base_vector + Vector.BACKWARD * min(1, pref(Preference.BASE_SIZE)),
                 null,
                 eventPlayer,
                 false
@@ -109,7 +109,7 @@ def Tutorial():
             false
         )
         eventPlayer.startFacing(
-            directionTowards(eventPlayer.base_vector, eventPlayer.getEyePosition()),
+            directionTowards(eventPlayer.base_vector, eye()),
             360,
             Relativity.TO_WORLD,
             FacingReeval.DIRECTION_AND_TURN_RATE
@@ -120,13 +120,13 @@ def Tutorial():
         wait(4)
         # Look at orb
         eventPlayer.startFacing(
-            directionTowards(eventPlayer.getEyePosition(), eventPlayer.base_vector),
+            directionTowards(eye(), eventPlayer.base_vector),
             360,
             Relativity.TO_WORLD,
             FacingReeval.DIRECTION_AND_TURN_RATE
         )
         wait()
-        eventPlayer.startCamera(eventPlayer.getEyePosition(), eventPlayer.base_vector, 30)
+        eventPlayer.startCamera(eye(), eventPlayer.base_vector, 30)
         bigMessage(eventPlayer, "You'll be able to adjust your settings here.")
         wait(4)
         bigMessage(eventPlayer, "Try switching things up!")
@@ -155,10 +155,10 @@ rule "— Detect / confine to base":
     if isConfined():
         async(Confine, AsyncBehavior.RESTART)
         return
-    async(UpdateCurrentBaseOwner, AsyncBehavior.RESTART)
+    async(UpdateBaseOwner, AsyncBehavior.RESTART)
 
 
-def UpdateCurrentBaseOwner():
+def UpdateBaseOwner():
     @Name "— Update current base owner"
 
     eventPlayer.current_base_owner = ([
@@ -214,7 +214,7 @@ def Repel():
 
     do:
         eventPlayer.applyImpulse(
-            directionTowards(eventPlayer.current_base_owner.base_vector, eventPlayer.getPosition()),
+            directionTowards(eventPlayer.current_base_owner.base_vector, pos()),
             15,
             Relativity.TO_WORLD,
             Impulse.CANCEL_CONTRARY_MOTION_XYZ
@@ -227,7 +227,7 @@ def Repel():
                     eventPlayer.current_base_owner.preferences[Preference.BASE_SIZE]
                     - distance(
                         eventPlayer.current_base_owner.base_vector,
-                        eventPlayer.getPosition()
+                        pos()
                     )
                 )
                 / eventPlayer.current_base_owner.preferences[Preference.BASE_SIZE]
@@ -276,15 +276,15 @@ rule "— Switch hero":
     @Condition eventPlayer.progress == 0
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isInModeratorStasis
     @Condition not eventPlayer.isInStasis
     @Condition not eventPlayer.isViewingPreferences
     @Condition eventPlayer.active_base_owner == eventPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
-    eventPlayer.progress_hud[ProgressHUD.TEXT] = "Entering hero picker..."
-    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
+    eventPlayer.progress_hud[ProgHUD.TEXT] = "Entering hero picker..."
+    eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
     chaseProgress(
         0.6,
         eventPlayer.isInModeratorMode
@@ -296,7 +296,7 @@ rule "— Switch hero":
         Tutorial()
         if eventPlayer.rider:
             EjectRider()
-        eventPlayer.previous_position_direction = [eventPlayer.getPosition(), eventPlayer.getFacingDirection()]
+        eventPlayer.previous_position_direction = [pos(), face()]
         eventPlayer.setAllowedHeroes(getAllHeroes().exclude(eventPlayer.getCurrentHero()))
         if f"{eventPlayer}" in ["DJBASTION", "Bastion"]:
             eventPlayer.setAllowedHeroes(Hero.BASTION)
@@ -312,17 +312,17 @@ rule "— Remove base":
     @Condition eventPlayer.base_vector
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isViewingPreferences
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
-    eventPlayer.progress_hud[ProgressHUD.TEXT] = "Removing base..."
-    eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
+    eventPlayer.progress_hud[ProgHUD.TEXT] = "Removing base..."
+    eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
     if eventPlayer.active_base_owner == eventPlayer: 
         chaseProgress(
             1,
             eventPlayer.isInModeratorMode
-            or eventPlayer.preferences[Preference.DREAM_MODE]
+            or eventPlayer.isInDreamMode
             or eventPlayer.isViewingPreferences
             or eventPlayer.active_base_owner != eventPlayer
             or not eventPlayer.isHoldingButton(Button.INTERACT)
@@ -331,7 +331,7 @@ rule "— Remove base":
         chaseProgress(
             1,
             eventPlayer.isInModeratorMode
-            or eventPlayer.preferences[Preference.DREAM_MODE]
+            or eventPlayer.isInDreamMode
             or eventPlayer.active_base_owner == eventPlayer
             or not eventPlayer.isHoldingButton(Button.CROUCH)
             or not eventPlayer.isHoldingButton(Button.INTERACT)
@@ -351,30 +351,30 @@ rule "— Fast travel":
     @Condition eventPlayer.progress == 0
     @Condition not eventPlayer.isUsingKeyboard
     @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.preferences[Preference.DREAM_MODE]
+    @Condition not eventPlayer.isInDreamMode
     @Condition not eventPlayer.isViewingPreferences
     @Condition not eventPlayer.mount
-    @Condition eventPlayer.preferences[Preference.FAST_TRAVEL]
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] or (
-        eventPlayer.active_base_owner == eventPlayer and not eventPlayer.preferences[Preference.BASE_LOCK]
+    @Condition pref(Preference.FAST_TRAVEL)
+    @Condition pref(Preference.PLAYER_MODE) or (
+        eventPlayer.active_base_owner == eventPlayer and not pref(Preference.BASE_LOCK)
     )
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
     eventPlayer.base_to_fast_travel_owner = friendly_base_in_crosshair(eventPlayer)
 
     if eventPlayer.base_to_fast_travel_owner:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Fast traveling to {} {}'s base...".format(
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "Fast traveling to {} {}'s base...".format(
             heroIcon(eventPlayer.base_to_fast_travel_owner.getCurrentHero()),
             eventPlayer.base_to_fast_travel_owner
         )
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_COLOR]
     elif eventPlayer.base_vector and eventPlayer.current_base_owner != eventPlayer:
         eventPlayer.base_to_fast_travel_owner = eventPlayer
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Fast traveling to your base..."
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
-    elif eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.active_base_owner and eventPlayer.previous_position:
-        eventPlayer.progress_hud[ProgressHUD.TEXT] = "Fast traveling to previous position..."
-        eventPlayer.progress_hud[ProgressHUD.COLOR] = eventPlayer.preferences[Preference.BASE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "Fast traveling to your base..."
+        eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
+    elif pref(Preference.PLAYER_MODE) and eventPlayer.active_base_owner and eventPlayer.previous_position:
+        eventPlayer.progress_hud[ProgHUD.TEXT] = "Fast traveling to previous position..."
+        eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
         chaseProgress(
             0.6,
             eventPlayer.isViewingPreferences
@@ -400,7 +400,7 @@ rule "— Fast travel":
             eventPlayer.base_to_fast_travel_owner != eventPlayer
             and eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_MODE] != BaseMode.FRIENDLY
         )
-        or not (eventPlayer.preferences[Preference.PLAYER_MODE] or eventPlayer.active_base_owner)
+        or not (pref(Preference.PLAYER_MODE) or eventPlayer.active_base_owner)
         or not eventPlayer.base_to_fast_travel_owner.base_vector
         or eventPlayer in getPlayersInRadius(
             eventPlayer.base_to_fast_travel_owner.base_vector,
@@ -411,7 +411,7 @@ rule "— Fast travel":
         or not eventPlayer.isHoldingButton(Button.MELEE)
     )
     if eventPlayer.progress == 100:
-        eventPlayer.previous_position = eventPlayer.getPosition()
+        eventPlayer.previous_position = pos()
         eventPlayer.activate_base_immediately = true
         eventPlayer.progress = 0
         eventPlayer.teleport(eventPlayer.base_to_fast_travel_owner.base_vector)
@@ -425,7 +425,7 @@ def Confine():
     do:
         eventPlayer.applyImpulse(
             directionTowards(
-                eventPlayer.getPosition(),
+                pos(),
                 eventPlayer.active_base_owner.base_vector
             ),
             10 if eventPlayer.isOnGround() else 0.00001,
@@ -442,7 +442,7 @@ def Confine():
             eventPlayer.teleport(
                 directionTowards(
                     eventPlayer.active_base_owner.base_vector,
-                    eventPlayer.getPosition()
+                    pos()
                 )
                 * (eventPlayer.active_base_owner.preferences[Preference.BASE_SIZE])
                 + eventPlayer.active_base_owner.base_vector

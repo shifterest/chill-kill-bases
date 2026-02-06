@@ -16,21 +16,18 @@ rule "— ADS in third-person":
         or eventPlayer.getCurrentHero() == Hero.FREJA
     )
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isInDreamMode
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     eventPlayer.stopCamera()
 
     waitUntil(
         not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
-        or eventPlayer.isViewingPreferences
-        or eventPlayer.isInModeratorMode
+        or eventPlayer.uiState != UIState.NORMAL
         or eventPlayer.isDead(),
         Math.INFINITY
     )
 
-    if not eventPlayer.isInModeratorMode:
+    if eventPlayer.uiState != UIState.MODERATING:
         async(UpdateCamera, AsyncBehavior.RESTART)
 
 
@@ -43,21 +40,18 @@ rule "— Ultimate in third-person":
         or eventPlayer.getCurrentHero() == Hero.JUNKRAT
     )
     @Condition eventPlayer.isUsingUltimate()
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isInDreamMode
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     eventPlayer.stopCamera()
 
     waitUntil(
         not eventPlayer.isUsingUltimate()
-        or eventPlayer.isViewingPreferences
-        or eventPlayer.isInModeratorMode
+        or eventPlayer.uiState != UIState.NORMAL
         or eventPlayer.isDead(),
         Math.INFINITY
     )
 
-    if not eventPlayer.isInModeratorMode:
+    if eventPlayer.uiState != UIState.MODERATING:
         async(UpdateCamera, AsyncBehavior.RESTART)
 
 
@@ -65,10 +59,7 @@ rule "— Switch shoulder":
     @Event eachPlayer
     @Condition pref(Preference.THIRD_PERSON) == ThirdPersonCamera.REAR
     @Condition pref(Preference.THIRD_PERSON_OFFSET) != 0
-    @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isInDreamMode
-    @Condition not eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.NORMAL
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
@@ -79,9 +70,9 @@ rule "— Switch shoulder":
 def UpdateCamera():
     @Name "— Update camera"
 
-    if eventPlayer.isInModeratorMode:
+    if eventPlayer.uiState == UIState.MODERATING:
         return
-    if eventPlayer.isInBaseCreationMode:
+    if eventPlayer.uiState == UIState.BASE_CREATION:
         BaseCreationCamera()
     elif eventPlayer.active_base_owner == eventPlayer:
         switch pref(Preference.THIRD_PERSON):
@@ -104,6 +95,9 @@ def UpdateCamera():
             case ThirdPersonCamera.STATIC_TOP_DOWN:
                 StaticTopDownCamera()
                 break
+            case ThirdPersonCamera.FRONT:
+                FrontCamera()
+                break
             case ThirdPersonCamera.OFF:
                 StopCamera()
                 break
@@ -115,18 +109,7 @@ def BaseCreationCamera():
     @Name "— Enable base creation camera"
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
-    eventPlayer.startCamera(
-        eye(), 
-        raycast(
-            eye(),
-            eye() + face() * 100,
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        1
-    )
-    wait()
+    snapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
@@ -177,18 +160,7 @@ def RearCamera():
     @Name "— Enable rear camera"
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
-    eventPlayer.startCamera(
-        eye(), 
-        raycast(
-            eye(),
-            eye() + face() * 100,
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        1
-    )
-    wait()
+    snapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
@@ -268,18 +240,7 @@ def RearSpectatorCamera():
     @Name "— Enable rear spectator camera"
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
-    eventPlayer.startCamera(
-        eye(), 
-        raycast(
-            eye(),
-            eye() + face() * 100,
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        1
-    )
-    wait()
+    snapCamera()
     eventPlayer.startCamera(
         raycast(
             eventPlayer.focused_player.getEyePosition(),
@@ -360,18 +321,7 @@ def RearSpectatorCamera():
 def TopDownCamera():
     @Name "— Enable top-down camera"
 
-    eventPlayer.startCamera(
-        eye(), 
-        raycast(
-            eye(),
-            eye() + face() * 100,
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        1
-    )
-    wait()
+    snapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
@@ -421,18 +371,7 @@ def TopDownCamera():
 def StaticTopDownCamera():
     @Name "— Enable static top-down camera"
 
-    eventPlayer.startCamera(
-        eye(), 
-        raycast(
-            eye(),
-            eye() + face() * 100,
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        1
-    )
-    wait()
+    snapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
@@ -482,18 +421,7 @@ def StaticTopDownCamera():
 def DreamCamera():
     @Name "— Enable dream camera"
 
-    eventPlayer.startCamera(
-        eye(), 
-        raycast(
-            eye(),
-            eye() + face() * 100,
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        1
-    )
-    wait()
+    snapCamera()
     if pref(Preference.CLIP_CAMERA):
         eventPlayer.startCamera(
             raycast(
@@ -515,6 +443,73 @@ def DreamCamera():
             ),
             evalOnce(eventPlayer.focused_player).getEyePosition(),
             2
+        )
+
+
+def FrontCamera():
+    @Name "— Enable front camera"
+
+    # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
+    snapCamera()
+    eventPlayer.startCamera(
+        raycast(
+            eye(),
+            eye() + (
+                Vector.UP * (
+                    (
+                        pref(Preference.SIZE)
+                        if pref(Preference.PLAYER_MODE)
+                        else 100
+                    ) / 100
+                ) + face()
+                * (
+                    (
+                        pref(Preference.SIZE)
+                        if pref(Preference.PLAYER_MODE)
+                        else 100
+                    ) / 40
+                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                + crossProduct(Vector.UP, face())
+                * pref(Preference.THIRD_PERSON_OFFSET)
+            ),
+            null,
+            eventPlayer,
+            false
+        ).getHitPosition(),
+        eye(),
+        30
+    )
+    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
+        wait(0.2)
+        eventPlayer.startCamera(
+            updateEveryFrame(
+                raycast(
+                    eye(),
+                    eye() + (
+                        Vector.UP * (
+                            (
+                                pref(Preference.SIZE)
+                                if pref(Preference.PLAYER_MODE)
+                                else 100
+                            ) / 100
+                        ) + face()
+                        * (
+                            (
+                                pref(Preference.SIZE)
+                                if pref(Preference.PLAYER_MODE)
+                                else 100
+                            ) / 40
+                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                        + crossProduct(Vector.UP, face())
+                        * pref(Preference.THIRD_PERSON_OFFSET)
+                    ),
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            updateEveryFrame(eye()),
+            0
         )
 
 

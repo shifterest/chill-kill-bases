@@ -7,7 +7,7 @@ rule "Keyboard":
 
 rule "— Input key":
     @Event eachPlayer
-    @Condition eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.KEYBOARD_INPUT
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
 
     eventPlayer.keyboard_input_character = [
@@ -126,7 +126,7 @@ rule "— Input key":
                     eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = ""
                 break
             case SpecialChar.EXIT:
-                eventPlayer.isUsingKeyboard = false
+                eventPlayer.uiState = UIState.NORMAL
                 eventPlayer.enableHeroHud()
                 eventPlayer.clearStatusEffect(Status.ROOTED)
                 eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
@@ -144,7 +144,7 @@ rule "— Input key":
 
 rule "— Keep cursor in bounds":
     @Event eachPlayer
-    @Condition eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.KEYBOARD_INPUT
 
     do:
         if angleDifference(horizontalAngleOfDirection(eventPlayer.previous_position_direction[1]), eventPlayer.getHorizontalFacingAngle()) > 43.5:

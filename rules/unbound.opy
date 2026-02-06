@@ -7,10 +7,10 @@ rule "Unbound":
 
 rule "— Dealt damage":
     @Event playerDealtDamage
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL
+    @Condition pref(Preference.PLAYER_MODE) == PlayerMode.CHILL
     @Condition eventPlayer != victim
 
-    switch eventPlayer.preferences[Preference.DAMAGE_EFFECT]:
+    switch pref(Preference.DAMAGE_EFFECT):
         case AbilityEffect.SLEEP:
             victim.setStatusEffect(eventPlayer, Status.ASLEEP, 1)
             break
@@ -40,11 +40,11 @@ rule "— Dealt damage":
 
 rule "— Received damage":
     @Event playerTookDamage
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL
+    @Condition pref(Preference.PLAYER_MODE) == PlayerMode.CHILL
     @Condition eventPlayer != attacker
 
-    damage(attacker, eventPlayer, eventDamage * max(eventPlayer.preferences[Preference.THORNS] / 100, 0.01))
-    switch eventPlayer.preferences[Preference.THORNS_EFFECT]:
+    damage(attacker, eventPlayer, eventDamage * max(pref(Preference.THORNS) / 100, 0.01))
+    switch pref(Preference.THORNS_EFFECT):
         case AbilityEffect.SLEEP:
             attacker.setStatusEffect(eventPlayer, Status.ASLEEP, 1)
             break
@@ -74,10 +74,10 @@ rule "— Received damage":
 
 rule "— Dealt healing":
     @Event playerDealtHealing
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE] == PlayerMode.CHILL
+    @Condition pref(Preference.PLAYER_MODE) == PlayerMode.CHILL
     @Condition eventPlayer != healee
 
-    switch eventPlayer.preferences[Preference.HEALING_EFFECT]:
+    switch pref(Preference.HEALING_EFFECT):
         case AbilityEffect.SLEEP:
             healee.setStatusEffect(eventPlayer, Status.ASLEEP, 1)
             break

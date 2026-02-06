@@ -20,38 +20,7 @@ macro orb_vector(y):
     localPlayer.base_vector + (
         y
         * Vector.UP
-        * distance(
-            localPlayer.base_vector,
-            (
-                raycast(
-                    localPlayer.getEyePosition(),
-                    localPlayer.getEyePosition()
-                    + (
-                        Vector.UP * (localPlayer.preferences[Preference.SIZE] / 100)
-                        + localPlayer.getFacingDirection()
-                        * (localPlayer.preferences[Preference.SIZE] / -40)
-                        * (
-                            localPlayer.preferences[Preference.THIRD_PERSON_DISTANCE]
-                            / 100
-                        )
-                        if localPlayer.preferences[Preference.PLAYER_MODE]
-                        else Vector.UP
-                        + localPlayer.getFacingDirection()
-                        * -2.5
-                        * (
-                            localPlayer.preferences[Preference.THIRD_PERSON_DISTANCE]
-                            / 100
-                        )
-                    ),
-                    null,
-                    localPlayer,
-                    false
-                ).getHitPosition()
-                if localPlayer.preferences[Preference.THIRD_PERSON]
-                else localPlayer.getEyePosition()
-            )
-        )
-        / 2.5
+        * localPlayer.menu_scale
     )
 
 
@@ -190,6 +159,21 @@ macro recreateBase():
     
 macro waitLoad():
     wait(getAverageServerLoad() / 150)
+
+
+macro snapCamera():
+    eventPlayer.startCamera(
+        eye(),
+        raycast(
+            eye(),
+            eye() + face() * 100,
+            null,
+            eventPlayer,
+            false
+        ).getHitPosition(),
+        1
+    )
+    wait()
 
 
 macro iconMessage(visibility, icon, message):

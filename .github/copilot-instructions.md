@@ -175,6 +175,26 @@ async(MySubroutine, AsyncBehavior.NOOP)       # Do nothing if already running
 - `vect(x, y, z)` for vectors.
 - `wait()` defaults to `wait(0.016, Wait.IGNORE_CONDITION)`.
 
+### Type Limitations
+
+**Status types cannot be stored in arrays or variables.** OverPy's type system requires `Status` values to be inlined directly. Use `switch` statements instead of array lookups:
+
+```overpy
+# WRONG — Status cannot be stored in array
+stasis_data = [Status.KNOCKED_DOWN, Status.STUNNED, Status.ASLEEP, Status.FROZEN]
+eventPlayer.clearStatusEffect(stasis_data[index])  # Type error!
+
+# CORRECT — Use switch statement with Status inlined
+switch pref(Preference.STASIS_MODE):
+    case Stasis.KNOCKED_DOWN:
+        eventPlayer.clearStatusEffect(Status.KNOCKED_DOWN)
+        break
+    case Stasis.STUNNED:
+        eventPlayer.clearStatusEffect(Status.STUNNED)
+        break
+    # ... etc
+```
+
 ---
 
 ## Project-Specific Conventions

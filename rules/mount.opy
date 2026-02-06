@@ -11,8 +11,8 @@ rule "— Mount to player":
     @Condition not eventPlayer.mount
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition not eventPlayer.isHoldingButton(Button.ABILITY_1)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
+    @Condition eventPlayer.uiState != UIState.VIEWING_PREFERENCES
+    @Condition eventPlayer.uiState != UIState.MODERATING
     @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL).hasSpawned()
     @Condition not eventPlayer.getRealPlayerClosestToReticle(Team.ALL).rider
     @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL) != eventPlayer.rider

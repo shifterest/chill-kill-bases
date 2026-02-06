@@ -1,7 +1,6 @@
 #!mainFile "../main.opy"
 
 subroutine ActivateFriendlyBase
-subroutine ActivateOwnBase
 subroutine BackupPlayer
 subroutine BaseCreationCamera
 subroutine Confine
@@ -14,6 +13,7 @@ subroutine EjectFromMount
 subroutine EjectRider
 subroutine EnableAbilities
 subroutine ExitStasis
+subroutine FrontCamera
 subroutine HardReset
 subroutine InitializePlayer
 subroutine InteractWithPreferences
@@ -25,7 +25,6 @@ subroutine Repel
 subroutine ReturnImmediately
 subroutine StaticTopDownCamera
 subroutine StopCamera
-subroutine SwitchSpectatedPlayer
 subroutine TopDownCamera
 subroutine Tutorial
 subroutine UpdateAbilities

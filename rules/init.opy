@@ -39,6 +39,7 @@ rule "— Populate global variables":
             god_usernames = []
             break
     ban_usernames = []
+    comms_ban_usernames = []
     mod_usernames = [f"{hostPlayer}"]
 
     extended_color_data = [
@@ -137,7 +138,7 @@ rule "— Populate global variables":
         "third-person camera",
         "Select a third-person camera perspective.",
         PreferenceType.MULTIPLE_CHOICE_RANDOM,
-        ["off", "rear", "top-down", "static top-down"]
+        ["off", "rear", "top-down", "static top-down", "front"]
     ]
     preferences_data[Preference.THIRD_PERSON_DISTANCE] = [
         "third-person camera distance",
@@ -842,8 +843,6 @@ def HardReset():
     eventPlayer.base_preferences_changed = null
     eventPlayer.last_known_base_owner = null
     eventPlayer.last_known_base_mode = null
-    eventPlayer.previous_base_size = null
-    eventPlayer.previous_base_gap_size = null
     eventPlayer.current_base_owner = null
     eventPlayer.active_base_owner = null
     eventPlayer.base_to_fast_travel_owner = null
@@ -851,10 +850,7 @@ def HardReset():
     eventPlayer.preferences = null
     eventPlayer.preference_adjustment = null
     eventPlayer.isViewingAdvancedPreferences = null
-    eventPlayer.isViewingPreferences = null
-    eventPlayer.isInModeratorMode = null
-    eventPlayer.isInBaseCreationMode = null
-    eventPlayer.isUsingKeyboard = null
+    eventPlayer.uiState = null
     eventPlayer.isInModeratorStasis = null
     eventPlayer.isInStasis = null
     eventPlayer.isInvisible = null

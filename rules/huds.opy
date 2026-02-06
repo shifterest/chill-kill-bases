@@ -30,7 +30,7 @@ rule "— Draw global HUD":
     hudSubheader(
         localPlayer
         if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
-        and not localPlayer.isInDreamMode
+        and localPlayer.uiState != UIState.DREAM_MODE
         else null,
         "{} current • {} mean • {} peak".format(
             getServerLoad(), getAverageServerLoad(), getPeakServerLoad()
@@ -44,7 +44,7 @@ rule "— Draw global HUD":
     hudSubheader(
         localPlayer
         if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
-        and localPlayer.isInModeratorMode
+        and localPlayer.uiState == UIState.MODERATING
         else null,
         "{} entities • {} text • {} dmg mods • {} heal mods".format(
             getNumberOfEntityIds(), getNumberOfTextIds(), getNumberOfDamageModificationIds(), getNumberOfHealingModificationIds()
@@ -59,7 +59,7 @@ rule "— Draw global HUD":
     hudSubheader(
         localPlayer
         if ("{}".format(localPlayer) in mod_usernames.concat(god_usernames) or localPlayer == hostPlayer)
-        and not localPlayer.isInDreamMode
+        and localPlayer.uiState != UIState.DREAM_MODE
         else null,
         "{} + {} • toggle moderator mode\n ".format(
             buttonToString(Button.CROUCH), buttonToString(Button.RELOAD)
@@ -73,8 +73,8 @@ rule "— Draw global HUD":
     # Main info
     hudSubtext(
         null
-        if localPlayer.isInModeratorMode
-        or localPlayer.isInDreamMode
+        if localPlayer.uiState == UIState.MODERATING
+        or localPlayer.uiState == UIState.DREAM_MODE
         else localPlayer,
         localPlayer.onscreen_hud[OnScreenHUD.MAIN],
         HudPosition.TOP,
@@ -87,7 +87,7 @@ rule "— Draw global HUD":
     )
     # Moderator mode
     hudSubtext(
-        localPlayer if localPlayer.isInModeratorMode else null,
+        localPlayer if localPlayer.uiState == UIState.MODERATING else null,
         "{} {}{} • {} • {}".format(
             heroIcon(localPlayer.focused_player.getCurrentHero()),
             localPlayer.focused_player,
@@ -125,12 +125,12 @@ rule "— Draw global HUD":
             buttonToString(Button.CROUCH),
             buttonToString(Button.MELEE)
         )
-        if localPlayer.isInModeratorMode else
+        if localPlayer.uiState == UIState.MODERATING else
         "{}{}{}{}{}{}{}{}".format(
             "{} • create base\n{} • cancel\n".format(
                 buttonToString(Button.PRIMARY_FIRE), buttonToString(Button.INTERACT)
             )
-            if localPlayer.isInBaseCreationMode
+            if localPlayer.uiState == UIState.BASE_CREATION
             else "hold {} • create base\n".format(buttonToString(Button.INTERACT))
             if not localPlayer.base_vector
             else "",
@@ -183,6 +183,7 @@ rule "— Draw global HUD":
                 buttonToString(Button.INTERACT), buttonToString(Button.MELEE)
             )
             if localPlayer.preferences[Preference.THIRD_PERSON] == ThirdPersonCamera.REAR
+            or localPlayer.preferences[Preference.THIRD_PERSON] == ThirdPersonCamera.FRONT
             and localPlayer.preferences[Preference.THIRD_PERSON_OFFSET] != 0
             else "",
             "hold {} + {} • remove base\n".format(
@@ -221,10 +222,10 @@ rule "— Draw global HUD":
             else ""
         )
         if localPlayer.preferences[Preference.SHOW_HOTKEYS] and not (
-            localPlayer.isViewingPreferences
-            or localPlayer.isInModeratorMode
-            or localPlayer.isUsingKeyboard
-            or localPlayer.isInDreamMode
+            localPlayer.uiState == UIState.VIEWING_PREFERENCES
+            or localPlayer.uiState == UIState.MODERATING
+            or localPlayer.uiState == UIState.KEYBOARD_INPUT
+            or localPlayer.uiState == UIState.DREAM_MODE
         ) else "",
         HudPosition.TOP,
         4,
@@ -327,7 +328,7 @@ rule "— Draw global HUD":
     createIcon(
         localPlayer
         if localPlayer.base_vector
-        and not localPlayer.isViewingPreferences
+        and localPlayer.uiState != UIState.VIEWING_PREFERENCES
         else null,
         localPlayer.base_vector + Vector.UP / 10,
         Icon.ARROW_DOWN,
@@ -353,9 +354,9 @@ rule "— Draw global HUD":
     createEffect(
         null
         if localPlayer.active_base_owner != localPlayer
-        or localPlayer.isInModeratorMode
-        or localPlayer.isUsingKeyboard
-        or localPlayer.isInDreamMode
+        or localPlayer.uiState == UIState.MODERATING
+        or localPlayer.uiState == UIState.KEYBOARD_INPUT
+        or localPlayer.uiState == UIState.DREAM_MODE
         else localPlayer,
         Effect.ORB,
         rainbow_rgb()
@@ -369,10 +370,10 @@ rule "— Draw global HUD":
     createEffect(
         null
         if localPlayer.active_base_owner != localPlayer
-        or localPlayer.isInModeratorMode
-        or localPlayer.isUsingKeyboard
-        or localPlayer.isInDreamMode
-        or not localPlayer.isViewingPreferences
+        or localPlayer.uiState == UIState.MODERATING
+        or localPlayer.uiState == UIState.KEYBOARD_INPUT
+        or localPlayer.uiState == UIState.DREAM_MODE
+        or localPlayer.uiState != UIState.VIEWING_PREFERENCES
         else localPlayer,
         Effect.LIGHT_SHAFT,
         rainbow_rgb()
@@ -386,10 +387,10 @@ rule "— Draw global HUD":
     createEffect(
         null
         if localPlayer.active_base_owner != localPlayer
-        or localPlayer.isInModeratorMode
-        or localPlayer.isUsingKeyboard
-        or localPlayer.isInDreamMode
-        or not localPlayer.isViewingPreferences
+        or localPlayer.uiState == UIState.MODERATING
+        or localPlayer.uiState == UIState.KEYBOARD_INPUT
+        or localPlayer.uiState == UIState.DREAM_MODE
+        or localPlayer.uiState != UIState.VIEWING_PREFERENCES
         or not localPlayer.isViewingAdvancedPreferences
         else localPlayer,
         Effect.RING,
@@ -467,10 +468,10 @@ def UpdateModeratorListHUD():
 def CreateBase():
     @Name "— Create base"
 
-    if eventPlayer.isInBaseCreationMode:
+    if eventPlayer.uiState == UIState.BASE_CREATION:
         # Base sphere
         createEffect(
-            eventPlayer if eventPlayer.isInBaseCreationMode else null,
+            eventPlayer if eventPlayer.uiState == UIState.BASE_CREATION else null,
             Effect.SPHERE,
             rainbow_rgb()
             if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
@@ -500,7 +501,7 @@ def CreateBase():
             createInWorldText(
                 eventPlayer
                 if eventPlayer.active_base_owner != eventPlayer
-                and not eventPlayer.isInDreamMode
+                and eventPlayer.uiState != UIState.DREAM_MODE
                 else null,
                 eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
                 eventPlayer.base_vector,
@@ -515,7 +516,7 @@ def CreateBase():
             createInWorldText(
                 eventPlayer
                 if eventPlayer.active_base_owner != eventPlayer
-                and not eventPlayer.isInDreamMode
+                and eventPlayer.uiState != UIState.DREAM_MODE
                 else null,
                 "{} {}'s base{}".format(
                     heroIcon(eventPlayer.getCurrentHero()),
@@ -550,7 +551,7 @@ def CreateBase():
                 [
                     p for p in getAllPlayers()
                     if p.active_base_owner != eventPlayer
-                    and not p.isInDreamMode
+                    and p.uiState != UIState.DREAM_MODE
                 ],
                 eventPlayer.in_world_hud[InWorldHUD.BASE_MODE_ICON],
                 eventPlayer.base_vector,
@@ -566,7 +567,7 @@ def CreateBase():
                 [
                     p for p in getAllPlayers()
                     if p.active_base_owner != eventPlayer
-                    and not p.isInDreamMode
+                    and p.uiState != UIState.DREAM_MODE
                 ],
                 "{} {}'s base{}".format(
                     heroIcon(eventPlayer.getCurrentHero()),
@@ -586,14 +587,9 @@ def CreateBase():
 def DestroyBase():
     @Name "— Destroy base"
 
-    if eventPlayer.isInModeratorMode:
-        destroyEffect(eventPlayer.focused_player.base_effect_id)
-        destroyInWorldText(eventPlayer.focused_player.icon_effect_id)
-        destroyInWorldText(eventPlayer.focused_player.description_effect_id)
-    else:
-        destroyEffect(eventPlayer.base_effect_id)
-        destroyInWorldText(eventPlayer.icon_effect_id)
-        destroyInWorldText(eventPlayer.description_effect_id)
+    destroyEffect(eventPlayer.base_effect_id)
+    destroyInWorldText(eventPlayer.icon_effect_id)
+    destroyInWorldText(eventPlayer.description_effect_id)
 
 
 def UpdateMessage():

@@ -13,7 +13,6 @@ globalvar base_vectors_backups
 globalvar preferences_backups
 # data
 globalvar extended_color_data
-globalvar keys_data
 globalvar base_mode_icon_data
 # preferences data
 globalvar preferences_data
@@ -50,8 +49,6 @@ playervar activate_base_immediately
 playervar base_preferences_changed
 playervar last_known_base_owner
 playervar last_known_base_mode
-playervar previous_base_size
-playervar previous_base_gap_size
 # base owners
 playervar current_base_owner
 playervar active_base_owner
@@ -61,12 +58,8 @@ playervar preferences_index
 playervar preferences
 playervar preference_adjustment
 playervar isViewingAdvancedPreferences
-playervar isViewingPreferences
-# mode
-playervar isInModeratorMode
-playervar isInBaseCreationMode
-playervar isInDreamMode
-playervar isUsingKeyboard
+# UI state (replaces: isViewingPreferences, isInModeratorMode, isInBaseCreationMode, isInDreamMode, isUsingKeyboard)
+playervar uiState
 # status
 playervar isInModeratorStasis
 playervar isInStasis
@@ -88,6 +81,7 @@ playervar description_effect_id
 playervar message_effect_id
 # miscellaneous
 playervar focused_player
+playervar menu_scale
 playervar previous_position
 playervar previous_position_direction
 playervar keyboard_input_character

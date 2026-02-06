@@ -8,11 +8,13 @@ rule "Dream":
 def DreamMode():
     @Name "— Dream mode"
 
+    eventPlayer.uiState = UIState.DREAM_MODE
     eventPlayer.previous_facing_direction = eventPlayer.getFacingDirection()
     eventPlayer.disableHeroHUD()
     UpdatePhase()
     waitUntil(eventPlayer.isHoldingButton(Button.JUMP) or isActive(), Math.INFINITY)
-    eventPlayer.isInDreamMode = false
+    eventPlayer.uiState = UIState.NORMAL
+    pref(Preference.DREAM_MODE) = false
     eventPlayer.enableHeroHud()
     UpdatePhase()
     async(UpdateCamera, AsyncBehavior.RESTART)
@@ -21,7 +23,7 @@ def DreamMode():
 
 rule "— Switch spectated player":
     @Event eachPlayer
-    @Condition eventPlayer.isInDreamMode
+    @Condition eventPlayer.uiState == UIState.DREAM_MODE
 
     do:
         eventPlayer.focused_player = random.choice(
@@ -38,7 +40,7 @@ rule "— Switch spectated player":
             eventPlayer.focused_player = eventPlayer
         DreamCamera()
         waitUntil(
-            not eventPlayer.isInDreamMode
+            eventPlayer.uiState != UIState.DREAM_MODE
             or not eventPlayer.focused_player.hasSpawned()
             or eventPlayer.focused_player.isInvisible,
             pref(Preference.SWITCH_TIMER)
@@ -52,13 +54,12 @@ rule "— Dream on AFK":
     @Condition pref(Preference.AFK_TIMER) * 60 == eventPlayer.afk_timer
 
     if (
-        eventPlayer.isInModeratorMode
-        or eventPlayer.isUsingKeyboard
-        or eventPlayer.isInDreamMode
+        eventPlayer.uiState == UIState.MODERATING
+        or eventPlayer.uiState == UIState.KEYBOARD_INPUT
+        or eventPlayer.uiState == UIState.DREAM_MODE
         or pref(Preference.ULTIMATE_MODE) == UltimateMode.INFINITE
     ):
         return
-    eventPlayer.isInDreamMode = true
     DreamMode()
 
 

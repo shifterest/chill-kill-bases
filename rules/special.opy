@@ -7,8 +7,8 @@ rule "Special":
 
 rule "— Trampoline mode":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.TRAMPOLINE]
+    @Condition pref(Preference.PLAYER_MODE)
+    @Condition pref(Preference.TRAMPOLINE)
     @Condition eventPlayer.isOnGround()
     @Condition not eventPlayer.isHoldingButton(Button.CROUCH)
 

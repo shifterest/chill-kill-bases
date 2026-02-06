@@ -258,3 +258,12 @@ enum ThirdPersonCamera:
     TOP_DOWN,
     STATIC_TOP_DOWN,
     FRONT
+
+
+enum UIState:
+    NORMAL,
+    VIEWING_PREFERENCES,
+    MODERATING,
+    DREAM_MODE,
+    BASE_CREATION,
+    KEYBOARD_INPUT

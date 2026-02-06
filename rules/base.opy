@@ -12,8 +12,8 @@ rule "— Prepare base":
     @Condition not eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
-    if eventPlayer.isInBaseCreationMode:
-        eventPlayer.isInBaseCreationMode = false
+    if eventPlayer.uiState == UIState.BASE_CREATION:
+        eventPlayer.uiState = UIState.NORMAL
         DestroyBase()
         async(UpdateCamera, AsyncBehavior.RESTART)
     else:
@@ -21,13 +21,13 @@ rule "— Prepare base":
         eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
         chaseProgress(
             1,
-            eventPlayer.isInModeratorMode
+            eventPlayer.uiState != UIState.NORMAL
             or eventPlayer.isDead()
             or eventPlayer.isHoldingButton(Button.CROUCH)
             or not eventPlayer.isHoldingButton(Button.INTERACT)
         )
         if eventPlayer.progress == 100:
-            eventPlayer.isInBaseCreationMode = true
+            eventPlayer.uiState = UIState.BASE_CREATION
             eventPlayer.progress = 0
             CreateBase()
             async(UpdateCamera, AsyncBehavior.RESTART)
@@ -39,11 +39,11 @@ rule "— Prepare base":
 
 rule "— Create base":
     @Event eachPlayer
-    @Condition eventPlayer.isInBaseCreationMode
+    @Condition eventPlayer.uiState == UIState.BASE_CREATION
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isDead()
 
     if eventPlayer.isDead():
-        eventPlayer.isInBaseCreationMode = false
+        eventPlayer.uiState = UIState.NORMAL
         DestroyBase()
         return
         
@@ -62,7 +62,7 @@ rule "— Create base":
         async(Tutorial, AsyncBehavior.RESTART)
         eventPlayer.base_vector = pos()
         eventPlayer.activate_base_immediately = true
-        eventPlayer.isInBaseCreationMode = false
+        eventPlayer.uiState = UIState.NORMAL
         stopMomentum()
         recreateBase()
         BackupPlayer()
@@ -274,12 +274,9 @@ def ActivateFriendlyBase():
 rule "— Switch hero":
     @Event eachPlayer
     @Condition eventPlayer.progress == 0
-    @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isInDreamMode
+    @Condition eventPlayer.uiState == UIState.NORMAL
     @Condition not eventPlayer.isInModeratorStasis
     @Condition not eventPlayer.isInStasis
-    @Condition not eventPlayer.isViewingPreferences
     @Condition eventPlayer.active_base_owner == eventPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
@@ -287,8 +284,7 @@ rule "— Switch hero":
     eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
     chaseProgress(
         0.6,
-        eventPlayer.isInModeratorMode
-        or eventPlayer.isViewingPreferences
+        eventPlayer.uiState != UIState.NORMAL
         or eventPlayer.active_base_owner != eventPlayer
         or not eventPlayer.isHoldingButton(Button.RELOAD)
     )
@@ -310,10 +306,7 @@ rule "— Remove base":
     @Event eachPlayer
     @Condition eventPlayer.progress == 0
     @Condition eventPlayer.base_vector
-    @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isInDreamMode
-    @Condition not eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.NORMAL
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
     eventPlayer.progress_hud[ProgHUD.TEXT] = "Removing base..."
@@ -321,38 +314,38 @@ rule "— Remove base":
     if eventPlayer.active_base_owner == eventPlayer: 
         chaseProgress(
             1,
-            eventPlayer.isInModeratorMode
-            or eventPlayer.isInDreamMode
-            or eventPlayer.isViewingPreferences
+            eventPlayer.uiState != UIState.NORMAL
             or eventPlayer.active_base_owner != eventPlayer
             or not eventPlayer.isHoldingButton(Button.INTERACT)
         )
     elif eventPlayer.isHoldingButton(Button.CROUCH):
         chaseProgress(
             1,
-            eventPlayer.isInModeratorMode
-            or eventPlayer.isInDreamMode
+            eventPlayer.uiState == UIState.MODERATING
+            or eventPlayer.uiState == UIState.DREAM_MODE
             or eventPlayer.active_base_owner == eventPlayer
             or not eventPlayer.isHoldingButton(Button.CROUCH)
             or not eventPlayer.isHoldingButton(Button.INTERACT)
         )
     if eventPlayer.progress == 100:
-        eventPlayer.base_vector = null
-        Tutorial()
-        DestroyBase()
-        UpdateBaseEffects()
-        BackupPlayer()
+        RemoveBase()
     unchaseProgress(1)
     wait(0.5)
+
+
+def RemoveBase():
+    @Name "— Remove base"
+
+    eventPlayer.base_vector = null
+    DestroyBase()
+    UpdateBaseEffects()
+    BackupPlayer()
 
 
 rule "— Fast travel":
     @Event eachPlayer
     @Condition eventPlayer.progress == 0
-    @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isInDreamMode
-    @Condition not eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.NORMAL
     @Condition not eventPlayer.mount
     @Condition pref(Preference.FAST_TRAVEL)
     @Condition pref(Preference.PLAYER_MODE) or (
@@ -377,7 +370,7 @@ rule "— Fast travel":
         eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
         chaseProgress(
             0.6,
-            eventPlayer.isViewingPreferences
+            eventPlayer.uiState == UIState.VIEWING_PREFERENCES
             or eventPlayer.isDead()
             or not eventPlayer.active_base_owner
             or not eventPlayer.isHoldingButton(Button.MELEE)

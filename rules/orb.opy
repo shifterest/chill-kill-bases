@@ -12,7 +12,7 @@ rule "— Draw preferences HUD":
     # --- Keyboard HUD ---
     # Cursor
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "▲",
         updateEveryFrame(
             localPlayer.getEyePosition()
@@ -34,7 +34,7 @@ rule "— Draw preferences HUD":
     )
     # Keyboard
     # createInWorldText(
-    #     localPlayer if localPlayer.isUsingKeyboard else null,
+    #     localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
     #     "{} | {}".format(
     #         angleDifference(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()),
     #         angleDifference(verticalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getVerticalFacingAngle())
@@ -47,7 +47,7 @@ rule "— Draw preferences HUD":
     #     SpecVisibility.NEVER
     # )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "{}{}".format(
             localPlayer.preferences[Preference.CUSTOM_MESSAGE],
             "|" if getTotalTimeElapsed() % 1 <= 0.5 else " "
@@ -60,7 +60,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "♥     ♡     ツ     ♪     ★     ▲     ▼",
         menu_vector(0, 0.15),
         2.5,
@@ -70,7 +70,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "~     !     @     #     $     %     ^     &     *     (     )     _     +     backspace",
         menu_vector(0, 0.05),
         2.5,
@@ -80,7 +80,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "`     1     2     3     4     5     6     7     8     9     0     -     =     {     [     |     ",
         menu_vector(0, -0.05),
         2.5,
@@ -90,7 +90,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "q     w     e     r     t     y     u     i     o     p          }     ]     \\",
         menu_vector(0, -0.2),
         2.5,
@@ -100,7 +100,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "a     s     d     f     g     h     j     k     l     :     ;     \"     '",
         menu_vector(0, -0.3),
         2.5,
@@ -110,7 +110,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "          z     x     c     v     b     n     m     <     >     ,     .     ?     /",
         menu_vector(0, -0.4),
         2.5,
@@ -120,7 +120,7 @@ rule "— Draw preferences HUD":
         SpecVisibility.NEVER
     )
     createInWorldText(
-        localPlayer if localPlayer.isUsingKeyboard else null,
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "space     •     exit",
         menu_vector(0, -0.55),
         2.5,
@@ -133,7 +133,7 @@ rule "— Draw preferences HUD":
     # --- Preferences ---
     # Category
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
+        localPlayer if localPlayer.uiState == UIState.VIEWING_PREFERENCES else null,
         "viewing quick settings | {} • go to advanced settings".format(buttonToString(Button.MELEE))
         if not localPlayer.isViewingAdvancedPreferences
         else "viewing advanced settings | {} • go to quick settings".format(buttonToString(Button.MELEE))
@@ -152,7 +152,7 @@ rule "— Draw preferences HUD":
 
     # Title
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
+        localPlayer if localPlayer.uiState == UIState.VIEWING_PREFERENCES else null,
         localPlayer.preferences_hud[PreferencesHUD.TITLE],
         orb_vector(0.8),
         1.5,
@@ -163,7 +163,7 @@ rule "— Draw preferences HUD":
     )
     # Preference counter and hotkeys
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
+        localPlayer if localPlayer.uiState == UIState.VIEWING_PREFERENCES else null,
         "{} {} • {} of {} • {} {}".format(
             buttonToString(Button.PRIMARY_FIRE),
             iconString(Icon.ARROW_LEFT),
@@ -183,7 +183,7 @@ rule "— Draw preferences HUD":
     )
     # Parameter
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
+        localPlayer if localPlayer.uiState == UIState.VIEWING_PREFERENCES else null,
         localPlayer.preferences_hud[PreferencesHUD.PARAMETER],
         orb_vector(0.5),
         1.5,
@@ -197,7 +197,7 @@ rule "— Draw preferences HUD":
     # Interaction progress
     createProgressBarInWorldText(
         localPlayer
-        if localPlayer.isViewingPreferences
+        if localPlayer.uiState == UIState.VIEWING_PREFERENCES
         and localPlayer.interaction_progress > 0
         else null,
         localPlayer.interaction_progress,
@@ -214,7 +214,7 @@ rule "— Draw preferences HUD":
     )
     # Parameter counter and hotkeys
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
+        localPlayer if localPlayer.uiState == UIState.VIEWING_PREFERENCES else null,
         "{} • jump".format(buttonToString(Button.INTERACT))
         if localPlayer.preferences_hud[PreferencesHUD.TYPE] == PreferenceType.CATEGORY
         else "{} {} {}  |  {} • reset".format(
@@ -301,7 +301,7 @@ rule "— Draw preferences HUD":
     )
     # Description
     createInWorldText(
-        localPlayer if localPlayer.isViewingPreferences else null,
+        localPlayer if localPlayer.uiState == UIState.VIEWING_PREFERENCES else null,
         localPlayer.preferences_hud[PreferencesHUD.DESCRIPTION],
         orb_vector(0.2),
         0.9,
@@ -314,7 +314,7 @@ rule "— Draw preferences HUD":
     createInWorldText(
         localPlayer
         if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED]
-        and localPlayer.isViewingPreferences
+        and localPlayer.uiState == UIState.VIEWING_PREFERENCES
         else null,
         "Chill / zen required" if localPlayer.preferences_hud[PreferencesHUD.CHILL_REQUIRED] and not localPlayer.preferences[Preference.PLAYER_MODE]
         else "",
@@ -394,9 +394,9 @@ def UpdatePreferencesHUD():
 rule "— View / hide preferences":
     @Event eachPlayer
     @Condition eventPlayer.active_base_owner == eventPlayer
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.isInDreamMode
+    @Condition eventPlayer.uiState != UIState.MODERATING
+    @Condition eventPlayer.uiState != UIState.KEYBOARD_INPUT
+    @Condition eventPlayer.uiState != UIState.DREAM_MODE
     @Condition distance(
         eventPlayer.getEyePosition()
         + distance(eventPlayer.getEyePosition(), eventPlayer.base_vector)
@@ -404,14 +404,14 @@ rule "— View / hide preferences":
         eventPlayer.base_vector
     ) <= orb_radius
 
-    eventPlayer.isViewingPreferences = true
+    eventPlayer.uiState = UIState.VIEWING_PREFERENCES
     async(UpdateAbilities, AsyncBehavior.RESTART)
     UpdatePreferencesHUD()
 
     waitUntil(
         eventPlayer.active_base_owner != eventPlayer
-        or eventPlayer.isUsingKeyboard
-        or eventPlayer.isInDreamMode
+        or eventPlayer.uiState == UIState.KEYBOARD_INPUT
+        or eventPlayer.uiState == UIState.DREAM_MODE
         # or eventPlayer.isCommunicatingEmote()
         or distance(
             eventPlayer.getEyePosition()
@@ -423,13 +423,54 @@ rule "— View / hide preferences":
         Math.INFINITY
     )
 
-    eventPlayer.isViewingPreferences = false
+    eventPlayer.uiState = UIState.NORMAL
     async(UpdateAbilities, AsyncBehavior.RESTART)
+
+
+
+rule "— Update menu scale":
+    @Event eachPlayer
+    @Condition eventPlayer.uiState == UIState.VIEWING_PREFERENCES
+
+    do:
+        eventPlayer.menu_scale = distance(
+            eventPlayer.base_vector,
+            (
+                raycast(
+                    eventPlayer.getEyePosition(),
+                    eventPlayer.getEyePosition()
+                    + (
+                        Vector.UP * (eventPlayer.preferences[Preference.SIZE] / 100)
+                        + eventPlayer.getFacingDirection()
+                        * (eventPlayer.preferences[Preference.SIZE] / -40)
+                        * (
+                            eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE]
+                            / 100
+                        )
+                        if eventPlayer.preferences[Preference.PLAYER_MODE]
+                        else Vector.UP
+                        + eventPlayer.getFacingDirection()
+                        * -2.5
+                        * (
+                            eventPlayer.preferences[Preference.THIRD_PERSON_DISTANCE]
+                            / 100
+                        )
+                    ),
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+                if eventPlayer.preferences[Preference.THIRD_PERSON]
+                else eventPlayer.getEyePosition()
+            )
+        ) / 2.5
+        wait()
+    while RULE_CONDITION
 
 
 rule "— Switch between quick and advanced preferences":
     @Event eachPlayer
-    @Condition eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.VIEWING_PREFERENCES
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
     if eventPlayer.isViewingAdvancedPreferences:
@@ -456,7 +497,7 @@ rule "— Switch between quick and advanced preferences":
 
 rule "— Interact / toggle preference":
     @Event eachPlayer
-    @Condition eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.VIEWING_PREFERENCES
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
     switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
@@ -490,7 +531,7 @@ rule "— Interact / toggle preference":
             if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.KEYBOARD:
                 chaseInteractionProgress(
                     0.5,
-                    not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    eventPlayer.uiState != UIState.VIEWING_PREFERENCES or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             elif (
                 preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_MULTIPLE_CHOICE
@@ -498,12 +539,12 @@ rule "— Interact / toggle preference":
             ):
                 chaseInteractionProgress(
                     preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS][0],
-                    not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    eventPlayer.uiState != UIState.VIEWING_PREFERENCES or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             else:
                 chaseInteractionProgress(
                     preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.PARAMETERS],
-                    not eventPlayer.isViewingPreferences or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    eventPlayer.uiState != UIState.VIEWING_PREFERENCES or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             if eventPlayer.interaction_progress == 100:
                 if preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE] == PreferenceType.INTERACT_BOOLEAN:
@@ -538,7 +579,7 @@ rule "— Interact / toggle preference":
 
 rule "— Navigate preferences":
     @Event eachPlayer
-    @Condition eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.VIEWING_PREFERENCES
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
 
     eventPlayer.preference_adjustment = -1 if eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) else 1
@@ -566,7 +607,7 @@ rule "— Navigate preferences":
 
 rule "— Adjust preference, go to next/previous option":
     @Event eachPlayer
-    @Condition eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.VIEWING_PREFERENCES
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) or eventPlayer.isHoldingButton(Button.ABILITY_2)
 
     do:
@@ -638,7 +679,7 @@ rule "— Adjust preference, go to next/previous option":
 
 rule "— Reset preference":
     @Event eachPlayer
-    @Condition eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState == UIState.VIEWING_PREFERENCES
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
     switch preferences_data[dynamic_preferences_index(eventPlayer)][PreferenceProperty.TYPE]:
@@ -708,7 +749,7 @@ def InteractWithPreferences():
             iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "preferences reset")
             break
         case Preference.CUSTOM_MESSAGE:
-            eventPlayer.isUsingKeyboard = true
+            eventPlayer.uiState = UIState.KEYBOARD_INPUT
             eventPlayer.previous_position_direction = [
                 eventPlayer.getPosition(), vect(
                     eventPlayer.getFacingDirection().x,
@@ -785,20 +826,24 @@ def InteractWithPreferences():
                 eventPlayer.base_vector,
                 eventPlayer.preferences[Preference.BASE_SIZE],
                 eventPlayer.preferences[Preference.BASE_GAP_SIZE]
-            ):
+            ) and eventPlayer.preferences[Preference.BASE_SIZE] > preferences_data[Preference.BASE_SIZE][PreferenceProperty.PARAMETERS][Numeric.MIN]:
                 eventPlayer.preferences[Preference.BASE_SIZE] -= preferences_data[Preference.BASE_SIZE][PreferenceProperty.PARAMETERS][Numeric.STEP]
-            #     eventPlayer.previous_base_size = eventPlayer.preferences[Preference.BASE_SIZE]
-            # eventPlayer.previous_base_size = eventPlayer.preferences[Preference.BASE_SIZE]
+            eventPlayer.preferences[Preference.BASE_SIZE] = max(
+                eventPlayer.preferences[Preference.BASE_SIZE],
+                preferences_data[Preference.BASE_SIZE][PreferenceProperty.PARAMETERS][Numeric.MIN]
+            )
             break
         case Preference.BASE_GAP_SIZE:
             while isOverlappingBase(
                 eventPlayer.base_vector,
                 eventPlayer.preferences[Preference.BASE_SIZE],
                 eventPlayer.preferences[Preference.BASE_GAP_SIZE]
-            ):
+            ) and eventPlayer.preferences[Preference.BASE_GAP_SIZE] > preferences_data[Preference.BASE_GAP_SIZE][PreferenceProperty.PARAMETERS][Numeric.MIN]:
                 eventPlayer.preferences[Preference.BASE_GAP_SIZE] -= preferences_data[Preference.BASE_GAP_SIZE][PreferenceProperty.PARAMETERS][Numeric.STEP]
-            #     eventPlayer.previous_base_gap_size = eventPlayer.preferences[Preference.BASE_GAP_SIZE]
-            # eventPlayer.previous_base_gap_size = eventPlayer.preferences[Preference.BASE_GAP_SIZE]
+            eventPlayer.preferences[Preference.BASE_GAP_SIZE] = max(
+                eventPlayer.preferences[Preference.BASE_GAP_SIZE],
+                preferences_data[Preference.BASE_GAP_SIZE][PreferenceProperty.PARAMETERS][Numeric.MIN]
+            )
             break
         case Preference.BASE_NOCLIP:
         case Preference.BASE_GRAVITY:

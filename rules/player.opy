@@ -32,7 +32,7 @@ rule "— Player spawned":
     @Condition eventPlayer.hasSpawned()
 
     ReturnImmediately()
-    if eventPlayer.preferences[Preference.PLAYER_MODE] and eventPlayer.preferences[Preference.AMMO_OVERLOAD]:
+    if pref(Preference.PLAYER_MODE) and pref(Preference.AMMO_OVERLOAD):
         UpdateAmmo()
 
 
@@ -45,7 +45,7 @@ rule "— Player died":
     if eventPlayer.death_throttle > 6:
         bigMessage(eventPlayer, "Your base probably wasn't supposed to be there.")
         RemoveBase()
-    if eventPlayer.base_vector and eventPlayer.preferences[Preference.INSTANT_RESPAWN]:
+    if eventPlayer.base_vector and pref(Preference.INSTANT_RESPAWN):
         eventPlayer.death_throttle += 1
         eventPlayer.respawn()
 

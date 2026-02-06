@@ -11,9 +11,8 @@ rule "— Enter stasis":
     @Condition eventPlayer.preferences[Preference.STASIS]
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
-    @Condition not eventPlayer.isViewingPreferences
+    @Condition eventPlayer.uiState != UIState.MODERATING
+    @Condition eventPlayer.uiState != UIState.VIEWING_PREFERENCES
 
     if eventPlayer.isInStasis:
         ExitStasis()

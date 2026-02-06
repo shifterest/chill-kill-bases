@@ -51,9 +51,7 @@ rule "— Ability mode • Hold to spam • Primary fire (Brigitte)":
     @Condition eventPlayer.getCurrentHero() == Hero.BRIGITTE
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     do:
         eventPlayer.setAbilityCooldown(Button.PRIMARY_FIRE, 0)
@@ -81,9 +79,7 @@ rule "— Ability mode • Hold to spam • Secondary fire":
         or eventPlayer.getCurrentHero() == Hero.BRIGITTE
     )
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     do:
         eventPlayer.setAbilityCooldown(Button.SECONDARY_FIRE, 0)
@@ -104,9 +100,7 @@ rule "— Ability mode • Hold to spam • Ability 1":
     @Condition pref(Preference.PLAYER_MODE)
     @Condition pref(Preference.ABILITY_MODE) == AbilityMode.HOLD_TO_SPAM
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     do:
         eventPlayer.setAbilityCooldown(Button.ABILITY_1, 0)
@@ -127,9 +121,7 @@ rule "— Ability mode • Hold to spam • Ability 2":
     @Condition pref(Preference.PLAYER_MODE)
     @Condition pref(Preference.ABILITY_MODE) == AbilityMode.HOLD_TO_SPAM
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     do:
         eventPlayer.setAbilityCooldown(Button.ABILITY_2, 0)
@@ -193,9 +185,7 @@ rule "— Ultimate mode • Infinite":
     @Condition pref(Preference.PLAYER_MODE)
     @Condition pref(Preference.ULTIMATE_MODE) == UltimateMode.INFINITE
     @Condition not eventPlayer.isUsingUltimate()
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     do:
         switch eventPlayer.getCurrentHero():
@@ -226,9 +216,7 @@ rule "— Ultimate mode • Hold to spam":
     @Condition pref(Preference.PLAYER_MODE)
     @Condition pref(Preference.ULTIMATE_MODE) == UltimateMode.HOLD_TO_SPAM
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
-    @Condition not eventPlayer.isViewingPreferences
-    @Condition not eventPlayer.isInModeratorMode
-    @Condition not eventPlayer.isUsingKeyboard
+    @Condition eventPlayer.uiState == UIState.NORMAL
 
     do:
         eventPlayer.setUltCharge(100)

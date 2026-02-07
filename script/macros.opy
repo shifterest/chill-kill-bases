@@ -40,8 +40,8 @@ macro menu_vector(x, y):
     )
 
 
-macro rainbow_rgb():
-    rgb(rainbow_red, rainbow_green, rainbow_blue)
+macro rainbow():
+    hsl(rainbow_hue, 1, 0.5)
 
 
 macro friendly_base_in_crosshair(player):
@@ -195,7 +195,7 @@ macro updateHeroOutline():
         getAllPlayers(),
         true,
         (
-            rainbow_rgb()
+            rainbow()
             if eventPlayer.preferences[Preference.OUTLINE_COLOR]
             == ExtendedColor.RAINBOW
             else extended_color_data[eventPlayer.preferences[Preference.OUTLINE_COLOR]]
@@ -262,7 +262,7 @@ macro spamAbility(button):
 
 # Effects
 macro RainbowColor(color):
-    rainbow_rgb() if color == ExtendedColor.RAINBOW else extended_color_data[color]
+    rainbow() if color == ExtendedColor.RAINBOW else extended_color_data[color]
 
 
 macro Aura(effect, pos):
@@ -275,7 +275,7 @@ macro Aura(effect, pos):
         ),
         effect,
         (
-            rainbow_rgb()
+            rainbow()
             if eventPlayer.preferences[Preference.AURA_COLOR] == ExtendedColor.RAINBOW
             else extended_color_data[eventPlayer.preferences[Preference.AURA_COLOR]]
         ),
@@ -295,7 +295,7 @@ macro AuraHidden(effect, pos):
         ),
         effect,
         (
-            rainbow_rgb()
+            rainbow()
             if eventPlayer.preferences[Preference.AURA_COLOR] == ExtendedColor.RAINBOW
             else extended_color_data[eventPlayer.preferences[Preference.AURA_COLOR]]
         ),
@@ -310,7 +310,7 @@ macro BaseRingExplosion():
         eventPlayer,
         DynamicEffect.RING_EXPLOSION,
         (
-            rainbow_rgb()
+            rainbow()
             if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
             else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]]
         ),

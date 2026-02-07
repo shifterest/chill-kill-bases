@@ -8,31 +8,11 @@ rule "Loops":
 rule "— Transition rainbow color":
     @Condition isGameInProgress()
 
-    # based on u/Halex000's RGB rainbow cycling HUD text (code CZ97D)
+    # Simplified HSL-based rainbow cycling
     do:
-        chase(rainbow_green, 255, duration = 1, ChaseReeval.NONE)
-        wait(1)
-        stopChasingVariable(rainbow_green)
-
-        chase(rainbow_blue, 0, duration = 1, ChaseReeval.NONE)
-        wait(1)
-        stopChasingVariable(rainbow_blue)
-
-        chase(rainbow_red, 255, duration = 1, ChaseReeval.NONE)
-        wait(1)
-        stopChasingVariable(rainbow_red)
-
-        chase(rainbow_green, 0, duration = 1, ChaseReeval.NONE)
-        wait(1)
-        stopChasingVariable(rainbow_green)
-
-        chase(rainbow_blue, 255, duration = 1, ChaseReeval.NONE)
-        wait(1)
-        stopChasingVariable(rainbow_blue)
-
-        chase(rainbow_red, 0, duration = 1, ChaseReeval.NONE)
-        wait(1)
-        stopChasingVariable(rainbow_red)
+        chase(rainbow_hue, 360, duration = 6, ChaseReeval.NONE)
+        wait(6)
+        rainbow_hue = 0
     while RULE_CONDITION
 
 

@@ -79,7 +79,7 @@ rule "— Draw global HUD":
         localPlayer.onscreen_hud[OnScreenHUD.MAIN],
         HudPosition.TOP,
         3,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.onscreen_hud[OnScreenHUD.COLOR] == ExtendedColor.RAINBOW
         else localPlayer.onscreen_hud[OnScreenHUD.COLOR],
         HudReeval.VISIBILITY_STRING_AND_COLOR,
@@ -250,7 +250,7 @@ rule "— Draw global HUD":
         localPlayer.progress_hud[ProgHUD.TEXT],
         HudPosition.TOP,
         70,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.progress_hud[ProgHUD.COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.progress_hud[ProgHUD.COLOR]],
         Color.WHITE,
@@ -264,7 +264,7 @@ rule "— Draw global HUD":
         localPlayer.onscreen_hud[OnScreenHUD.ACTIVATION],
         HudPosition.TOP,
         71,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.current_base_owner.preferences[Preference.BASE_COLOR]
         == ExtendedColor.RAINBOW
         else extended_color_data[
@@ -284,7 +284,7 @@ rule "— Draw global HUD":
                 "chill / kill bases • join mvc for music • TSX53",
                 HudPosition.RIGHT,
                 0,
-                rainbow_rgb(),
+                rainbow(),
                 HudReeval.VISIBILITY_AND_COLOR,
                 SpecVisibility.DEFAULT
             )
@@ -295,7 +295,7 @@ rule "— Draw global HUD":
                 "chill / kill bases • sleep tight • TSX53",
                 HudPosition.RIGHT,
                 0,
-                rainbow_rgb(),
+                rainbow(),
                 HudReeval.VISIBILITY_AND_COLOR,
                 SpecVisibility.DEFAULT
             )
@@ -306,7 +306,7 @@ rule "— Draw global HUD":
                 "chill / kill bases (by shifterest) • TSX53",
                 HudPosition.RIGHT,
                 0,
-                rainbow_rgb(),
+                rainbow(),
                 HudReeval.VISIBILITY_AND_COLOR,
                 SpecVisibility.DEFAULT
             )
@@ -317,7 +317,7 @@ rule "— Draw global HUD":
                 "chill / kill bases • TSX53",
                 HudPosition.RIGHT,
                 0,
-                rainbow_rgb(),
+                rainbow(),
                 HudReeval.VISIBILITY_AND_COLOR,
                 SpecVisibility.DEFAULT
             )
@@ -340,7 +340,7 @@ rule "— Draw global HUD":
     createEffect(
         localPlayer if localPlayer.active_base_owner else null,
         Effect.RING,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.active_base_owner.preferences[Preference.BASE_COLOR]
         == ExtendedColor.RAINBOW
         else extended_color_data[
@@ -359,7 +359,7 @@ rule "— Draw global HUD":
         or localPlayer.uiState == UIState.DREAM_MODE
         else localPlayer,
         Effect.ORB,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
         localPlayer.base_vector,
@@ -376,7 +376,7 @@ rule "— Draw global HUD":
         or localPlayer.uiState != UIState.VIEWING_PREFERENCES
         else localPlayer,
         Effect.LIGHT_SHAFT,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
         localPlayer.base_vector,
@@ -394,7 +394,7 @@ rule "— Draw global HUD":
         or not localPlayer.isViewingAdvancedPreferences
         else localPlayer,
         Effect.RING,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
         localPlayer.base_vector,
@@ -473,7 +473,7 @@ def CreateBase():
         createEffect(
             eventPlayer if eventPlayer.uiState == UIState.BASE_CREATION else null,
             Effect.SPHERE,
-            rainbow_rgb()
+            rainbow()
             if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
             else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]],
             updateEveryFrame(eventPlayer.getPosition()),
@@ -487,7 +487,7 @@ def CreateBase():
             createEffect(
                 eventPlayer if eventPlayer.active_base_owner != eventPlayer else null,
                 Effect.SPHERE,
-                rainbow_rgb()
+                rainbow()
                 if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
                 else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]],
                 eventPlayer.base_vector
@@ -536,7 +536,7 @@ def CreateBase():
             createEffect(
                 [p for p in getAllPlayers() if p.active_base_owner != eventPlayer],
                 Effect.SPHERE,
-                rainbow_rgb()
+                rainbow()
                 if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
                 else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]],
                 eventPlayer.base_vector
@@ -616,7 +616,7 @@ def UpdateMessage():
             1.5,
             Clip.SURFACES,
             WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,
-            rainbow_rgb()
+            rainbow()
             if eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] == ExtendedColor.RAINBOW
             else extended_color_data[eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR]],
             SpecVisibility.DEFAULT

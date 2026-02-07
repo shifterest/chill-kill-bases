@@ -24,9 +24,7 @@ globalvar preferences_default
 globalvar moderator_list_hud
 globalvar moderator_list_hud_counter
 # chased
-globalvar rainbow_red
-globalvar rainbow_green
-globalvar rainbow_blue
+globalvar rainbow_hue
 # miscellaneous
 globalvar orb_radius
 globalvar mode

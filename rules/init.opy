@@ -700,10 +700,7 @@ rule "— Populate global variables":
 
     moderator_list_hud = ""
 
-    rainbow_red = 0
-    rainbow_green = 0
-    rainbow_blue = 255
-    
+    rainbow_hue = 0
     orb_radius = 0.4
 
 

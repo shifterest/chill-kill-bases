@@ -290,9 +290,12 @@ def UpdatePhase():
     if eventPlayer.active_base_owner == eventPlayer:
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
     elif (
-        eventPlayer.active_base_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
-        or pref(Preference.PLAYER_MODE) == PlayerMode.ZEN
+        pref(Preference.PLAYER_MODE) == PlayerMode.ZEN
         or eventPlayer.uiState == UIState.DREAM_MODE
+        or (
+            eventPlayer.active_base_owner
+            and eventPlayer.active_base_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
+        )
     ):
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
     elif eventPlayer.hasStatusEffect(Status.PHASED_OUT):

@@ -32,20 +32,20 @@ rule "— Draw preferences HUD":
         Color.ORANGE,
         SpecVisibility.NEVER
     )
-    # Keyboard
-    # createInWorldText(
-    #     localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
-    #     "{} | {}".format(
-    #         angleDifference(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()),
-    #         angleDifference(verticalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getVerticalFacingAngle())
-    #     ),
-    #     menu_vector(0, 0.35),
-    #     1,
-    #     Clip.NONE,
-    #     WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-    #     Color.WHITE,
-    #     SpecVisibility.NEVER
-    # )
+    # Keyboard Debug
+    createInWorldText(
+        localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
+        "H: {}  |  V: {}".format(
+            angleDifference(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getHorizontalFacingAngle()),
+            angleDifference(verticalAngleOfDirection(localPlayer.previous_position_direction[1]), localPlayer.getVerticalFacingAngle())
+        ),
+        menu_vector(0, 0.35),
+        1.5,
+        Clip.NONE,
+        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
+        Color.YELLOW,
+        SpecVisibility.NEVER
+    )
     createInWorldText(
         localPlayer if localPlayer.uiState == UIState.KEYBOARD_INPUT else null,
         "{}{}".format(
@@ -144,7 +144,7 @@ rule "— Draw preferences HUD":
         0.9,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER
@@ -176,7 +176,7 @@ rule "— Draw preferences HUD":
         0.9,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER
@@ -189,7 +189,7 @@ rule "— Draw preferences HUD":
         1.5,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.PARAMETER_COLOR]],
         SpecVisibility.NEVER
@@ -205,7 +205,7 @@ rule "— Draw preferences HUD":
         orb_vector(0.4),
         0.8,
         Clip.NONE,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences[Preference.BASE_COLOR]],
         null,
@@ -294,7 +294,7 @@ rule "— Draw preferences HUD":
         0.9,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow_rgb()
+        rainbow()
         if localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR] == ExtendedColor.RAINBOW
         else extended_color_data[localPlayer.preferences_hud[PreferencesHUD.ACCENT_COLOR]],
         SpecVisibility.NEVER

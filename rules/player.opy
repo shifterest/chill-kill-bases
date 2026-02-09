@@ -32,7 +32,7 @@ rule "— Player spawned":
     @Condition eventPlayer.hasSpawned()
 
     ReturnImmediately()
-    if pref(Preference.PLAYER_MODE) and pref(Preference.AMMO_OVERLOAD):
+    if s(Setting.PLAYER_MODE) and s(Setting.AMMO_OVERLOAD):
         UpdateAmmo()
 
 
@@ -45,7 +45,7 @@ rule "— Player died":
     if eventPlayer.death_throttle > 6:
         bigMessage(eventPlayer, "Your base probably wasn't supposed to be there.")
         RemoveBase()
-    if eventPlayer.base_vector and pref(Preference.INSTANT_RESPAWN):
+    if eventPlayer.base_vector and s(Setting.INSTANT_RESPAWN):
         eventPlayer.death_throttle += 1
         eventPlayer.respawn()
 
@@ -54,7 +54,7 @@ rule "— Player died":
     if eventPlayer.base_vector:
         wait(0.1)
         eventPlayer.teleport(eventPlayer.base_vector)
-        eventPlayer.activate_base_immediately = true
+        eventPlayer.activate_base_now = true
 
 
 rule "— Player left":
@@ -69,13 +69,13 @@ def ReturnImmediately():
 
     if eventPlayer.base_vector:
         wait(0.1)
-        if eventPlayer.previous_position_direction:
-            eventPlayer.teleport(eventPlayer.previous_position_direction[0])
-            eventPlayer.setFacing(eventPlayer.previous_position_direction[1], Relativity.TO_WORLD)
-            eventPlayer.previous_position_direction = null
+        if eventPlayer.last_transform:
+            eventPlayer.teleport(eventPlayer.last_transform[0])
+            restoreTransform()
+            eventPlayer.last_transform = null
         else:
             eventPlayer.teleport(eventPlayer.base_vector)
-        eventPlayer.activate_base_immediately = true
+        eventPlayer.activate_base_now = true
         eventPlayer.startForcingPosition(eventPlayer.getPosition(), false)
         wait(0.5)
         eventPlayer.stopForcingPosition()

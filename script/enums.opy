@@ -1,6 +1,6 @@
 #!mainFile "../main.opy"
 
-enum PreferenceProperty:
+enum SettingProp:
     TITLE,
     DESCRIPTIONS,
     TYPE,
@@ -9,15 +9,14 @@ enum PreferenceProperty:
     CHILL_REQUIRED
 
 
-enum PreferenceCategoryProperty:
-    CATEGORY_INDEX,
+enum SettingsCatProp:
+    NAME,
     STARTING_INDEX,
     ENDING_INDEX,
     COLOR
 
 
-enum PreferenceType:
-    CATEGORY,
+enum SettingType:
     MULTIPLE_CHOICE,
     MULTIPLE_CHOICE_RANDOM,
     BOOLEAN,
@@ -28,25 +27,29 @@ enum PreferenceType:
     INTERACT_MULTIPLE_CHOICE_RANDOM,
     INTERACT_BOOLEAN, # duration
     KEYBOARD, # duration
-    COLOR_PICKER
+    COLOR_PICKER,
+    CATEGORY  # For category navigation
 
 
-enum Numeric:
+enum SettingTypeNumericProp:
     MIN,
     MAX,
     STEP,
     SUFFIX
 
 
-enum Preference:
-    # Main
+enum SettingCat:
+    QUICK,
     GAME,
     HERO,
     ABILITIES,
     EFFECTS,
     SPECIAL,
     BASE,
-    DREAM,
+    DREAM
+
+
+enum Setting:
     # Game
     PLAYER_MODE,
     THIRD_PERSON,
@@ -156,17 +159,29 @@ enum InWorldHUD:
     BASE_SUMMARY
 
 
-enum PreferencesHUD:
+enum SettingsHUD:
     ACCENT_COLOR,
-    TITLE,
-    CURRENT_PREFERENCE,
-    TOTAL_PREFERENCES,
+    CATEGORY_NAME,
+    SECOND_PREVIOUS_SETTING,
+    PREVIOUS_SETTING,
+    CURRENT_SETTING,
+    NEXT_SETTING,
+    SECOND_NEXT_SETTING,
+    CURRENT_SETTING_INDEX,
+    TOTAL_SETTINGS,
     TYPE,
-    PARAMETER,
-    PARAMETER_COLOR,
-    CURRENT_TOTAL_PARAMETERS,
+    SECOND_PREVIOUS_OPTION,
+    PREVIOUS_OPTION,
+    CURRENT_OPTION,
+    NEXT_OPTION,
+    SECOND_NEXT_OPTION,
+    OPTION_COLOR,
     DESCRIPTION,
-    CHILL_REQUIRED
+    CHILL_REQUIRED,
+    # Legacy orb.opy compatibility
+    SETTING,  # Setting title
+    OPTION,   # Current option value
+    CURRENT_TOTAL_OPTIONS  # Option counter string
 
 
 enum OnScreenHUD:
@@ -262,8 +277,34 @@ enum ThirdPersonCamera:
 
 enum UIState:
     NORMAL,
-    VIEWING_PREFERENCES,
+    IN_MENU,
+    IN_ORB,
     MODERATING,
     DREAM_MODE,
     BASE_CREATION,
     KEYBOARD_INPUT
+
+
+enum PendingSetting:
+    CAMERA,
+    HERO,
+    SIZE_NOCLIP,
+    INVISIBILITY
+
+
+enum LastTransformProp:
+    LAST_POS,
+    LAST_FACING_DIR
+
+
+enum WorkshopSettings:
+    SERVER_MODE,
+    REDUCE_SERVER_LOAD,
+    MATCH_TIME,
+    ENABLE_MATCH_TIMER,
+    ENABLE_INSPECTOR,
+    ENABLE_SCOREBOARD,
+    ENABLE_POTG,
+    RANDOMIZE_OUTLINE_COLOR,
+    RANDOMIZE_BASE_COLOR,
+    RANDOMIZE_CHILL_COLOR

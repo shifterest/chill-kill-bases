@@ -6,9 +6,9 @@ rule "Backup":
 
 
 def BackupPlayer():
-    @Name "— Backup player preferences"
+    @Name "— Backup player settings"
 
     if player_names_backups.index(f"{eventPlayer}") < 0:
         player_names_backups.append(f"{eventPlayer}")
     base_vectors_backups[player_names_backups.index(f"{eventPlayer}")] = eventPlayer.base_vector
-    preferences_backups[player_names_backups.index(f"{eventPlayer}")] = eventPlayer.preferences
+    settings_backups[player_names_backups.index(f"{eventPlayer}")] = eventPlayer.settings

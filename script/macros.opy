@@ -1,9 +1,8 @@
 #!mainFile "../main.opy"
 
-
 # Shorthand
-macro pref(preference):
-    eventPlayer.preferences[preference]
+macro s(setting):
+    eventPlayer.settings[setting]
 
 macro pos():
     eventPlayer.getPosition()
@@ -16,26 +15,34 @@ macro face():
 
 
 # Constants
-macro orb_vector(y):
-    localPlayer.base_vector + (
-        y
-        * Vector.UP
-        * localPlayer.menu_scale
+macro dynamic_settings_i(player):
+    (
+        quick_settings_data[player.settings_i]
+        if player.cat_i == SettingCat.QUICK
+        else player.settings_i
     )
 
 
-macro menu_vector(x, y):
-    localPlayer.getEyePosition() + vect(
+macro dynamic_settings_data(player):
+    (
+        quick_settings_data
+        if player.cat_i == SettingCat.QUICK
+        else settings_data
+    )
+
+
+macro menu_vector(player, x, y):
+    player.getEyePosition() + vect(
         x
-        * cosDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
+        * cosDeg(horizontalAngleOfDirection(player.last_transform[1]))
         + sinDeg(
-            horizontalAngleOfDirection(localPlayer.previous_position_direction[1])
+            horizontalAngleOfDirection(player.last_transform[1])
         ),
         y,
         -x
-        * sinDeg(horizontalAngleOfDirection(localPlayer.previous_position_direction[1]))
+        * sinDeg(horizontalAngleOfDirection(player.last_transform[1]))
         + cosDeg(
-            horizontalAngleOfDirection(localPlayer.previous_position_direction[1])
+            horizontalAngleOfDirection(player.last_transform[1])
         )
     )
 
@@ -43,21 +50,22 @@ macro menu_vector(x, y):
 macro rainbow():
     hsl(rainbow_hue, 1, 0.5)
 
-
+macro RainbowColor(color):
+    rainbow() if color == ExtendedColor.RAINBOW else extended_color_data[color]
 macro friendly_base_in_crosshair(player):
     [
         p
         for p in getAllPlayers().exclude(player).exclude(player.current_base_owner)
         if (
             p.base_vector
-            and p.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
+            and p.settings[Setting.BASE_MODE] == BaseMode.FRIENDLY
             and distance(
                 player.getEyePosition()
                 + distance(player.getEyePosition(), p.base_vector)
                 * player.getFacingDirection(),
                 p.base_vector
             )
-            <= p.preferences[Preference.BASE_SIZE]
+            <= p.settings[Setting.BASE_SIZE]
         )
     ][0]
 
@@ -74,17 +82,22 @@ macro base_in_crosshair(player):
                 * player.getFacingDirection(),
                 p.base_vector
             )
-            <= p.preferences[Preference.BASE_SIZE]
+            <= p.settings[Setting.BASE_SIZE]
         )
     ][0]
 
 
-macro dynamic_preferences_index(player):
-    (
-        player.preferences_index
-        if player.isViewingAdvancedPreferences
-        else quick_preferences_data[player.preferences_index]
-    )
+# Settings data access shortcuts
+macro current_setting_data(player):
+    settings_data[dynamic_settings_i(player)]
+
+
+macro current_setting_value(player):
+    player.settings[dynamic_settings_i(player)]
+
+
+macro format_numeric(value, suffix):
+    f"{value}{suffix if suffix else ' units'}"
 
 
 # Conditions
@@ -94,9 +107,9 @@ macro isOverlappingBase(vector, size, gap_size):
             p != eventPlayer
             and p.base_vector
             and distance(vector, p.base_vector)
-            <= p.preferences[Preference.BASE_SIZE]
+            <= p.settings[Setting.BASE_SIZE]
             + size
-            + max(p.preferences[Preference.BASE_GAP_SIZE], gap_size)
+            + max(p.settings[Setting.BASE_GAP_SIZE], gap_size)
             for p in getAllPlayers()
         ]
     )
@@ -105,15 +118,15 @@ macro isOverlappingBase(vector, size, gap_size):
 macro isInMountingRange(player):
     distance(player.getRealPlayerClosestToReticle(Team.ALL), player.getPosition()) <= (
         (
-            player.preferences[Preference.SIZE] * (3 / 200)
-            if player.preferences[Preference.PLAYER_MODE]
+            player.settings[Setting.SIZE] * (3 / 200)
+            if player.settings[Setting.PLAYER_MODE]
             else 1.5
         )
         + (
-            player.getRealPlayerClosestToReticle(Team.ALL).preferences[Preference.SIZE]
+            player.getRealPlayerClosestToReticle(Team.ALL).settings[Setting.SIZE]
             * (3 / 200)
-            if player.getRealPlayerClosestToReticle(Team.ALL).preferences[
-                Preference.PLAYER_MODE
+            if player.getRealPlayerClosestToReticle(Team.ALL).settings[
+                Setting.PLAYER_MODE
             ]
             else 1.5
         )
@@ -129,7 +142,7 @@ macro isInDifferentBase():
         if p.base_vector
         and eventPlayer
         in getPlayersInRadius(
-            p.base_vector, p.preferences[Preference.BASE_SIZE], Team.ALL, LosCheck.OFF
+            p.base_vector, p.settings[Setting.BASE_SIZE], Team.ALL, LosCheck.OFF
         )
     ][0] != eventPlayer.current_base_owner
 
@@ -140,14 +153,14 @@ macro isConfined():
         and eventPlayer.active_base_owner.base_vector
         and eventPlayer.base_vector
         and eventPlayer.active_base_owner == eventPlayer
-        and eventPlayer.preferences[Preference.BASE_LOCK]
+        and eventPlayer.settings[Setting.BASE_LOCK]
     )
 
 
 macro isActive():
     (
         eventPlayer.getThrottle() != vect(0, 0, 0)
-        or eventPlayer.getFacingDirection() != eventPlayer.previous_facing_direction
+        or eventPlayer.getFacingDirection() != eventPlayer.last_facing_dir
     )
 
 
@@ -161,19 +174,22 @@ macro waitLoad():
     wait(getAverageServerLoad() / 150)
 
 
-macro snapCamera():
-    eventPlayer.startCamera(
-        eye(),
-        raycast(
-            eye(),
-            eye() + face() * 100,
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        1
+macro saveTransform():
+    eventPlayer.last_transform = [
+        eventPlayer.getPosition(),
+        vect(
+            eventPlayer.getFacingDirection().x,
+            0,
+            eventPlayer.getFacingDirection().z
+        )
+    ]
+
+
+macro restoreTransform():
+    eventPlayer.setFacing(
+        eventPlayer.last_transform[LastTransformProp.LAST_FACING_DIR],
+        Relativity.TO_WORLD
     )
-    wait()
 
 
 macro iconMessage(visibility, icon, message):
@@ -194,19 +210,14 @@ macro updateHeroOutline():
     eventPlayer.startForcingOutlineFor(
         getAllPlayers(),
         true,
-        (
-            rainbow()
-            if eventPlayer.preferences[Preference.OUTLINE_COLOR]
-            == ExtendedColor.RAINBOW
-            else extended_color_data[eventPlayer.preferences[Preference.OUTLINE_COLOR]]
-        ),
+        RainbowColor(eventPlayer.settings[Setting.OUTLINE_COLOR]),
         OutlineVisibility.DEFAULT
     )
 
 
 macro updatePitch():
     eventPlayer.startModifyingVoicelinePitch(
-        eventPlayer.preferences[Preference.VOICE_PITCH] / 100, false
+        eventPlayer.settings[Setting.VOICE_PITCH] / 100, false
     )
 
 
@@ -255,32 +266,24 @@ macro spamAbility(button):
     eventPlayer.forceButtonPress(button)
     wait()
     eventPlayer.stopForcingButton(button)
-    wait(eventPlayer.preferences[Preference.ABILITY_SPAM_DELAY])
+    wait(eventPlayer.settings[Setting.ABILITY_SPAM_DELAY])
     eventPlayer.cancelPrimaryAction()
     wait()
 
 
 # Effects
-macro RainbowColor(color):
-    rainbow() if color == ExtendedColor.RAINBOW else extended_color_data[color]
-
-
 macro Aura(effect, pos):
     createEffect(
         (
             null
-            if not eventPlayer.preferences[Preference.PLAYER_MODE]
+            if not eventPlayer.settings[Setting.PLAYER_MODE]
             or eventPlayer.isInvisible
             else getAllPlayers()
         ),
         effect,
-        (
-            rainbow()
-            if eventPlayer.preferences[Preference.AURA_COLOR] == ExtendedColor.RAINBOW
-            else extended_color_data[eventPlayer.preferences[Preference.AURA_COLOR]]
-        ),
+        RainbowColor(eventPlayer.settings[Setting.AURA_COLOR]),
         pos,
-        eventPlayer.preferences[Preference.AURA_SIZE] / 100,
+        eventPlayer.settings[Setting.AURA_SIZE] / 100,
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
 
@@ -289,18 +292,14 @@ macro AuraHidden(effect, pos):
     createEffect(
         (
             null
-            if not eventPlayer.preferences[Preference.PLAYER_MODE]
+            if not eventPlayer.settings[Setting.PLAYER_MODE]
             or eventPlayer.isInvisible
             else getAllPlayers().exclude(eventPlayer)
         ),
         effect,
-        (
-            rainbow()
-            if eventPlayer.preferences[Preference.AURA_COLOR] == ExtendedColor.RAINBOW
-            else extended_color_data[eventPlayer.preferences[Preference.AURA_COLOR]]
-        ),
+        RainbowColor(eventPlayer.settings[Setting.AURA_COLOR]),
         pos,
-        eventPlayer.preferences[Preference.AURA_SIZE] / 100,
+        eventPlayer.settings[Setting.AURA_SIZE] / 100,
         EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
     )
 
@@ -309,13 +308,9 @@ macro BaseRingExplosion():
     playEffect(
         eventPlayer,
         DynamicEffect.RING_EXPLOSION,
-        (
-            rainbow()
-            if eventPlayer.preferences[Preference.BASE_COLOR] == ExtendedColor.RAINBOW
-            else extended_color_data[eventPlayer.preferences[Preference.BASE_COLOR]]
-        ),
+        RainbowColor(eventPlayer.settings[Setting.BASE_COLOR]),
         eventPlayer.base_vector,
-        eventPlayer.preferences[Preference.BASE_SIZE] * 2
+        eventPlayer.settings[Setting.BASE_SIZE] * 2
     )
 
 
@@ -406,4 +401,15 @@ macro BuffExplosionSoundQuiet():
         null,
         eventPlayer.getPosition(),
         15
+    )
+
+
+macro GoodPickupEffect(position):
+    playEffect(
+        eventPlayer,
+        DynamicEffect.GOOD_PICKUP_EFFECT,
+        # RainbowColor(eventPlayer.settings[Setting.BASE_COLOR]),
+        Color.WHITE,
+        position,
+        10
     )

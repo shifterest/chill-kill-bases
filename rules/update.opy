@@ -21,7 +21,7 @@ def InitializePlayer():
 def UpdateHero():
     @Name "— Update hero"
 
-    switch pref(Preference.PLAYER_MODE):
+    switch s(Setting.PLAYER_MODE):
         case PlayerMode.KILL:
             eventPlayer.setDamageDealt(100)
             eventPlayer.setDamageReceived(100)
@@ -30,10 +30,10 @@ def UpdateHero():
             eventPlayer.setUltCharge(0)
             break
         case PlayerMode.CHILL:
-            eventPlayer.setDamageDealt(max(pref(Preference.DAMAGE), 0.1))
+            eventPlayer.setDamageDealt(max(s(Setting.DAMAGE), 0.1))
             eventPlayer.setDamageReceived(100)
-            eventPlayer.setHealingDealt(max(pref(Preference.HEALING), 0.1))
-            eventPlayer.setMaxHealth(pref(Preference.HEALTH))
+            eventPlayer.setHealingDealt(max(s(Setting.HEALING), 0.1))
+            eventPlayer.setMaxHealth(s(Setting.HEALTH))
             eventPlayer.setHealth(999999999)
             break
         case PlayerMode.ZEN:
@@ -68,7 +68,7 @@ def UpdateBaseEffects():
     UpdatePhysics()
     UpdateHUD()
     UpdateInvisibility()
-    if pref(Preference.THIRD_PERSON) != ThirdPersonCamera.OFF:
+    if s(Setting.THIRD_PERSON) != ThirdPersonCamera.OFF:
         UpdateCamera()
 
 
@@ -83,15 +83,15 @@ def UpdateAbilities():
     elif eventPlayer.active_base_owner == eventPlayer:
         DisableAbilities()
     elif (
-        eventPlayer.active_base_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
-        or pref(Preference.PLAYER_MODE) == PlayerMode.ZEN
+        eventPlayer.active_base_owner.settings[Setting.BASE_MODE] == BaseMode.FRIENDLY
+        or s(Setting.PLAYER_MODE) == PlayerMode.ZEN
     ):
         DisableAbilities()
     else:
         EnableAbilities()
 
     if (
-        (pref(Preference.PLAYER_MODE) == PlayerMode.ZEN or eventPlayer.active_base_owner)
+        (s(Setting.PLAYER_MODE) == PlayerMode.ZEN or eventPlayer.active_base_owner)
         and not (
             eventPlayer.isDuplicatingAHero()
             or eventPlayer.uiState != UIState.NORMAL
@@ -192,13 +192,14 @@ def EnableAbilities():
 def UpdateFlight():
     @Name "— Update flight"
 
-    if pref(Preference.PLAYER_MODE) and pref(Preference.FLIGHT):
+    if s(Setting.PLAYER_MODE) and s(Setting.FLIGHT):
         eventPlayer.startAcceleration(
             Vector.UP,
-            evalOnce(pref(Preference.FLIGHT_ACCELERATION))
-            if eventPlayer.isHoldingButton(Button.JUMP)
+            evalOnce(s(Setting.FLIGHT_ACCELERATION))
+            if eventPlayer.uiState == UIState.NORMAL
+            and eventPlayer.isHoldingButton(Button.JUMP)
             else 0,
-            evalOnce(pref(Preference.FLIGHT_ACCELERATION) * 2),
+            evalOnce(s(Setting.FLIGHT_ACCELERATION) * 2),
             Relativity.TO_PLAYER,
             AccelReeval.DIRECTION_RATE_AND_MAX_SPEED
         )
@@ -209,8 +210,8 @@ def UpdateFlight():
 def UpdateKnockback():
     @Name "— Update knockback dealt"
 
-    if pref(Preference.PLAYER_MODE):
-        eventPlayer.setKnockbackDealt(pref(Preference.KNOCKBACK))
+    if s(Setting.PLAYER_MODE):
+        eventPlayer.setKnockbackDealt(s(Setting.KNOCKBACK))
     else:
         eventPlayer.setKnockbackDealt(100)
 
@@ -218,20 +219,20 @@ def UpdateKnockback():
 def UpdateSizeNoclip():
     @Name "— Update hero size and environmental collision"
 
-    if pref(Preference.PLAYER_MODE) and pref(Preference.SIZE) != 100:
-        eventPlayer.startScalingSize(pref(Preference.SIZE) / 100, false)
+    if s(Setting.PLAYER_MODE) and s(Setting.SIZE) != 100:
+        eventPlayer.startScalingSize(s(Setting.SIZE) / 100, false)
     else:
         eventPlayer.stopScalingSize()
 
-    if eventPlayer.current_base_owner and eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] != BaseMode.HIDDEN:
-        if eventPlayer.current_base_owner.preferences[Preference.BASE_NOCLIP]:
+    if eventPlayer.current_base_owner and eventPlayer.current_base_owner.settings[Setting.BASE_MODE] != BaseMode.HIDDEN:
+        if eventPlayer.current_base_owner.settings[Setting.BASE_NOCLIP]:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()
-    elif pref(Preference.PLAYER_MODE) >= PlayerMode.CHILL:
-        if pref(Preference.NOCLIP):
+    elif s(Setting.PLAYER_MODE) >= PlayerMode.CHILL:
+        if s(Setting.NOCLIP):
             eventPlayer.disableEnvironmentCollision(false)
-        elif pref(Preference.SIZE) > 100:
+        elif s(Setting.SIZE) > 100:
             eventPlayer.disableEnvironmentCollision(false)
         else:
             eventPlayer.enableEnvironmentCollision()
@@ -242,14 +243,14 @@ def UpdateSizeNoclip():
 def UpdatePhysics():
     @Name "— Update gravity and speeds"
 
-    if eventPlayer.current_base_owner and eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] != BaseMode.HIDDEN:
-        eventPlayer.setGravity(eventPlayer.current_base_owner.preferences[Preference.BASE_GRAVITY])
-        eventPlayer.setMoveSpeed(eventPlayer.current_base_owner.preferences[Preference.BASE_SPEED])
-        eventPlayer.setJumpVerticalSpeed(eventPlayer.current_base_owner.preferences[Preference.BASE_JUMP_SPEED])
-    elif pref(Preference.PLAYER_MODE):
-        eventPlayer.setGravity(pref(Preference.GRAVITY))
-        eventPlayer.setMoveSpeed(pref(Preference.SPEED))
-        eventPlayer.setJumpVerticalSpeed(pref(Preference.JUMP_SPEED))
+    if eventPlayer.current_base_owner and eventPlayer.current_base_owner.settings[Setting.BASE_MODE] != BaseMode.HIDDEN:
+        eventPlayer.setGravity(eventPlayer.current_base_owner.settings[Setting.BASE_GRAVITY])
+        eventPlayer.setMoveSpeed(eventPlayer.current_base_owner.settings[Setting.BASE_SPEED])
+        eventPlayer.setJumpVerticalSpeed(eventPlayer.current_base_owner.settings[Setting.BASE_JUMP_SPEED])
+    elif s(Setting.PLAYER_MODE):
+        eventPlayer.setGravity(s(Setting.GRAVITY))
+        eventPlayer.setMoveSpeed(s(Setting.SPEED))
+        eventPlayer.setJumpVerticalSpeed(s(Setting.JUMP_SPEED))
     else:
         eventPlayer.setGravity(100)
         eventPlayer.setMoveSpeed(100)
@@ -259,9 +260,9 @@ def UpdatePhysics():
 def UpdateProjectiles():
     @Name "— Update projectile speed and gravity"
 
-    if pref(Preference.PLAYER_MODE):
-        eventPlayer.setProjectileSpeed(pref(Preference.PROJECTILE_SPEED))
-        eventPlayer.setProjectileGravity(pref(Preference.PROJECTILE_GRAVITY))
+    if s(Setting.PLAYER_MODE):
+        eventPlayer.setProjectileSpeed(s(Setting.PROJECTILE_SPEED))
+        eventPlayer.setProjectileGravity(s(Setting.PROJECTILE_GRAVITY))
     else:
         eventPlayer.setProjectileSpeed(100)
         eventPlayer.setProjectileGravity(100)
@@ -270,12 +271,15 @@ def UpdateProjectiles():
 def UpdateInvisibility():
     @Name "— Update invisibility"
 
-    if (
-        pref(Preference.PLAYER_MODE)
-        and pref(Preference.INVISIBILITY)
+    if eventPlayer.uiState == UIState.IN_MENU:
+        eventPlayer.setInvisibility(Invis.ALL)
+        eventPlayer.isInvisible = true
+    elif (
+        s(Setting.PLAYER_MODE)
+        and s(Setting.INVISIBILITY)
     ) or (
         eventPlayer.active_base_owner == eventPlayer
-        and pref(Preference.BASE_MODE) == BaseMode.HIDDEN
+        and s(Setting.BASE_MODE) == BaseMode.HIDDEN
     ):
         eventPlayer.setInvisibility(Invis.ENEMIES)
         eventPlayer.isInvisible = true
@@ -290,11 +294,11 @@ def UpdatePhase():
     if eventPlayer.active_base_owner == eventPlayer:
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
     elif (
-        pref(Preference.PLAYER_MODE) == PlayerMode.ZEN
+        s(Setting.PLAYER_MODE) == PlayerMode.ZEN
         or eventPlayer.uiState == UIState.DREAM_MODE
         or (
             eventPlayer.active_base_owner
-            and eventPlayer.active_base_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY
+            and eventPlayer.active_base_owner.settings[Setting.BASE_MODE] == BaseMode.FRIENDLY
         )
     ):
         eventPlayer.setStatusEffect(null, Status.PHASED_OUT, Math.INFINITY)
@@ -313,20 +317,20 @@ def UpdateHoT():
 def UpdateAmmo():
     @Name "— Update ammo"
 
-    if pref(Preference.PLAYER_MODE) and pref(Preference.AMMO_OVERLOAD):
+    if s(Setting.PLAYER_MODE) and s(Setting.AMMO_OVERLOAD):
         eventPlayer.setMaxAmmo(0, 1000)
         eventPlayer.setAmmo(0, 1000)
         eventPlayer.setMaxAmmo(1, 1000)
         eventPlayer.setAmmo(1, 1000)
     else:
         eventPlayer.last_hero = eventPlayer.getCurrentHero()
-        eventPlayer.previous_position_direction = [eventPlayer.getPosition(), eventPlayer.getFacingDirection()]
+        eventPlayer.last_transform = [eventPlayer.getPosition(), eventPlayer.getFacingDirection()]
         eventPlayer.setAllowedHeroes(getAllHeroes().exclude(eventPlayer.last_hero))
         wait()
         eventPlayer.startForcingHero(eventPlayer.last_hero)
         wait()
         eventPlayer.stopForcingCurrentHero()
         ReturnImmediately()
-        iconMessage(eventPlayer, iconString(Icon.HAPPY), "Ammo reset")
+        iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "Ammo reset")
         # eventPlayer.setAmmo(0, eventPlayer.getMaxAmmo(0))
         # eventPlayer.setAmmo(1, eventPlayer.getMaxAmmo(1))

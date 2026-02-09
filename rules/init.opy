@@ -28,10 +28,9 @@ rule "— Avoid server crashes":
 
 
 rule "— Populate global variables":
-    mode = createWorkshopSetting(enum["Default", "Music", "Sleep", "shifterest"], "game preferences", "lobby mode", 0, 0)
-    optimize = createWorkshopSetting(bool, "game preferences", "optimize server load", false, 2)
+    
 
-    switch mode:
+    switch workshop_settings[WorkshopSettings.SERVER_MODE]:
         case Mode.SHIFTEREST:
             god_usernames = ["shifterest", "Cage", "aerhysu", "IAmNoOb", "Bastion", "Quiver", "Forgive", "Zeshirow"]
             break
@@ -69,64 +68,15 @@ rule "— Populate global variables":
         abilityIconString(Hero.HAZARD, Button.ABILITY_2)
     ]
 
-    preferences_data[Preference.GAME] = [
-        "game preferences",
-        "Customize various game settings.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.GREEN
-    ]
-    preferences_data[Preference.HERO] = [
-        "hero preferences",
-        "Modify hero attributes.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.YELLOW
-    ]
-    preferences_data[Preference.ABILITIES] = [
-        "ability preferences",
-        "Configure ability and ultimate mechanics.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.PURPLE
-    ]
-    preferences_data[Preference.EFFECTS] = [
-        "effects preferences",
-        "Adjust various visual effects.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.VIOLET
-    ]
-    preferences_data[Preference.SPECIAL] = [
-        "special preferences",
-        "Control special game features.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.TURQUOISE
-    ]
-    preferences_data[Preference.BASE] = [
-        "base preferences",
-        "Customize base appearance and behavior.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.ROSE
-    ]
-    preferences_data[Preference.DREAM] = [
-        "dream preferences",
-        "Adjust dream mode settings.",
-        PreferenceType.CATEGORY,
-        null,
-        ExtendedColor.AQUA
-    ]
     # Game
-    preferences_data[Preference.PLAYER_MODE] = [
+    settings_data[Setting.PLAYER_MODE] = [
         "player mode",
         [
             "No special features, kill or be killed.",
             "Enable chill features. Be as harmless or lethal as you want.",
             "Enable invulnerability, disable most abilities."
         ],
-        PreferenceType.MULTIPLE_CHOICE,
+        SettingType.MULTIPLE_CHOICE,
         [
             f"{iconString(Icon.SKULL)} kill",
             f"{abilityIconString(Hero.MEI, Button.ULTIMATE)} chill",
@@ -134,233 +84,233 @@ rule "— Populate global variables":
         ],
         [ExtendedColor.RED, ExtendedColor.SKY_BLUE, ExtendedColor.GREEN]
     ]
-    preferences_data[Preference.THIRD_PERSON] = [
+    settings_data[Setting.THIRD_PERSON] = [
         "third-person camera",
         "Select a third-person camera perspective.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOM,
+        SettingType.MULTIPLE_CHOICE_RANDOM,
         ["off", "rear", "top-down", "static top-down", "front"]
     ]
-    preferences_data[Preference.THIRD_PERSON_DISTANCE] = [
+    settings_data[Setting.THIRD_PERSON_DISTANCE] = [
         "third-person camera distance",
         "Specify the distance of the camera in third-person view.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 1000, 10, "%"]
     ]
-    preferences_data[Preference.THIRD_PERSON_OFFSET] = [
+    settings_data[Setting.THIRD_PERSON_OFFSET] = [
         "third-person offset",
         "Specify the horizontal offset of the camera in third-person view.",
-        PreferenceType.NUMERIC_REVERSIBLE,
+        SettingType.NUMERIC_REVERSIBLE,
         [-5, 5, 0.5, "m"]
     ]
-    preferences_data[Preference.THIRD_PERSON_SMOOTHING] = [
+    settings_data[Setting.THIRD_PERSON_SMOOTHING] = [
         "third-person smoothing",
-        "Third-person camera smoothing is forcibly enabled in this server." if optimize else "Enable third-person camera smoothing, sacrificing accuracy.",
-        PreferenceType.BOOLEAN
+        "Third-person camera smoothing is forcibly enabled in this server." if workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] else "Enable third-person camera smoothing, sacrificing accuracy.",
+        SettingType.BOOLEAN
     ]
-    preferences_data[Preference.SWITCH_HERO] = [
+    settings_data[Setting.SWITCH_HERO] = [
         "Switch hero",
         "Switch heroes (in case of bugs in the Overwatch hero picker).",
-        PreferenceType.INTERACT_MULTIPLE_CHOICE_RANDOM,
+        SettingType.INTERACT_MULTIPLE_CHOICE_RANDOM,
         [0.6, [f"{heroIcon(hero)} {hero}" for hero in getAllHeroes()]]
     ]
-    preferences_data[Preference.SHOW_HOTKEYS] = [
+    settings_data[Setting.SHOW_HOTKEYS] = [
         "show hotkeys",
         "Enable the display of gameplay hotkeys.",
-        PreferenceType.BOOLEAN
+        SettingType.BOOLEAN
     ]
-    preferences_data[Preference.STASIS] = [
+    settings_data[Setting.STASIS] = [
         "stasis",
         "Temporarily immobilize yourself.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
-    preferences_data[Preference.STASIS_MODE] = [
+    settings_data[Setting.STASIS_MODE] = [
         "stasis mode",
         "Select the status effect to apply during stasis.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOM,
+        SettingType.MULTIPLE_CHOICE_RANDOM,
         ["knock down", "stun", "sleep", "freeze"],
         null,
         true
     ]
-    preferences_data[Preference.FAST_TRAVEL] = [
+    settings_data[Setting.FAST_TRAVEL] = [
         "fast travel",
         "Enable teleportation between bases and key locations.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
-    preferences_data[Preference.FAST_TRAVEL_TO_OBJECTIVE] = [
+    settings_data[Setting.FAST_TRAVEL_TO_OBJECTIVE] = [
         "fast travel to objective",
         "Quickly jump to objectives.",
-        PreferenceType.INTERACT_MULTIPLE_CHOICE,
+        SettingType.INTERACT_MULTIPLE_CHOICE,
         [0.6, ["first", "second", "third"]],
         null,
         true
     ]
-    preferences_data[Preference.INSTANT_RESPAWN] = [
+    settings_data[Setting.INSTANT_RESPAWN] = [
         "instant respawn",
         "Initiate immediate respawn at the base after death.",
-        PreferenceType.BOOLEAN
+        SettingType.BOOLEAN
     ]
-    preferences_data[Preference.REMOVE_BASE_REMOTELY] = [
+    settings_data[Setting.REMOVE_BASE_REMOTELY] = [
         "remove base remotely",
         "Enable remote removal of your base.",
-        PreferenceType.BOOLEAN
+        SettingType.BOOLEAN
     ]
-    preferences_data[Preference.SWITCH_TEAM] = [
+    settings_data[Setting.SWITCH_TEAM] = [
         "switch team",
         "Switch teams in skirmish maps.",
-        PreferenceType.INTERACT,
+        SettingType.INTERACT,
         1
     ]
-    preferences_data[Preference.RESET] = [
+    settings_data[Setting.RESET] = [
         "reset",
         "Reset all your settings.",
-        PreferenceType.INTERACT,
+        SettingType.INTERACT,
         1
     ]
     # Hero
-    preferences_data[Preference.OUTLINE_COLOR] = [
+    settings_data[Setting.OUTLINE_COLOR] = [
         "outline color",
         "Select an outline color.",
-        PreferenceType.COLOR_PICKER,
+        SettingType.COLOR_PICKER,
         true
     ]
-    preferences_data[Preference.FLIGHT] = [
+    settings_data[Setting.FLIGHT] = [
         "flight",
         "Enable or disable flight capability.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
-    preferences_data[Preference.FLIGHT_ACCELERATION] = [
+    settings_data[Setting.FLIGHT_ACCELERATION] = [
         "flight acceleration",
         "Set the acceleration for flight.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [5, 100, 5],
         null,
         true
     ]
-    preferences_data[Preference.SIZE] = [
+    settings_data[Setting.SIZE] = [
         "size",
         "Adjust the size of the hero.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 500, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.GRAVITY] = [
+    settings_data[Setting.GRAVITY] = [
         "gravity",
         "Set the gravity on the hero.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 500, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.SPEED] = [
+    settings_data[Setting.SPEED] = [
         "speed",
         "Define the movement speed of the hero.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 1000, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.JUMP_SPEED] = [
+    settings_data[Setting.JUMP_SPEED] = [
         "jump speed",
         "Adjust the jump speed of the hero.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 1000, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.VOICE_PITCH] = [
+    settings_data[Setting.VOICE_PITCH] = [
         "voice pitch",
         "Adjust the pitch of the hero's voice.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [50, 150, 10, "%"]
     ]
     # Abilities
-    preferences_data[Preference.DAMAGE] = [
+    settings_data[Setting.DAMAGE] = [
         "damage",
         "Set the damage output percentage.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 5000, 50, "%"],
         null,
         true
     ]
-    preferences_data[Preference.DAMAGE_EFFECT] = [
+    settings_data[Setting.DAMAGE_EFFECT] = [
         "damage effect",
         "Select the effect applied upon dealing damage.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOM,
+        SettingType.MULTIPLE_CHOICE_RANDOM,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
     ]
-    preferences_data[Preference.HEALING] = [
+    settings_data[Setting.HEALING] = [
         "healing",
         "Set the healing output percentage.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 5000, 50, "%"],
         null,
         true
     ]
-    preferences_data[Preference.HEALING_EFFECT] = [
+    settings_data[Setting.HEALING_EFFECT] = [
         "healing effect",
         "Select the effect applied during healing.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOM,
+        SettingType.MULTIPLE_CHOICE_RANDOM,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
     ]
-    preferences_data[Preference.HEALTH] = [
+    settings_data[Setting.HEALTH] = [
         "health",
         "Set the health pool percentage.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 5000, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.THORNS] = [
+    settings_data[Setting.THORNS] = [
         "thorns",
         "Set the damage reflection percentage.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 5000, 50, "%"],
         null,
         true
     ]
-    preferences_data[Preference.THORNS_EFFECT] = [
+    settings_data[Setting.THORNS_EFFECT] = [
         "thorns effect",
         "Select the effect applied when reflecting damage.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOM,
+        SettingType.MULTIPLE_CHOICE_RANDOM,
         ["none", "sleep", "burn", "freeze", "hack", "knock down", "stun", "repel", "attract"],
         null,
         true
     ]
-    preferences_data[Preference.ABILITY_MODE] = [
+    settings_data[Setting.ABILITY_MODE] = [
         "ability mode",
         [
             "Standard ability cooldowns.",
             "Reduced ability cooldowns.",
             "Hold for repeated use."
         ],
-        PreferenceType.MULTIPLE_CHOICE,
-        ["normal", "no cooldown"] if optimize else ["normal", "no cooldown", "hold to spam"],
+        SettingType.MULTIPLE_CHOICE,
+        ["normal", "no cooldown"] if workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] else ["normal", "no cooldown", "hold to spam"],
         null,
         true
     ]
-    preferences_data[Preference.ABILITY_SPAM_DELAY] = [
+    settings_data[Setting.ABILITY_SPAM_DELAY] = [
         "ability spam delay",
-        "Ability spam is disabled on this server." if optimize else "Set the delay between successive ability activations.",
-        PreferenceType.NUMERIC,
+        "Ability spam is disabled on this server." if workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] else "Set the delay between successive ability activations.",
+        SettingType.NUMERIC,
         [0.01, 1, 0.01, " second(s)"],
-        ExtendedColor.GRAY if optimize else ExtendedColor.WHITE,
+        ExtendedColor.GRAY if workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] else ExtendedColor.WHITE,
         true
     ]
-    preferences_data[Preference.ULTIMATE_MODE] = [
+    settings_data[Setting.ULTIMATE_MODE] = [
         "ultimate mode",
         [
             "Standard ultimate cooldowns.",
@@ -368,141 +318,141 @@ rule "— Populate global variables":
             "Instant ultimate recasts.",
             "Hold for repeated use."
         ],
-        PreferenceType.MULTIPLE_CHOICE,
-        ["normal", "no cooldown"] if optimize else ["normal", "no cooldown", "infinite", "hold to spam"],
+        SettingType.MULTIPLE_CHOICE,
+        ["normal", "no cooldown"] if workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] else ["normal", "no cooldown", "infinite", "hold to spam"],
         null,
         true
     ]
-    preferences_data[Preference.ULTIMATE_SPAM_DELAY] = [
+    settings_data[Setting.ULTIMATE_SPAM_DELAY] = [
         "ultimate spam delay",
-        "Ultimate spam is disabled on this server." if optimize else "Set the delay between successive ultimate activations.",
-        PreferenceType.NUMERIC,
+        "Ultimate spam is disabled on this server." if workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] else "Set the delay between successive ultimate activations.",
+        SettingType.NUMERIC,
         [0.01, 1, 0.01, " second(s)"],
-        ExtendedColor.GRAY if optimize else ExtendedColor.WHITE,
+        ExtendedColor.GRAY if workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] else ExtendedColor.WHITE,
         true
     ]
-    preferences_data[Preference.KNOCKBACK] = [
+    settings_data[Setting.KNOCKBACK] = [
         "knockback",
         "Adjust the force of the knockback effect.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 1000, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.PROJECTILE_SPEED] = [
+    settings_data[Setting.PROJECTILE_SPEED] = [
         "projectile speed",
         "Specify the speed of projectiles.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 1000, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.PROJECTILE_GRAVITY] = [
+    settings_data[Setting.PROJECTILE_GRAVITY] = [
         "projectile gravity",
         "Set the gravitational effect on projectiles.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 1000, 10, "%"],
         null,
         true
     ]
-    preferences_data[Preference.AMMO_OVERLOAD] = [
+    settings_data[Setting.AMMO_OVERLOAD] = [
         "ammo overload",
         "Enable unlimited ammo and increased ammo clips.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
     # Effects
-    preferences_data[Preference.CUSTOM_MESSAGE] = [
+    settings_data[Setting.CUSTOM_MESSAGE] = [
         "custom message",
         "Enter a personal message to be displayed above the player.",
-        PreferenceType.KEYBOARD
+        SettingType.KEYBOARD
     ]
-    preferences_data[Preference.CUSTOM_MESSAGE_COLOR] = [
+    settings_data[Setting.CUSTOM_MESSAGE_COLOR] = [
         "custom message color",
         "Select a color for the displayed message.",
-        PreferenceType.COLOR_PICKER,
+        SettingType.COLOR_PICKER,
         true
     ]
-    preferences_data[Preference.AURA] = [
+    settings_data[Setting.AURA] = [
         "aura",
         "Enable or disable a surrounding glowing effect.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
-    preferences_data[Preference.AURA_EFFECT] = [
+    settings_data[Setting.AURA_EFFECT] = [
         "aura effect",
         "Select the shape of the aura effect.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOM,
+        SettingType.MULTIPLE_CHOICE_RANDOM,
         ["sparkles", "cloud", "light shaft", "good aura", "bad aura", "ring", "sphere"],
         null,
         true
     ]
-    preferences_data[Preference.AURA_COLOR] = [
+    settings_data[Setting.AURA_COLOR] = [
         "aura color",
         "Select a color for the aura effect.",
-        PreferenceType.COLOR_PICKER,
+        SettingType.COLOR_PICKER,
         true,
         null,
         true
     ]
-    preferences_data[Preference.AURA_SIZE] = [
+    settings_data[Setting.AURA_SIZE] = [
         "aura size",
         "Specify the size of the aura effect.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 1000, 10, "m"],
         null,
         true
     ]
-    preferences_data[Preference.HIDE_AURA_IN_FIRST_PERSON] = [
+    settings_data[Setting.HIDE_AURA_IN_FIRST_PERSON] = [
         "hide aura in first-person",
         "Disable the aura effect when in first-person view.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
     # Special
-    preferences_data[Preference.NOCLIP] = [
+    settings_data[Setting.NOCLIP] = [
         "noclip",
         "Enable or disable the ability to move through walls.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
-    preferences_data[Preference.INVISIBILITY] = [
+    settings_data[Setting.INVISIBILITY] = [
         "invisibility",
         "Enable or disable the invisibility state of the hero.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
-    preferences_data[Preference.ALLOW_MOUNTING] = [
+    settings_data[Setting.ALLOW_MOUNTING] = [
         "allow mounting",
         "Enable or disable mounting.",
-        PreferenceType.BOOLEAN
+        SettingType.BOOLEAN
     ]
-    preferences_data[Preference.MOUNTING_MODE] = [
+    settings_data[Setting.MOUNTING_MODE] = [
         "mounting mode",
         "Select the preferred arrangement for mounting.",
-        PreferenceType.MULTIPLE_CHOICE_RANDOM,
+        SettingType.MULTIPLE_CHOICE_RANDOM,
         ["stack", "intersect", "front", "back", "left", "right"]
     ]
-    preferences_data[Preference.TRAMPOLINE] = [
+    settings_data[Setting.TRAMPOLINE] = [
         "trampoline mode",
         "Enable automatic jump upon landing. Hold crouch to stop.",
-        PreferenceType.BOOLEAN,
+        SettingType.BOOLEAN,
         null,
         null,
         true
     ]
     # Base
-    preferences_data[Preference.BASE_MODE] = [
+    settings_data[Setting.BASE_MODE] = [
         "base mode",
         [
             "Provides protection for the player, disregarding other players.",
@@ -511,7 +461,7 @@ rule "— Populate global variables":
             "Provides protection for the player, actively repelling other players.",
             "Provides protection for the player, actively damaging other players."
         ],
-        PreferenceType.MULTIPLE_CHOICE,
+        SettingType.MULTIPLE_CHOICE,
         [
             "{} passive".format(base_mode_icon_data[BaseMode.PASSIVE]),
             "{} hidden".format(base_mode_icon_data[BaseMode.HIDDEN]),
@@ -527,192 +477,187 @@ rule "— Populate global variables":
             ExtendedColor.RED
         ]
     ]
-    preferences_data[Preference.BASE_COLOR] = [
+    settings_data[Setting.BASE_COLOR] = [
         "base color",
         "Select a color for the base.",
-        PreferenceType.COLOR_PICKER,
+        SettingType.COLOR_PICKER,
         true
     ]
-    preferences_data[Preference.BASE_SIZE] = [
+    settings_data[Setting.BASE_SIZE] = [
         "base size",
         "Specify the size of the base.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [1, 15, 0.5, "m"]
     ]
-    preferences_data[Preference.BASE_GAP_SIZE] = [
+    settings_data[Setting.BASE_GAP_SIZE] = [
         "base gap size",
         "Define the minimum distance between bases.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 8, 0.5, "m"]
     ]
-    preferences_data[Preference.BASE_LOCK] = [
+    settings_data[Setting.BASE_LOCK] = [
         "base lock",
         "Enable or disable base locking for security.",
-        PreferenceType.BOOLEAN
+        SettingType.BOOLEAN
     ]
-    preferences_data[Preference.BASE_NOCLIP] = [
+    settings_data[Setting.BASE_NOCLIP] = [
         "in-base noclip",
         "Enable or disable noclip within the base.",
-        PreferenceType.BOOLEAN
+        SettingType.BOOLEAN
     ]
-    preferences_data[Preference.BASE_GRAVITY] = [
+    settings_data[Setting.BASE_GRAVITY] = [
         "in-base gravity",
         "Specify the gravity setting within the base.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 500, 10, "%"]
     ]
-    preferences_data[Preference.BASE_SPEED] = [
+    settings_data[Setting.BASE_SPEED] = [
         "in-base speed",
         "Specify the movement speed within the base.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 500, 10, "%"]
     ]
-    preferences_data[Preference.BASE_JUMP_SPEED] = [
+    settings_data[Setting.BASE_JUMP_SPEED] = [
         "in-base jump speed",
         "Specify the jump speed within the base.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [10, 500, 10, "%"]
     ]
     # Dream
-    preferences_data[Preference.DREAM_MODE] = [
+    settings_data[Setting.DREAM_MODE] = [
         "enable dream mode",
         "Activate dream mode to allow spectator view.",
-        PreferenceType.INTERACT_BOOLEAN,
+        SettingType.INTERACT_BOOLEAN,
         0.6
     ]
-    preferences_data[Preference.AFK_TIMER] = [
+    settings_data[Setting.AFK_TIMER] = [
         "AFK timer",
         "Set the idle time (in minutes) after which dream mode is activated.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [0, 60, 0.5, " minute(s)"]
     ]
-    preferences_data[Preference.SWITCH_TIMER] = [
+    settings_data[Setting.SWITCH_TIMER] = [
         "player switch timer",
         "Define the duration for switching players in dream mode.",
-        PreferenceType.NUMERIC,
+        SettingType.NUMERIC,
         [3, 180, 1, " seconds"]
     ]
-    preferences_data[Preference.CLIP_CAMERA] = [
+    settings_data[Setting.CLIP_CAMERA] = [
         "clip camera",
         "Enable or disable camera collision in dream mode.",
-        PreferenceType.BOOLEAN
+        SettingType.BOOLEAN
     ]
 
-    preferences_category_data = [
-        [-1, Preference.GAME, Preference.DREAM, ExtendedColor.ORANGE],
-        [Preference.GAME, Preference.PLAYER_MODE, Preference.RESET, ExtendedColor.GREEN],
-        [Preference.HERO, Preference.OUTLINE_COLOR, Preference.VOICE_PITCH, ExtendedColor.YELLOW],
-        [Preference.ABILITIES, Preference.DAMAGE, Preference.AMMO_OVERLOAD, ExtendedColor.PURPLE],
-        [Preference.EFFECTS, Preference.CUSTOM_MESSAGE, Preference.HIDE_AURA_IN_FIRST_PERSON, ExtendedColor.VIOLET],
-        [Preference.SPECIAL, Preference.NOCLIP, Preference.TRAMPOLINE, ExtendedColor.TURQUOISE],
-        [Preference.BASE, Preference.BASE_MODE, Preference.BASE_JUMP_SPEED, ExtendedColor.ROSE],
-        [Preference.DREAM, Preference.DREAM_MODE, Preference.CLIP_CAMERA, ExtendedColor.AQUA],
+    settings_cat_data = [
+        ["Quick", -1, -1, ExtendedColor.BLUE],
+        ["Game", Setting.PLAYER_MODE, Setting.RESET, ExtendedColor.GREEN],
+        ["Hero", Setting.OUTLINE_COLOR, Setting.VOICE_PITCH, ExtendedColor.YELLOW],
+        ["Abilities", Setting.DAMAGE, Setting.AMMO_OVERLOAD, ExtendedColor.PURPLE],
+        ["Effects", Setting.CUSTOM_MESSAGE, Setting.HIDE_AURA_IN_FIRST_PERSON, ExtendedColor.VIOLET],
+        ["Special", Setting.NOCLIP, Setting.TRAMPOLINE, ExtendedColor.TURQUOISE],
+        ["Base", Setting.BASE_MODE, Setting.BASE_JUMP_SPEED, ExtendedColor.ROSE],
+        ["Dream", Setting.DREAM_MODE, Setting.CLIP_CAMERA, ExtendedColor.AQUA],
     ]
 
-    quick_preferences_data = [
-        Preference.PLAYER_MODE,
-        Preference.BASE_MODE,
-        Preference.THIRD_PERSON,
-        Preference.SWITCH_HERO,
-        Preference.FAST_TRAVEL_TO_OBJECTIVE,
-        Preference.CUSTOM_MESSAGE,
-        Preference.AURA,
-        Preference.SIZE,
-        Preference.SPEED,
-        Preference.DAMAGE,
-        Preference.HEALTH,
-        Preference.THORNS,
-        Preference.NOCLIP,
-        Preference.INVISIBILITY,
-        Preference.TRAMPOLINE,
-        Preference.BASE_COLOR,
-        Preference.BASE_SIZE,
-        Preference.DREAM_MODE,
+    quick_settings_data = [
+        Setting.PLAYER_MODE,
+        Setting.BASE_MODE,
+        Setting.THIRD_PERSON,
+        Setting.SWITCH_HERO,
+        Setting.FAST_TRAVEL_TO_OBJECTIVE,
+        Setting.CUSTOM_MESSAGE,
+        Setting.AURA,
+        Setting.SIZE,
+        Setting.SPEED,
+        Setting.DAMAGE,
+        Setting.HEALTH,
+        Setting.THORNS,
+        Setting.NOCLIP,
+        Setting.INVISIBILITY,
+        Setting.TRAMPOLINE,
+        Setting.BASE_COLOR,
+        Setting.BASE_SIZE,
+        Setting.DREAM_MODE,
     ]
 
     # Game
-    preferences_default[Preference.PLAYER_MODE] = PlayerMode.CHILL
-    preferences_default[Preference.THIRD_PERSON] = ThirdPersonCamera.REAR
-    preferences_default[Preference.THIRD_PERSON_DISTANCE] = 100
-    preferences_default[Preference.THIRD_PERSON_OFFSET] = 1
-    preferences_default[Preference.THIRD_PERSON_SMOOTHING] = true
-    preferences_default[Preference.SHOW_HOTKEYS] = true
-    preferences_default[Preference.STASIS] = true
-    preferences_default[Preference.STASIS_MODE] = Stasis.KNOCKED_DOWN
-    preferences_default[Preference.FAST_TRAVEL] = true
-    preferences_default[Preference.INSTANT_RESPAWN] = true
-    preferences_default[Preference.REMOVE_BASE_REMOTELY] = true
+    default_settings[Setting.PLAYER_MODE] = PlayerMode.CHILL
+    default_settings[Setting.THIRD_PERSON] = ThirdPersonCamera.REAR
+    default_settings[Setting.THIRD_PERSON_DISTANCE] = 100
+    default_settings[Setting.THIRD_PERSON_OFFSET] = 1
+    default_settings[Setting.THIRD_PERSON_SMOOTHING] = true
+    default_settings[Setting.SHOW_HOTKEYS] = true
+    default_settings[Setting.STASIS] = true
+    default_settings[Setting.STASIS_MODE] = Stasis.KNOCKED_DOWN
+    default_settings[Setting.FAST_TRAVEL] = true
+    default_settings[Setting.INSTANT_RESPAWN] = true
+    default_settings[Setting.REMOVE_BASE_REMOTELY] = true
     # Hero
-    preferences_default[Preference.OUTLINE_COLOR] = ExtendedColor.WHITE
-    preferences_default[Preference.FLIGHT] = true
-    preferences_default[Preference.FLIGHT_ACCELERATION] = 25
-    preferences_default[Preference.SIZE] = 100
-    preferences_default[Preference.GRAVITY] = 100
-    preferences_default[Preference.SPEED] = 100
-    preferences_default[Preference.JUMP_SPEED] = 100
-    preferences_default[Preference.VOICE_PITCH] = 100
+    default_settings[Setting.OUTLINE_COLOR] = ExtendedColor.WHITE
+    default_settings[Setting.FLIGHT] = true
+    default_settings[Setting.FLIGHT_ACCELERATION] = 25
+    default_settings[Setting.SIZE] = 100
+    default_settings[Setting.GRAVITY] = 100
+    default_settings[Setting.SPEED] = 100
+    default_settings[Setting.JUMP_SPEED] = 100
+    default_settings[Setting.VOICE_PITCH] = 100
     # Abilities
-    preferences_default[Preference.DAMAGE] = 100
-    preferences_default[Preference.DAMAGE_EFFECT] = AbilityEffect.NONE
-    preferences_default[Preference.HEALING] = 100
-    preferences_default[Preference.HEALING_EFFECT] = AbilityEffect.NONE
-    preferences_default[Preference.HEALTH] = 100
-    preferences_default[Preference.THORNS] = 100
-    preferences_default[Preference.THORNS_EFFECT] = AbilityEffect.NONE
-    preferences_default[Preference.ABILITY_MODE] = AbilityMode.NO_COOLDOWN
-    preferences_default[Preference.ABILITY_SPAM_DELAY] = 0.05
-    preferences_default[Preference.ULTIMATE_MODE] = UltimateMode.NO_COOLDOWN
-    preferences_default[Preference.ULTIMATE_SPAM_DELAY] = 0.05
-    preferences_default[Preference.KNOCKBACK] = 100
-    preferences_default[Preference.PROJECTILE_SPEED] = 100
-    preferences_default[Preference.PROJECTILE_GRAVITY] = 100
-    preferences_default[Preference.AMMO_OVERLOAD] = true
+    default_settings[Setting.DAMAGE] = 100
+    default_settings[Setting.DAMAGE_EFFECT] = AbilityEffect.NONE
+    default_settings[Setting.HEALING] = 100
+    default_settings[Setting.HEALING_EFFECT] = AbilityEffect.NONE
+    default_settings[Setting.HEALTH] = 100
+    default_settings[Setting.THORNS] = 100
+    default_settings[Setting.THORNS_EFFECT] = AbilityEffect.NONE
+    default_settings[Setting.ABILITY_MODE] = AbilityMode.NO_COOLDOWN
+    default_settings[Setting.ABILITY_SPAM_DELAY] = 0.05
+    default_settings[Setting.ULTIMATE_MODE] = UltimateMode.NO_COOLDOWN
+    default_settings[Setting.ULTIMATE_SPAM_DELAY] = 0.05
+    default_settings[Setting.KNOCKBACK] = 100
+    default_settings[Setting.PROJECTILE_SPEED] = 100
+    default_settings[Setting.PROJECTILE_GRAVITY] = 100
+    default_settings[Setting.AMMO_OVERLOAD] = true
     # Effects
-    preferences_default[Preference.CUSTOM_MESSAGE] = ""
-    preferences_default[Preference.CUSTOM_MESSAGE_COLOR] = ExtendedColor.WHITE
-    preferences_default[Preference.AURA] = true
-    preferences_default[Preference.AURA_EFFECT] = ChillEffect.SPARKLES
-    preferences_default[Preference.AURA_COLOR] = ExtendedColor.WHITE
-    preferences_default[Preference.AURA_SIZE] = 150
-    preferences_default[Preference.HIDE_AURA_IN_FIRST_PERSON] = false
+    default_settings[Setting.CUSTOM_MESSAGE] = ""
+    default_settings[Setting.CUSTOM_MESSAGE_COLOR] = ExtendedColor.WHITE
+    default_settings[Setting.AURA] = true
+    default_settings[Setting.AURA_EFFECT] = ChillEffect.SPARKLES
+    default_settings[Setting.AURA_COLOR] = ExtendedColor.WHITE
+    default_settings[Setting.AURA_SIZE] = 150
+    default_settings[Setting.HIDE_AURA_IN_FIRST_PERSON] = false
     # Special
-    preferences_default[Preference.NOCLIP] = false
-    preferences_default[Preference.INVISIBILITY] = false
-    preferences_default[Preference.ALLOW_MOUNTING] = true
-    preferences_default[Preference.MOUNTING_MODE] = MountingMode.STACK
-    preferences_default[Preference.TRAMPOLINE] = false
+    default_settings[Setting.NOCLIP] = false
+    default_settings[Setting.INVISIBILITY] = false
+    default_settings[Setting.ALLOW_MOUNTING] = true
+    default_settings[Setting.MOUNTING_MODE] = MountingMode.STACK
+    default_settings[Setting.TRAMPOLINE] = false
     # Base
-    preferences_default[Preference.BASE_MODE] = BaseMode.PASSIVE
-    preferences_default[Preference.BASE_COLOR] = ExtendedColor.ORANGE
-    preferences_default[Preference.BASE_SIZE] = 3.5
-    preferences_default[Preference.BASE_GAP_SIZE] = 0
-    preferences_default[Preference.BASE_LOCK] = false
-    preferences_default[Preference.BASE_NOCLIP] = false
-    preferences_default[Preference.BASE_GRAVITY] = 100
-    preferences_default[Preference.BASE_SPEED] = 100
-    preferences_default[Preference.BASE_JUMP_SPEED] = 100
+    default_settings[Setting.BASE_MODE] = BaseMode.PASSIVE
+    default_settings[Setting.BASE_COLOR] = ExtendedColor.ORANGE
+    default_settings[Setting.BASE_SIZE] = 3.5
+    default_settings[Setting.BASE_GAP_SIZE] = 0
+    default_settings[Setting.BASE_LOCK] = false
+    default_settings[Setting.BASE_NOCLIP] = false
+    default_settings[Setting.BASE_GRAVITY] = 100
+    default_settings[Setting.BASE_SPEED] = 100
+    default_settings[Setting.BASE_JUMP_SPEED] = 100
     # Dream
-    preferences_default[Preference.AFK_TIMER] = 0
-    preferences_default[Preference.SWITCH_TIMER] = 10
-    preferences_default[Preference.CLIP_CAMERA] = true
+    default_settings[Setting.AFK_TIMER] = 0
+    default_settings[Setting.SWITCH_TIMER] = 10
+    default_settings[Setting.CLIP_CAMERA] = true
 
     isInitialized = true
-
-    moderator_list_hud = ""
-
-    rainbow_hue = 0
-    orb_radius = 0.4
 
 
 rule "— Initialize game":
     @Condition isGameInProgress()
     @Condition isInitialized
 
-    setMatchTime(createWorkshopSetting(int[30:270], "match preferences", "match time", 270, 0) * 60)
+    setMatchTime(workshop_settings[WorkshopSettings.MATCH_TIME])
     disableGamemodeCompletion()
-    if not createWorkshopSetting(bool, "match preferences", "enable match timer", false, 1):
+    if not workshop_settings[WorkshopSettings.ENABLE_MATCH_TIMER]:
         pauseMatchTime()
-    if not createWorkshopSetting(bool, "game preferences", "enable inspector (increases server load)", false, 3):
+    if not workshop_settings[WorkshopSettings.ENABLE_INSPECTOR]:
         disableInspector()
 
 
@@ -721,56 +666,57 @@ rule "— Initialize player":
     @Condition isInitialized
 
     eventPlayer.disableGamemodeHud()
-    if not createWorkshopSetting(bool, "match preferences", "enable scoreboard", true, 2):
+    if not workshop_settings[WorkshopSettings.ENABLE_SCOREBOARD]:
         eventPlayer.disableScoreboard()
-    if eventPlayer.preferences:
+    if eventPlayer.settings:
         HardReset()
     if f"{eventPlayer}" in mod_usernames:
         async(UpdateModeratorListHUD, AsyncBehavior.RESTART)
     if player_names_backups.index(f"{eventPlayer}") >= 0:
         if base_vectors_backups[player_names_backups.index(f"{eventPlayer}")] and not isOverlappingBase(
             base_vectors_backups[player_names_backups.index(f"{eventPlayer}")],
-            preferences_backups[player_names_backups.index(f"{eventPlayer}")][Preference.BASE_SIZE],
-            preferences_backups[player_names_backups.index(f"{eventPlayer}")][Preference.BASE_GAP_SIZE]
+            settings_backups[player_names_backups.index(f"{eventPlayer}")][Setting.BASE_SIZE],
+            settings_backups[player_names_backups.index(f"{eventPlayer}")][Setting.BASE_GAP_SIZE]
         ):
             eventPlayer.base_vector = base_vectors_backups[player_names_backups.index(f"{eventPlayer}")]
             eventPlayer.has_created_base_once = true
             CreateBase()
-        eventPlayer.preferences = preferences_backups[player_names_backups.index(f"{eventPlayer}")]
+        eventPlayer.settings = settings_backups[player_names_backups.index(f"{eventPlayer}")]
     else:
-        LoadDefaultPreferences()
+        LoadDefaultSettings()
 
         # loadouts
         switch f"{eventPlayer}":
             case "shifterest":
                 eventPlayer.has_created_base_once = true
-                eventPlayer.preferences[Preference.PLAYER_MODE] = PlayerMode.CHILL
-                eventPlayer.preferences[Preference.BASE_MODE] = BaseMode.FRIENDLY
-                eventPlayer.preferences[Preference.FLIGHT] = true
-                eventPlayer.preferences[Preference.SPEED] = 200
-                eventPlayer.preferences[Preference.JUMP_SPEED] = 150
-                eventPlayer.preferences[Preference.KNOCKBACK] = 100
-                eventPlayer.preferences[Preference.PROJECTILE_GRAVITY] = 100
-                eventPlayer.preferences[Preference.PROJECTILE_SPEED] = 1000
-                eventPlayer.preferences[Preference.DAMAGE] = 0
-                eventPlayer.preferences[Preference.HEALTH] = 1000
-                eventPlayer.preferences[Preference.DAMAGE_EFFECT] = AbilityEffect.SLEEP
-                eventPlayer.preferences[Preference.THORNS_EFFECT] = AbilityEffect.SLEEP
-                eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = "uwu"
-                eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] = ExtendedColor.RAINBOW
-                eventPlayer.preferences[Preference.AURA_EFFECT] = ChillEffect.SPARKLES
-                eventPlayer.preferences[Preference.AURA_COLOR] = ExtendedColor.RAINBOW
-                eventPlayer.preferences[Preference.BASE_SPEED] = 200
-                eventPlayer.preferences[Preference.BASE_JUMP_SPEED] = 500
-                eventPlayer.preferences[Preference.AFK_TIMER] = 1
+                s(Setting.PLAYER_MODE) = PlayerMode.CHILL
+                s(Setting.BASE_MODE) = BaseMode.FRIENDLY
+                s(Setting.FLIGHT) = true
+                s(Setting.SPEED) = 200
+                s(Setting.JUMP_SPEED) = 150
+                s(Setting.KNOCKBACK) = 100
+                s(Setting.PROJECTILE_GRAVITY) = 100
+                s(Setting.PROJECTILE_SPEED) = 1000
+                s(Setting.DAMAGE) = 0
+                s(Setting.HEALTH) = 1000
+                s(Setting.DAMAGE_EFFECT) = AbilityEffect.SLEEP
+                s(Setting.THORNS_EFFECT) = AbilityEffect.SLEEP
+                s(Setting.CUSTOM_MESSAGE) = "uwu"
+                s(Setting.CUSTOM_MESSAGE_COLOR) = ExtendedColor.RAINBOW
+                s(Setting.AURA_EFFECT) = ChillEffect.SPARKLES
+                s(Setting.AURA_COLOR) = ExtendedColor.RAINBOW
+                s(Setting.BASE_SPEED) = 200
+                s(Setting.BASE_JUMP_SPEED) = 500
+                s(Setting.AFK_TIMER) = 1
+                s(Setting.THIRD_PERSON) = false
                 break
             case "QueenWolf":
                 eventPlayer.has_created_base_once = true
-                eventPlayer.preferences[Preference.CUSTOM_MESSAGE] = "♡ R O Y A L T Y ♡"
-                eventPlayer.preferences[Preference.PLAYER_MODE] = PlayerMode.CHILL
-                eventPlayer.preferences[Preference.OUTLINE_COLOR] = ExtendedColor.RAINBOW
-                eventPlayer.preferences[Preference.CUSTOM_MESSAGE_COLOR] = random.choice([ExtendedColor.ROSE, ExtendedColor.RAINBOW])
-                eventPlayer.preferences[Preference.AURA_COLOR] = random.choice([ExtendedColor.ROSE, ExtendedColor.RAINBOW])
+                s(Setting.CUSTOM_MESSAGE) = "♡ R O Y A L T Y ♡"
+                s(Setting.PLAYER_MODE) = PlayerMode.CHILL
+                s(Setting.OUTLINE_COLOR) = ExtendedColor.RAINBOW
+                s(Setting.CUSTOM_MESSAGE_COLOR) = random.choice([ExtendedColor.ROSE, ExtendedColor.RAINBOW])
+                s(Setting.AURA_COLOR) = random.choice([ExtendedColor.ROSE, ExtendedColor.RAINBOW])
                 break
             case "DJBASTION":
             case "Bastion":
@@ -787,7 +733,7 @@ rule "— Initialize player":
         wait(4)
 
         bigMessage(eventPlayer, "to get started, hold {} to create a base.".format(buttonToString(Button.INTERACT)))
-        switch mode:
+        switch workshop_settings[WorkshopSettings.SERVER_MODE]:
             case Mode.MUSIC:
             case Mode.SLEEP:
                 wait(4)
@@ -804,23 +750,23 @@ rule "— End game":
     wait(0.25, Wait.ABORT_WHEN_FALSE)
     declarePlayerVictory(null)
 
-    if createWorkshopSetting(bool, "match preferences", "enable play of the game", false, 3):
+    if workshop_settings[WorkshopSettings.ENABLE_POTG]:
         wait(10)
 
     restartMatch()
 
 
-def LoadDefaultPreferences():
-    @Name "— Load default preferences"
+def LoadDefaultSettings():
+    @Name "— Load default settings"
 
-    eventPlayer.preferences = preferences_default
+    eventPlayer.settings = default_settings
 
-    if createWorkshopSetting(bool, "game preferences", "randomize hero outline color", true, 4):
-        eventPlayer.preferences[Preference.OUTLINE_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
-    if createWorkshopSetting(bool, "game preferences", "randomize base color", true, 5):
-        eventPlayer.preferences[Preference.BASE_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
-    if createWorkshopSetting(bool, "game preferences", "randomize chill mode effect color", true, 6):
-        eventPlayer.preferences[Preference.AURA_COLOR] = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
+    if workshop_settings[WorkshopSettings.RANDOMIZE_OUTLINE_COLOR]:
+        s(Setting.OUTLINE_COLOR) = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
+    if workshop_settings[WorkshopSettings.RANDOMIZE_BASE_COLOR]:
+        s(Setting.BASE_COLOR) = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
+    if workshop_settings[WorkshopSettings.RANDOMIZE_CHILL_COLOR]:
+        s(Setting.AURA_COLOR) = random.randint(ExtendedColor.YELLOW, ExtendedColor.BLACK)
 
 
 def HardReset():
@@ -831,24 +777,23 @@ def HardReset():
 
     eventPlayer.progress_hud = null
     eventPlayer.in_world_hud = null
-    eventPlayer.preferences_hud = null
+    eventPlayer.settings_hud = null
     eventPlayer.onscreen_hud = null
     eventPlayer.name_to_ban = null
     eventPlayer.base_vector = null
     eventPlayer.has_created_base_once = null
-    eventPlayer.activate_base_immediately = null
-    eventPlayer.base_preferences_changed = null
+    eventPlayer.activate_base_now = null
+    eventPlayer.base_settings_changed = null
     eventPlayer.last_known_base_owner = null
     eventPlayer.last_known_base_mode = null
     eventPlayer.current_base_owner = null
     eventPlayer.active_base_owner = null
     eventPlayer.base_to_fast_travel_owner = null
-    eventPlayer.preferences_index = null
-    eventPlayer.preferences = null
-    eventPlayer.preference_adjustment = null
-    eventPlayer.isViewingAdvancedPreferences = null
+    eventPlayer.settings_i = null
+    eventPlayer.settings = null
+    eventPlayer.setting_adjustment = null
     eventPlayer.uiState = null
-    eventPlayer.isInModeratorStasis = null
+    eventPlayer.isInModStasis = null
     eventPlayer.isInStasis = null
     eventPlayer.isInvisible = null
     eventPlayer.death_throttle = null
@@ -864,8 +809,8 @@ def HardReset():
     eventPlayer.description_effect_id = null
     eventPlayer.message_effect_id = null
     eventPlayer.focused_player = null
-    eventPlayer.previous_position = null
-    eventPlayer.previous_position_direction = null
-    eventPlayer.keyboard_input_character = null
-    eventPlayer.previous_facing_direction = null
+    eventPlayer.last_pos = null
+    eventPlayer.last_transform = null
+    eventPlayer.keyboard_input_char = null
+    eventPlayer.last_facing_dir = null
     eventPlayer.last_hero = null

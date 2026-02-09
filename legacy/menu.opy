@@ -1,33 +1,6 @@
 #!mainFile "../main.opy"
 
-macro isLookingAtOrb():
-    distance(
-        eventPlayer.getEyePosition()
-        + distance(eventPlayer.getEyePosition(), eventPlayer.base_vector)
-        * eventPlayer.getFacingDirection(),
-        eventPlayer.base_vector
-    ) <= orb_radius
-
-
-macro orb_vector(x, y):
-    (
-        localPlayer.getEyePosition()
-        + localPlayer.getFacingDirection()
-        * dotProduct(
-            localPlayer.base_vector - localPlayer.getEyePosition(),
-            localPlayer.getFacingDirection()
-        )
-        + (
-            normalize(crossProduct(Vector.UP, localPlayer.getFacingDirection())) * x
-            + crossProduct(
-                localPlayer.getFacingDirection(),
-                normalize(crossProduct(Vector.UP, localPlayer.getFacingDirection()))
-            ) * y
-        ) * localPlayer.menu_scale
-    )
-
-
-rule "Settings orb":
+rule "Settings menu":
     @Disabled
     @Delimiter
 
@@ -36,50 +9,24 @@ rule "— Draw settings HUDs":
     @Condition isGameInProgress()
     @Condition isInitialized
 
-    # Center orb
-    createEffect(
-        null
-        if localPlayer.active_base_owner != localPlayer
-        or localPlayer.uiState != UIState.NORMAL
-        else localPlayer,
-        Effect.ORB,
-        RainbowColor(localPlayer.settings[Setting.BASE_COLOR]),
-        localPlayer.base_vector,
-        orb_radius,
-        EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
-    )
-    # Adjusting settings indicator
-    createEffect(
-        null
-        if localPlayer.active_base_owner != localPlayer
-        or localPlayer.uiState != UIState.NORMAL
-        or localPlayer.uiState != UIState.IN_ORB
-        else localPlayer,
-        Effect.LIGHT_SHAFT,
-        RainbowColor(localPlayer.settings[Setting.BASE_COLOR]),
-        localPlayer.base_vector,
-        orb_radius,
-        EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR
-    )
-
     # Title
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         "Settings",
-        updateEveryFrame(orb_vector(0, 0.9)),
-        2,
+        menu_vector(localPlayer, 0, 0.3),
+        2.5,
         Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
-        rainbow(),
+        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
+        Color.WHITE,
         SpecVisibility.NEVER
     )
 
     # === Left ===
     # Category
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         f"{localPlayer.settings_hud[SettingsHUD.CATEGORY_NAME]} settings",
-        updateEveryFrame(orb_vector(1, 0.7)),
+        menu_vector(localPlayer, 0.6, 0.15),
         1.2,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
@@ -88,9 +35,9 @@ rule "— Draw settings HUDs":
     )
     # Navigation
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         f"{iconString(Icon.ARROW_LEFT)}                                                                                                                                {iconString(Icon.ARROW_RIGHT)}",
-        updateEveryFrame(orb_vector(1, 0.7)),
+        menu_vector(localPlayer, 0.6, 0.15),
         1,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -99,21 +46,20 @@ rule "— Draw settings HUDs":
     )
     # Category hotkeys
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         f"{buttonToString(Button.ULTIMATE)}                                                                                                    {buttonToString(Button.ABILITY_2)}",
-        updateEveryFrame(orb_vector(1, 0.7)),
+        menu_vector(localPlayer, 0.6, 0.15),
         1,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
         hsl(0, 0, 1, 100),
         SpecVisibility.NEVER
     )
-    
     # Second previous setting
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.SECOND_PREVIOUS_SETTING],
-        updateEveryFrame(orb_vector(1, 0.3)),
+        menu_vector(localPlayer, 0.6, -0.05),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -122,9 +68,9 @@ rule "— Draw settings HUDs":
     )
     # Previous setting
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.PREVIOUS_SETTING],
-        updateEveryFrame(orb_vector(1, 0.15)),
+        menu_vector(localPlayer, 0.6, -0.125),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -133,9 +79,9 @@ rule "— Draw settings HUDs":
     )
     # Current setting
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.CURRENT_SETTING],
-        updateEveryFrame(orb_vector(1, 0)),
+        menu_vector(localPlayer, 0.6, -0.2),
         2,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -144,9 +90,9 @@ rule "— Draw settings HUDs":
     )
     # Next setting
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.NEXT_SETTING],
-        updateEveryFrame(orb_vector(1, -0.15)),
+        menu_vector(localPlayer, 0.6, -0.275),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -155,9 +101,9 @@ rule "— Draw settings HUDs":
     )
     # Second next setting
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.SECOND_NEXT_SETTING],
-        updateEveryFrame(orb_vector(1, -0.3)),
+        menu_vector(localPlayer, 0.6, -0.35),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -165,27 +111,12 @@ rule "— Draw settings HUDs":
         SpecVisibility.NEVER
     )
 
-
-    # === Center ===
-    # Navigation indicator
-    createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
-        f"{'◀  ' if not localPlayer.isInCatMode else ''}{buttonToString(Button.MELEE)}{'  ▶' if localPlayer.isInCatMode else ''}",
-        updateEveryFrame(orb_vector(0, 0)),
-        2,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-        hsl(0, 0, 1, 100),
-        SpecVisibility.NEVER
-    )
-
-
     # === Either ===
     # Up arrow
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         "▲",
-        updateEveryFrame(orb_vector(1 if localPlayer.isInCatMode else -1, 0.55)),
+        menu_vector(localPlayer, 0.6 if localPlayer.isInCatMode else -0.6, 0.05),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
@@ -194,9 +125,9 @@ rule "— Draw settings HUDs":
     )
     # Previous hotkey
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         buttonToString(Button.PRIMARY_FIRE),
-        updateEveryFrame(orb_vector(1 if localPlayer.isInCatMode else -1, 0.45)),
+        menu_vector(localPlayer, 0.6 if localPlayer.isInCatMode else -0.6, 0.02),
         1,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -205,9 +136,9 @@ rule "— Draw settings HUDs":
     )
     # Next hotkey
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         buttonToString(Button.SECONDARY_FIRE),
-        updateEveryFrame(orb_vector(1 if localPlayer.isInCatMode else -1, -0.45)),
+        menu_vector(localPlayer, 0.6 if localPlayer.isInCatMode else -0.6, -0.435),
         1,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -216,10 +147,10 @@ rule "— Draw settings HUDs":
     )
     # Down arrow
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         "▼",
-        updateEveryFrame(orb_vector(1 if localPlayer.isInCatMode else -1, -0.55)),
-        2,
+        menu_vector(localPlayer, 0.6 if localPlayer.isInCatMode else -0.6, -0.475),
+        1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_AND_POSITION,
         Color.WHITE,
@@ -227,11 +158,22 @@ rule "— Draw settings HUDs":
     )
 
     # === Right ===
+    # Description
+    createInWorldText(
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
+        localPlayer.settings_hud[SettingsHUD.DESCRIPTION] if localPlayer.settings_hud[SettingsHUD.CHILL_REQUIRED] and not localPlayer.settings[Setting.PLAYER_MODE] else "Chill / zen mode is required for this setting",
+        menu_vector(localPlayer, -0.6, 0.15),
+        1,
+        Clip.NONE,
+        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
+        hsl(0, 0, 1, 100),
+        SpecVisibility.NEVER
+    )
     # Second previous option
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and not localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.SECOND_PREVIOUS_OPTION],
-        updateEveryFrame(orb_vector(-1, 0.3)),
+        menu_vector(localPlayer, -0.6, -0.05),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -240,9 +182,9 @@ rule "— Draw settings HUDs":
     )
     # Previous option
     createInWorldText(  
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and not localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.PREVIOUS_OPTION],
-        updateEveryFrame(orb_vector(-1, 0.15)),
+        menu_vector(localPlayer, -0.6, -0.125),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -251,9 +193,9 @@ rule "— Draw settings HUDs":
     )
     # Current option
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and not localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.CURRENT_OPTION],
-        updateEveryFrame(orb_vector(-1, 0)),
+        menu_vector(localPlayer, -0.6, -0.2),
         2,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,
@@ -266,7 +208,7 @@ rule "— Draw settings HUDs":
     )
     # Interaction hotkey
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and not localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         f"{buttonToString(Button.RELOAD)} • Reset"
         if localPlayer.settings_hud[SettingsHUD.TYPE] == SettingType.MULTIPLE_CHOICE
         else f"{buttonToString(Button.ULTIMATE)} • Random  |  {buttonToString(Button.RELOAD)} • Reset"
@@ -289,7 +231,7 @@ rule "— Draw settings HUDs":
         else f"Hold {buttonToString(Button.INTERACT)} • Enable"
         if localPlayer.settings_hud[SettingsHUD.TYPE] == SettingType.INTERACT_BOOLEAN
         else "",
-        updateEveryFrame(orb_vector(-1, -0.1)),
+        menu_vector(localPlayer, -0.6, -0.245),
         1,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -298,9 +240,9 @@ rule "— Draw settings HUDs":
     )
     # Next option
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB and not localPlayer.isInCatMode else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.NEXT_OPTION],
-        updateEveryFrame(orb_vector(-1, -0.25)),
+        menu_vector(localPlayer, -0.6, -0.3),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
@@ -309,108 +251,65 @@ rule "— Draw settings HUDs":
     )
     # Second next option
     createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU else null,
         localPlayer.settings_hud[SettingsHUD.SECOND_NEXT_OPTION],
-        updateEveryFrame(orb_vector(-1, -0.4)),
+        menu_vector(localPlayer, -0.6, -0.375),
         1.6,
         Clip.NONE,
         WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
         hsl(0, 0, 1, 100),
         SpecVisibility.NEVER
     )
-    # Description
-    createInWorldText(
-        localPlayer if localPlayer.uiState == UIState.IN_ORB else null,
-        localPlayer.settings_hud[SettingsHUD.DESCRIPTION] if localPlayer.settings_hud[SettingsHUD.CHILL_REQUIRED] and not localPlayer.settings[Setting.PLAYER_MODE] else "Chill / zen mode is required for this setting",
-        updateEveryFrame(orb_vector(0, -0.7)),
-        1,
-        Clip.NONE,
-        WorldTextReeval.VISIBILITY_POSITION_AND_STRING,
-        hsl(0, 0, 1, 100),
-        SpecVisibility.NEVER
-    )
+
     # Interaction progress
     createProgressBarInWorldText(
-        localPlayer
-        if localPlayer.uiState == UIState.IN_ORB
-        and localPlayer.interaction_progress > 0
-        else null,
+        localPlayer if localPlayer.uiState == UIState.IN_MENU and localPlayer.interaction_progress > 0 else null,
         localPlayer.interaction_progress,
         null,
-        updateEveryFrame(orb_vector(0, -0.7)),
+        menu_vector(localPlayer, 0, -0.6),
         0.8,
         Clip.NONE,
-        RainbowColor(localPlayer.settings[Setting.BASE_COLOR]),
+        RainbowColor(localPlayer.settings_hud[SettingsHUD.OPTION_COLOR]),
         null,
         ProgressWorldTextReeval.VISIBILITY_POSITION_VALUES_AND_COLOR,
         SpecVisibility.NEVER
     )
+    
 
-
-rule "— Show / hide settings":
+rule "— Enter settings menu":
     @Event eachPlayer
     @Condition eventPlayer.active_base_owner == eventPlayer
     @Condition eventPlayer.uiState == UIState.NORMAL
-    @Condition isLookingAtOrb()
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
-    eventPlayer.uiState = UIState.IN_ORB
-    async(UpdateAbilities, AsyncBehavior.RESTART)
-    UpdateSettingsHUDs()
-
-    waitUntil(
+    eventPlayer.progress_hud[ProgHUD.TEXT] = "Opening settings menu..."
+    eventPlayer.progress_hud[ProgHUD.COLOR] = s(Setting.BASE_COLOR)
+    chaseProgress(
+        0.75,
         eventPlayer.active_base_owner != eventPlayer
-        or not isLookingAtOrb(),
-        Math.INFINITY
+        or eventPlayer.uiState != UIState.NORMAL
+        or not eventPlayer.isHoldingButton(Button.INTERACT)
     )
+    if eventPlayer.progress == 100:
+        eventPlayer.uiState = UIState.IN_MENU
+        eventPlayer.progress = 0
+        UpdateSettingsHUDs()
+        async(EnterMenu, AsyncBehavior.RESTART)
+    else:
+        unchaseProgress(0.5)
 
-    eventPlayer.uiState = UIState.NORMAL
-    ApplyPendingSettings()
-    async(UpdateAbilities, AsyncBehavior.RESTART)
 
-
-rule "— Update menu scale":
+rule "— Exit settings menu":
     @Event eachPlayer
-    @Condition eventPlayer.uiState == UIState.IN_ORB
+    @Condition eventPlayer.uiState == UIState.IN_MENU
+    @Condition eventPlayer.isHoldingButton(Button.JUMP)
 
-    do:
-        eventPlayer.menu_scale = distance(
-            eventPlayer.base_vector,
-            (
-                raycast(
-                    eventPlayer.getEyePosition(),
-                    eventPlayer.getEyePosition()
-                    + (
-                        Vector.UP * (eventPlayer.settings[Setting.SIZE] / 100)
-                        + eventPlayer.getFacingDirection()
-                        * (eventPlayer.settings[Setting.SIZE] / -40)
-                        * (
-                            eventPlayer.settings[Setting.THIRD_PERSON_DISTANCE]
-                            / 100
-                        )
-                        if eventPlayer.settings[Setting.PLAYER_MODE]
-                        else Vector.UP
-                        + eventPlayer.getFacingDirection()
-                        * -2.5
-                        * (
-                            eventPlayer.settings[Setting.THIRD_PERSON_DISTANCE]
-                            / 100
-                        )
-                    ),
-                    null,
-                    eventPlayer,
-                    false
-                ).getHitPosition()
-                if eventPlayer.settings[Setting.THIRD_PERSON]
-                else eventPlayer.getEyePosition()
-            )
-        ) / 2.5
-        wait(0.1)
-    while RULE_CONDITION
+    async(ExitSettingsMenu, AsyncBehavior.RESTART)
 
 
 rule "— Switch navigation mode":
     @Event eachPlayer
-    @Condition eventPlayer.uiState == UIState.IN_ORB
+    @Condition eventPlayer.uiState == UIState.IN_MENU
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
     eventPlayer.isInCatMode = not eventPlayer.isInCatMode
@@ -421,7 +320,7 @@ rule "— Switch navigation mode":
 
 rule "— Navigate categories":
     @Event eachPlayer
-    @Condition eventPlayer.uiState == UIState.IN_ORB
+    @Condition eventPlayer.uiState == UIState.IN_MENU
     @Condition eventPlayer.isInCatMode
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) or eventPlayer.isHoldingButton(Button.ABILITY_2)
 
@@ -441,13 +340,17 @@ rule "— Navigate categories":
         eventPlayer.settings_i = settings_cat_data[eventPlayer.cat_i][SettingsCatProp.STARTING_INDEX]
 
     UpdateSettingsHUDs()
-    BaseRingExplosion()
-    RingExplosionSound()
+    BuffExplosionSoundQuiet()
+
+    if eventPlayer.isHoldingButton(Button.PRIMARY_FIRE):
+        GoodPickupEffect(menu_vector(eventPlayer, 0.6, 0.05))
+    elif eventPlayer.isHoldingButton(Button.SECONDARY_FIRE):
+        GoodPickupEffect(menu_vector(eventPlayer, 0.6, -0.45))
 
 
 rule "— Navigate settings / adjust setting":
     @Event eachPlayer
-    @Condition eventPlayer.uiState == UIState.IN_ORB
+    @Condition eventPlayer.uiState == UIState.IN_MENU
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) or eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
 
     do:
@@ -537,13 +440,18 @@ rule "— Navigate settings / adjust setting":
                     BuffImpactSoundQuiet()
                     break
 
+        if eventPlayer.isHoldingButton(Button.PRIMARY_FIRE):
+            GoodPickupEffect(menu_vector(localPlayer, 0.6 if localPlayer.isInCatMode else -0.6, 0.05))
+        elif eventPlayer.isHoldingButton(Button.SECONDARY_FIRE):
+            GoodPickupEffect(menu_vector(localPlayer, 0.6 if localPlayer.isInCatMode else -0.6, -0.475))
+
         wait(0.15, Wait.ABORT_WHEN_FALSE)
     while RULE_CONDITION
 
-
+    
 rule "— Interact / toggle setting":
     @Event eachPlayer
-    @Condition eventPlayer.uiState == UIState.IN_ORB
+    @Condition eventPlayer.uiState == UIState.IN_MENU
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
 
     switch settings_data[dynamic_settings_i(eventPlayer)][SettingProp.TYPE]:
@@ -568,7 +476,7 @@ rule "— Interact / toggle setting":
             if settings_data[dynamic_settings_i(eventPlayer)][SettingProp.TYPE] == SettingType.KEYBOARD:
                 chaseInteractionProgress(
                     0.5,
-                    eventPlayer.uiState != UIState.IN_ORB or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    eventPlayer.uiState != UIState.IN_MENU or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             elif (
                 settings_data[dynamic_settings_i(eventPlayer)][SettingProp.TYPE] == SettingType.INTERACT_MULTIPLE_CHOICE
@@ -576,12 +484,12 @@ rule "— Interact / toggle setting":
             ):
                 chaseInteractionProgress(
                     settings_data[dynamic_settings_i(eventPlayer)][SettingProp.PARAMETERS][0],
-                    eventPlayer.uiState != UIState.IN_ORB or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    eventPlayer.uiState != UIState.IN_MENU or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             else:
                 chaseInteractionProgress(
                     settings_data[dynamic_settings_i(eventPlayer)][SettingProp.PARAMETERS],
-                    eventPlayer.uiState != UIState.IN_ORB or not eventPlayer.isHoldingButton(Button.INTERACT)
+                    eventPlayer.uiState != UIState.IN_MENU or not eventPlayer.isHoldingButton(Button.INTERACT)
                 )
             if eventPlayer.interaction_progress == 100:
                 if settings_data[dynamic_settings_i(eventPlayer)][SettingProp.TYPE] == SettingType.INTERACT_BOOLEAN:
@@ -616,7 +524,7 @@ rule "— Interact / toggle setting":
 
 rule "— Reset setting":
     @Event eachPlayer
-    @Condition eventPlayer.uiState == UIState.IN_ORB
+    @Condition eventPlayer.uiState == UIState.IN_MENU
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
     switch settings_data[dynamic_settings_i(eventPlayer)][SettingProp.TYPE]:
@@ -639,7 +547,40 @@ rule "— Reset setting":
             UpdateSettingsHUDs()
             break
 
+def EnterMenu():
+    @Name "— Enter menu"
+    
+    eventPlayer.uiState = UIState.IN_MENU
+    eventPlayer.setStatusEffect(eventPlayer, Status.ROOTED, Math.INFINITY)
+    UpdateInvisibility()
+    saveTransform()
+    restoreTransform()
+    eventPlayer.disableHeroHUD()
+    async(MenuCamera, AsyncBehavior.RESTART)
+    UpdateAbilities()
 
+
+def ExitMenu():
+    @Name "— Exit menu"
+
+    eventPlayer.uiState = UIState.NORMAL
+    eventPlayer.clearStatusEffect(Status.ROOTED)
+    UpdateInvisibility()
+    restoreTransform()
+    eventPlayer.last_transform = null
+    async(UpdateCamera, AsyncBehavior.RESTART)
+    eventPlayer.enableHeroHud()
+    UpdateAbilities()
+
+
+def ExitSettingsMenu():
+    @Name "— Exit settings menu (subroutine)"
+
+    eventPlayer.uiState = UIState.NORMAL
+    ExitMenu()
+    ApplyPendingSettings()
+
+    
 def UpdateSettingsHUDs():
     @Name "— Update settings HUD"
 
@@ -648,15 +589,11 @@ def UpdateSettingsHUDs():
         if (dynamic_settings_i(eventPlayer) >= cat[SettingsCatProp.STARTING_INDEX]
         and dynamic_settings_i(eventPlayer) <= cat[SettingsCatProp.ENDING_INDEX])
     ][0]
-    eventPlayer.settings_hud[SettingsHUD.CATEGORY_NAME] = (
-        settings_cat_data[SettingCat.QUICK]
-        if eventPlayer.cat_i == SettingCat.QUICK
-        else [
-            cat[SettingsCatProp.NAME] for cat in settings_cat_data
-            if (dynamic_settings_i(eventPlayer) >= cat[SettingsCatProp.STARTING_INDEX]
-            and dynamic_settings_i(eventPlayer) <= cat[SettingsCatProp.ENDING_INDEX])
-        ][0]
-    )
+    eventPlayer.settings_hud[SettingsHUD.CATEGORY_NAME] = [
+        cat[SettingsCatProp.NAME] for cat in settings_cat_data
+        if (dynamic_settings_i(eventPlayer) >= cat[SettingsCatProp.STARTING_INDEX]
+        and dynamic_settings_i(eventPlayer) <= cat[SettingsCatProp.ENDING_INDEX])
+    ][0]
 
     eventPlayer.settings_hud[SettingsHUD.SECOND_PREVIOUS_SETTING] = settings_data[dynamic_settings_data(eventPlayer)[(eventPlayer.settings_i - 2 + len(dynamic_settings_data(eventPlayer))) % len(dynamic_settings_data(eventPlayer))]][SettingProp.TITLE]
     eventPlayer.settings_hud[SettingsHUD.PREVIOUS_SETTING] = settings_data[dynamic_settings_data(eventPlayer)[(eventPlayer.settings_i - 1 + len(dynamic_settings_data(eventPlayer))) % len(dynamic_settings_data(eventPlayer))]][SettingProp.TITLE]
@@ -764,17 +701,18 @@ def UpdateSettingsHUDs():
     eventPlayer.settings_hud[SettingsHUD.CHILL_REQUIRED] = current_setting_data(eventPlayer)[SettingProp.CHILL_REQUIRED]
 
 
-
 def InteractWithSettings():
     @Name "— Interact with settings"
 
     switch dynamic_settings_i(eventPlayer):
         case Setting.SWITCH_HERO:
+            ExitSettingsMenu()
             eventPlayer.startForcingHero(getAllHeroes()[eventPlayer.settings[Setting.SWITCH_HERO]])
             wait()
             eventPlayer.stopForcingCurrentHero()
             break
         case Setting.FAST_TRAVEL_TO_OBJECTIVE:
+            ExitSettingsMenu()
             if (
                 eventPlayer.settings[Setting.PLAYER_MODE]
                 and getObjectivePosition(eventPlayer.settings[Setting.FAST_TRAVEL_TO_OBJECTIVE]) != vect(0, 0, 0)
@@ -792,9 +730,11 @@ def InteractWithSettings():
         case Setting.THIRD_PERSON_DISTANCE:
         case Setting.THIRD_PERSON_OFFSET:
         case Setting.THIRD_PERSON_SMOOTHING:
-            async(UpdateCamera, AsyncBehavior.RESTART)
+            if PendingSetting.CAMERA not in eventPlayer.pending_settings: 
+                eventPlayer.pending_settings.append(PendingSetting.CAMERA)
             break
         case Setting.SWITCH_TEAM:
+            ExitSettingsMenu()
             if getCurrentGamemode() == Gamemode.SKIRMISH:
                 DebuffImpactSound()
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "Switching teams disabled due to server crashes")
@@ -804,6 +744,7 @@ def InteractWithSettings():
                 iconMessage(eventPlayer, iconString(Icon.WARNING), "This gamemode doesn't support switching teams")
             break
         case Setting.RESET:
+            ExitSettingsMenu()
             RemoveBase()
             LoadDefaultSettings()
             InitializePlayer()
@@ -812,12 +753,6 @@ def InteractWithSettings():
             break
         case Setting.CUSTOM_MESSAGE:
             eventPlayer.uiState = UIState.KEYBOARD_INPUT
-            eventPlayer.setStatusEffect(eventPlayer, Status.ROOTED, Math.INFINITY)
-            UpdateInvisibility()
-            saveTransform()
-            restoreTransform()
-            eventPlayer.disableHeroHUD()
-            async(MenuCamera, AsyncBehavior.RESTART)
             break
         case Setting.AURA:
         case Setting.AURA_EFFECT:
@@ -836,7 +771,8 @@ def InteractWithSettings():
             break
         case Setting.SIZE:
         case Setting.NOCLIP:
-            UpdateSizeNoclip()
+            if PendingSetting.SIZE_NOCLIP not in eventPlayer.pending_settings: 
+                eventPlayer.pending_settings.append(PendingSetting.SIZE_NOCLIP)
             break
         case Setting.FLIGHT:
             UpdateFlight()
@@ -855,7 +791,8 @@ def InteractWithSettings():
             UpdateAmmo()
             break
         case Setting.INVISIBILITY:
-            UpdateInvisibility()
+            if PendingSetting.SIZE_NOCLIP not in eventPlayer.pending_settings: 
+                eventPlayer.pending_settings.append(PendingSetting.SIZE_NOCLIP)
             break
         case Setting.ALLOW_MOUNTING:
             if (
@@ -905,6 +842,7 @@ def InteractWithSettings():
             UpdateBaseOwner()
             break
         case Setting.DREAM_MODE:
+            ExitSettingsMenu()
             DreamMode()
             break
         case Setting.AFK_TIMER:
@@ -924,8 +862,17 @@ def ApplyPendingSettings():
 
     while len(eventPlayer.pending_settings) > 0:
         switch eventPlayer.pending_settings[0]:
+            case PendingSetting.CAMERA:
+                UpdateCamera()
+                break
             case PendingSetting.HERO:
                 UpdateHero()
+                break
+            case PendingSetting.SIZE_NOCLIP:
+                UpdateSizeNoclip()
+                break
+            case PendingSetting.INVISIBILITY:
+                UpdateInvisibility()
                 break
         del eventPlayer.pending_settings[0]
 
@@ -978,20 +925,9 @@ def Tutorial():
         )
         eventPlayer.disableHeroHUD()
         eventPlayer.setInvisibility(Invis.ALL)
-        bigMessage(eventPlayer, "Awesome! Now, check out the orb at the center of your base.")
+        bigMessage(eventPlayer, f"Awesome! Check out the settings menu by holding {buttonToString(Button.INTERACT)}.")
         wait(4)
-        # Look at orb
-        eventPlayer.startFacing(
-            directionTowards(eye(), eventPlayer.base_vector),
-            360,
-            Relativity.TO_WORLD,
-            FacingReeval.DIRECTION_AND_TURN_RATE
-        )
-        wait()
-        eventPlayer.startCamera(eye(), eventPlayer.base_vector, 30)
-        bigMessage(eventPlayer, "You'll be able to adjust your settings here.")
-        wait(4)
-        bigMessage(eventPlayer, "Try switching things up!")
+        bigMessage(eventPlayer, "Change a setting or two and see what happens!")
         wait(4)
         switch workshop_settings[WorkshopSettings.SERVER_MODE]:
             case Mode.SLEEP:

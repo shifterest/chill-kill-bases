@@ -9,12 +9,12 @@ def DreamMode():
     @Name "— Dream mode"
 
     eventPlayer.uiState = UIState.DREAM_MODE
-    eventPlayer.previous_facing_direction = eventPlayer.getFacingDirection()
+    eventPlayer.last_facing_dir = eventPlayer.getFacingDirection()
     eventPlayer.disableHeroHUD()
     UpdatePhase()
     waitUntil(eventPlayer.isHoldingButton(Button.JUMP) or isActive(), Math.INFINITY)
     eventPlayer.uiState = UIState.NORMAL
-    pref(Preference.DREAM_MODE) = false
+    s(Setting.DREAM_MODE) = false
     eventPlayer.enableHeroHud()
     UpdatePhase()
     async(UpdateCamera, AsyncBehavior.RESTART)
@@ -43,21 +43,19 @@ rule "— Switch spectated player":
             eventPlayer.uiState != UIState.DREAM_MODE
             or not eventPlayer.focused_player.hasSpawned()
             or eventPlayer.focused_player.isInvisible,
-            pref(Preference.SWITCH_TIMER)
+            s(Setting.SWITCH_TIMER)
         )
     while RULE_CONDITION
 
 
 rule "— Dream on AFK":
     @Event eachPlayer
-    @Condition pref(Preference.AFK_TIMER) > 0
-    @Condition pref(Preference.AFK_TIMER) * 60 == eventPlayer.afk_timer
+    @Condition s(Setting.AFK_TIMER) > 0
+    @Condition s(Setting.AFK_TIMER) * 60 == eventPlayer.afk_timer
 
     if (
-        eventPlayer.uiState == UIState.MODERATING
-        or eventPlayer.uiState == UIState.KEYBOARD_INPUT
-        or eventPlayer.uiState == UIState.DREAM_MODE
-        or pref(Preference.ULTIMATE_MODE) == UltimateMode.INFINITE
+        eventPlayer.uiState != UIState.NORMAL
+        or s(Setting.ULTIMATE_MODE) == UltimateMode.INFINITE
     ):
         return
     DreamMode()
@@ -65,12 +63,12 @@ rule "— Dream on AFK":
 
 rule "— Reset AFK timer":
     @Event eachPlayer
-    @Condition pref(Preference.AFK_TIMER) > 0
+    @Condition s(Setting.AFK_TIMER) > 0
     @Condition isActive()
 
     do:
         eventPlayer.afk_timer = 0
-        eventPlayer.previous_facing_direction = eventPlayer.getFacingDirection()
+        eventPlayer.last_facing_dir = eventPlayer.getFacingDirection()
         wait(1)
     while RULE_CONDITION
 
@@ -78,14 +76,14 @@ rule "— Reset AFK timer":
 def UpdateAFKTimer():
     @Name "— Update AFK timer"
 
-    if pref(Preference.AFK_TIMER) > 0:
+    if s(Setting.AFK_TIMER) > 0:
         chase(
             eventPlayer.afk_timer,
-            pref(Preference.AFK_TIMER) * 60,
+            s(Setting.AFK_TIMER) * 60,
             rate = 1,
             ChaseReeval.NONE
         )
-        eventPlayer.previous_facing_direction = eventPlayer.getFacingDirection()
+        eventPlayer.last_facing_dir = eventPlayer.getFacingDirection()
     else:
         stopChasingVariable(eventPlayer.afk_timer)
-        eventPlayer.previous_facing_direction = null
+        eventPlayer.last_facing_dir = null

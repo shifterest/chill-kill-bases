@@ -12,19 +12,21 @@ subroutine DreamMode
 subroutine EjectFromMount
 subroutine EjectRider
 subroutine EnableAbilities
+subroutine EnterMenu
+subroutine ExitMenu
 subroutine ExitStasis
 subroutine FrontCamera
 subroutine HardReset
 subroutine InitializePlayer
-subroutine InteractWithPreferences
-subroutine LoadDefaultPreferences
+subroutine InteractWithSettings
+subroutine LoadDefaultSettings
 subroutine RearCamera
 subroutine RearSpectatorCamera
 subroutine RemoveBase
 subroutine Repel
 subroutine ReturnImmediately
 subroutine StaticTopDownCamera
-subroutine StopCamera
+subroutine ResetCamera
 subroutine TopDownCamera
 subroutine Tutorial
 subroutine UpdateAbilities
@@ -32,8 +34,8 @@ subroutine UpdateAFKTimer
 subroutine UpdateAmmo
 subroutine UpdateAura
 subroutine UpdateBaseEffects
-subroutine UpdateCamera
 subroutine UpdateBaseOwner
+subroutine UpdateCamera
 subroutine UpdateFlight
 subroutine UpdateGodModList
 subroutine UpdateHero
@@ -45,7 +47,17 @@ subroutine UpdateMessage
 subroutine UpdateModeratorListHUD
 subroutine UpdatePhase
 subroutine UpdatePhysics
-subroutine UpdatePreferencesHUD
 subroutine UpdateProjectiles
 subroutine UpdateRider
+subroutine UpdateSettingsHUDs
 subroutine UpdateSizeNoclip
+subroutine ExitSettingsMenu
+subroutine ApplyPendingSettings
+subroutine MenuCamera
+
+rule "Subroutines":
+    @Disabled
+    @Delimiter
+
+
+    

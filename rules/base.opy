@@ -18,7 +18,7 @@ rule "— Prepare base":
         async(UpdateCamera, AsyncBehavior.RESTART)
     else:
         eventPlayer.progress_hud[ProgHUD.TEXT] = "Preparing base..."
-        eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
+        eventPlayer.progress_hud[ProgHUD.COLOR] = s(Setting.BASE_COLOR)
         chaseProgress(
             1,
             eventPlayer.uiState != UIState.NORMAL
@@ -49,8 +49,8 @@ rule "— Create base":
         
     if isOverlappingBase(
         pos(),
-        pref(Preference.BASE_SIZE),
-        pref(Preference.BASE_GAP_SIZE)
+        s(Setting.BASE_SIZE),
+        s(Setting.BASE_GAP_SIZE)
     ):
         smallMessage(eventPlayer, "Can't place a base here")
         # iconMessage(eventPlayer, iconString(Icon.WARNING), t"can't place a base here")
@@ -61,91 +61,11 @@ rule "— Create base":
         # iconMessage(eventPlayer, iconString(Icon.CHECKMARK), t"base created successfully")
         async(Tutorial, AsyncBehavior.RESTART)
         eventPlayer.base_vector = pos()
-        eventPlayer.activate_base_immediately = true
+        eventPlayer.activate_base_now = true
         eventPlayer.uiState = UIState.NORMAL
         stopMomentum()
         recreateBase()
         BackupPlayer()
-
-
-def Tutorial():
-    @Name "— Tutorial"
-
-    if not eventPlayer.has_created_base_once:
-        eventPlayer.has_created_base_once = true
-        # Camera
-        eventPlayer.startCamera(
-            eye(), 
-            raycast(
-                eye(),
-                eye() + face() * 100,
-                null,
-                eventPlayer,
-                false
-            ).getHitPosition(),
-            1
-        )
-        wait()
-        eventPlayer.startCamera(
-            raycast(
-                eventPlayer.base_vector,
-                eventPlayer.base_vector + (Vector.UP * pref(Preference.BASE_SIZE) * 2) + (Vector.BACKWARD / 2),
-                null,
-                eventPlayer,
-                false
-            ).getHitPosition(),
-            eventPlayer.base_vector,
-            30
-        )
-        # Force position and facing
-        eventPlayer.startForcingPosition(
-            raycast(
-                eventPlayer.base_vector,
-                eventPlayer.base_vector + Vector.BACKWARD * min(1, pref(Preference.BASE_SIZE)),
-                null,
-                eventPlayer,
-                false
-            ).getHitPosition(),
-            false
-        )
-        eventPlayer.startFacing(
-            directionTowards(eventPlayer.base_vector, eye()),
-            360,
-            Relativity.TO_WORLD,
-            FacingReeval.DIRECTION_AND_TURN_RATE
-        )
-        eventPlayer.disableHeroHUD()
-        eventPlayer.setInvisibility(Invis.ALL)
-        bigMessage(eventPlayer, "Awesome! Now, check out the orb at the center of your base.")
-        wait(4)
-        # Look at orb
-        eventPlayer.startFacing(
-            directionTowards(eye(), eventPlayer.base_vector),
-            360,
-            Relativity.TO_WORLD,
-            FacingReeval.DIRECTION_AND_TURN_RATE
-        )
-        wait()
-        eventPlayer.startCamera(eye(), eventPlayer.base_vector, 30)
-        bigMessage(eventPlayer, "You'll be able to adjust your settings here.")
-        wait(4)
-        bigMessage(eventPlayer, "Try switching things up!")
-        wait(4)
-        switch mode:
-            case Mode.SLEEP:
-                bigMessage(eventPlayer, f"Sweet dreams, {eventPlayer}!")
-                break
-            case Mode.MUSIC:
-                bigMessage(eventPlayer, f"Enjoy the music, {eventPlayer}!")
-                break
-            default:
-                bigMessage(eventPlayer, f"Happy chilling, {eventPlayer}!")
-                break
-        eventPlayer.stopForcingPosition()
-        eventPlayer.stopFacing()
-        eventPlayer.enableHeroHud()
-    UpdateCamera()
-    UpdateInvisibility()
 
 
 rule "— Detect / confine to base":
@@ -158,34 +78,18 @@ rule "— Detect / confine to base":
     async(UpdateBaseOwner, AsyncBehavior.RESTART)
 
 
-def UpdateBaseOwner():
-    @Name "— Update current base owner"
-
-    eventPlayer.current_base_owner = ([
-        p for p in getAllPlayers() if p.base_vector
-        and eventPlayer in getPlayersInRadius(
-            p.base_vector,
-            p.preferences[Preference.BASE_SIZE],
-            Team.ALL,
-            LosCheck.OFF
-    )])[0]
-    if not eventPlayer.current_base_owner:
-        eventPlayer.activate_base_immediately = false
-    async(UpdateBaseEffects, AsyncBehavior.RESTART)
-
-
 rule "— Activate base / update base mode":
     @Event eachPlayer
     @Condition (
         eventPlayer.last_known_base_owner != eventPlayer.current_base_owner
         or eventPlayer.last_known_base_mode
-        != eventPlayer.current_base_owner.preferences[Preference.BASE_MODE]
+        != eventPlayer.current_base_owner.settings[Setting.BASE_MODE]
     )
 
     eventPlayer.last_known_base_owner = eventPlayer.current_base_owner
-    eventPlayer.last_known_base_mode = eventPlayer.current_base_owner.preferences[Preference.BASE_MODE]
+    eventPlayer.last_known_base_mode = eventPlayer.current_base_owner.settings[Setting.BASE_MODE]
     if eventPlayer.current_base_owner != eventPlayer:
-        switch eventPlayer.current_base_owner.preferences[Preference.BASE_MODE]:
+        switch eventPlayer.current_base_owner.settings[Setting.BASE_MODE]:
             case BaseMode.FRIENDLY:
                 async(ActivateFriendlyBase, AsyncBehavior.RESTART)
                 break
@@ -200,99 +104,37 @@ rule "— Activate base / update base mode":
         async(ActivateFriendlyBase, AsyncBehavior.RESTART)
 
 
-rule "— Update base preferences":
+rule "— Update base settings":
     @Event eachPlayer
-    @Condition eventPlayer.current_base_owner.base_preferences_changed
+    @Condition eventPlayer.current_base_owner.base_settings_changed
 
     async(UpdateSizeNoclip, AsyncBehavior.RESTART)
     async(UpdatePhysics, AsyncBehavior.RESTART)
-    eventPlayer.current_base_owner.base_preferences_changed = false
-
-
-def Repel():
-    @Name "— Repel from base"
-
-    do:
-        eventPlayer.applyImpulse(
-            directionTowards(eventPlayer.current_base_owner.base_vector, pos()),
-            15,
-            Relativity.TO_WORLD,
-            Impulse.CANCEL_CONTRARY_MOTION_XYZ
-        )
-        if eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] == BaseMode.HOSTILE:
-            damage(
-                eventPlayer,
-                eventPlayer.current_base_owner,
-                eventPlayer.getHealth() * (
-                    eventPlayer.current_base_owner.preferences[Preference.BASE_SIZE]
-                    - distance(
-                        eventPlayer.current_base_owner.base_vector,
-                        pos()
-                    )
-                )
-                / eventPlayer.current_base_owner.preferences[Preference.BASE_SIZE]
-            )
-        wait(0.25)
-    while [
-        p for p in getAllPlayers()
-        if p.base_vector
-        and eventPlayer in getPlayersInRadius(
-            p.base_vector,
-            p.preferences[Preference.BASE_SIZE],
-            Team.ALL,
-            LosCheck.OFF
-        )
-    ][0].preferences[Preference.BASE_MODE] >= BaseMode.REPULSIVE
-
-
-def ActivateFriendlyBase():
-    @Name "— Activate friendly base"
-
-    if eventPlayer.active_base_owner != eventPlayer:
-        if eventPlayer.current_base_owner == eventPlayer:
-            chaseBaseProgress(
-                0.6,
-                eventPlayer.activate_base_immediately
-                or eventPlayer.current_base_owner != eventPlayer
-            )
-        elif eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] == BaseMode.FRIENDLY:
-            chaseBaseProgress(
-                0.6,
-                eventPlayer.activate_base_immediately
-                or eventPlayer.current_base_owner.preferences[Preference.BASE_MODE] != BaseMode.FRIENDLY
-                or eventPlayer.last_known_base_owner != eventPlayer.current_base_owner
-            )
-
-        if eventPlayer.base_progress == 100 or eventPlayer.activate_base_immediately:
-            eventPlayer.active_base_owner = eventPlayer.current_base_owner
-            eventPlayer.activate_base_immediately = false
-            BuffExplosionSound()
-        eventPlayer.base_progress = 0
-    UpdateBaseEffects()
+    eventPlayer.current_base_owner.base_settings_changed = false
 
 
 rule "— Switch hero":
     @Event eachPlayer
     @Condition eventPlayer.progress == 0
     @Condition eventPlayer.uiState == UIState.NORMAL
-    @Condition not eventPlayer.isInModeratorStasis
+    @Condition not eventPlayer.isInModStasis
     @Condition not eventPlayer.isInStasis
     @Condition eventPlayer.active_base_owner == eventPlayer
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
 
     eventPlayer.progress_hud[ProgHUD.TEXT] = "Entering hero picker..."
-    eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
+    eventPlayer.progress_hud[ProgHUD.COLOR] = s(Setting.BASE_COLOR)
     chaseProgress(
         0.6,
         eventPlayer.uiState != UIState.NORMAL
         or eventPlayer.active_base_owner != eventPlayer
-        or not eventPlayer.isHoldingButton(Button.RELOAD)
+        or not eventPlayer.isHoldingButton(Button.ULTIMATE)
     )
     if eventPlayer.progress == 100:
         Tutorial()
         if eventPlayer.rider:
             EjectRider()
-        eventPlayer.previous_position_direction = [pos(), face()]
+        eventPlayer.last_transform = [pos(), face()]
         eventPlayer.setAllowedHeroes(getAllHeroes().exclude(eventPlayer.getCurrentHero()))
         if f"{eventPlayer}" in ["DJBASTION", "Bastion"]:
             eventPlayer.setAllowedHeroes(Hero.BASTION)
@@ -307,16 +149,16 @@ rule "— Remove base":
     @Condition eventPlayer.progress == 0
     @Condition eventPlayer.base_vector
     @Condition eventPlayer.uiState == UIState.NORMAL
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
     eventPlayer.progress_hud[ProgHUD.TEXT] = "Removing base..."
-    eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
+    eventPlayer.progress_hud[ProgHUD.COLOR] = s(Setting.BASE_COLOR)
     if eventPlayer.active_base_owner == eventPlayer: 
         chaseProgress(
             1,
             eventPlayer.uiState != UIState.NORMAL
             or eventPlayer.active_base_owner != eventPlayer
-            or not eventPlayer.isHoldingButton(Button.INTERACT)
+            or not eventPlayer.isHoldingButton(Button.RELOAD)
         )
     elif eventPlayer.isHoldingButton(Button.CROUCH):
         chaseProgress(
@@ -325,7 +167,7 @@ rule "— Remove base":
             or eventPlayer.uiState == UIState.DREAM_MODE
             or eventPlayer.active_base_owner == eventPlayer
             or not eventPlayer.isHoldingButton(Button.CROUCH)
-            or not eventPlayer.isHoldingButton(Button.INTERACT)
+            or not eventPlayer.isHoldingButton(Button.RELOAD)
         )
     if eventPlayer.progress == 100:
         RemoveBase()
@@ -333,23 +175,14 @@ rule "— Remove base":
     wait(0.5)
 
 
-def RemoveBase():
-    @Name "— Remove base"
-
-    eventPlayer.base_vector = null
-    DestroyBase()
-    UpdateBaseEffects()
-    BackupPlayer()
-
-
 rule "— Fast travel":
     @Event eachPlayer
     @Condition eventPlayer.progress == 0
     @Condition eventPlayer.uiState == UIState.NORMAL
     @Condition not eventPlayer.mount
-    @Condition pref(Preference.FAST_TRAVEL)
-    @Condition pref(Preference.PLAYER_MODE) or (
-        eventPlayer.active_base_owner == eventPlayer and not pref(Preference.BASE_LOCK)
+    @Condition s(Setting.FAST_TRAVEL)
+    @Condition s(Setting.PLAYER_MODE) or (
+        eventPlayer.active_base_owner == eventPlayer and not s(Setting.BASE_LOCK)
     )
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
@@ -360,24 +193,24 @@ rule "— Fast travel":
             heroIcon(eventPlayer.base_to_fast_travel_owner.getCurrentHero()),
             eventPlayer.base_to_fast_travel_owner
         )
-        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.base_to_fast_travel_owner.settings[Setting.BASE_COLOR]
     elif eventPlayer.base_vector and eventPlayer.current_base_owner != eventPlayer:
         eventPlayer.base_to_fast_travel_owner = eventPlayer
         eventPlayer.progress_hud[ProgHUD.TEXT] = "Fast traveling to your base..."
-        eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
-    elif pref(Preference.PLAYER_MODE) and eventPlayer.active_base_owner and eventPlayer.previous_position:
+        eventPlayer.progress_hud[ProgHUD.COLOR] = s(Setting.BASE_COLOR)
+    elif s(Setting.PLAYER_MODE) and eventPlayer.active_base_owner and eventPlayer.last_pos:
         eventPlayer.progress_hud[ProgHUD.TEXT] = "Fast traveling to previous position..."
-        eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
+        eventPlayer.progress_hud[ProgHUD.COLOR] = s(Setting.BASE_COLOR)
         chaseProgress(
             0.6,
-            eventPlayer.uiState == UIState.VIEWING_PREFERENCES
+            eventPlayer.uiState == UIState.IN_ORB
             or eventPlayer.isDead()
             or not eventPlayer.active_base_owner
             or not eventPlayer.isHoldingButton(Button.MELEE)
         )
         if eventPlayer.progress == 100:
-            eventPlayer.teleport(eventPlayer.previous_position)
-            eventPlayer.previous_position = null
+            eventPlayer.teleport(eventPlayer.last_pos)
+            eventPlayer.last_pos = null
             eventPlayer.progress = 0
             stopMomentum()
             BuffExplosionSound()
@@ -391,26 +224,79 @@ rule "— Fast travel":
         eventPlayer.isDead()
         or (
             eventPlayer.base_to_fast_travel_owner != eventPlayer
-            and eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_MODE] != BaseMode.FRIENDLY
+            and eventPlayer.base_to_fast_travel_owner.settings[Setting.BASE_MODE] != BaseMode.FRIENDLY
         )
-        or not (pref(Preference.PLAYER_MODE) or eventPlayer.active_base_owner)
+        or not (s(Setting.PLAYER_MODE) or eventPlayer.active_base_owner)
         or not eventPlayer.base_to_fast_travel_owner.base_vector
         or eventPlayer in getPlayersInRadius(
             eventPlayer.base_to_fast_travel_owner.base_vector,
-            eventPlayer.base_to_fast_travel_owner.preferences[Preference.BASE_SIZE],
+            eventPlayer.base_to_fast_travel_owner.settings[Setting.BASE_SIZE],
             Team.ALL,
             LosCheck.OFF
         )
         or not eventPlayer.isHoldingButton(Button.MELEE)
     )
     if eventPlayer.progress == 100:
-        eventPlayer.previous_position = pos()
-        eventPlayer.activate_base_immediately = true
+        eventPlayer.last_pos = pos()
+        eventPlayer.activate_base_now = true
         eventPlayer.progress = 0
         eventPlayer.teleport(eventPlayer.base_to_fast_travel_owner.base_vector)
         stopMomentum()
     unchaseProgress(0.6)
     wait(0.5)
+
+
+def UpdateBaseOwner():
+    @Name "— Update current base owner"
+
+    eventPlayer.current_base_owner = ([
+        p for p in getAllPlayers() if p.base_vector
+        and eventPlayer in getPlayersInRadius(
+            p.base_vector,
+            p.settings[Setting.BASE_SIZE],
+            Team.ALL,
+            LosCheck.OFF
+    )])[0]
+    if not eventPlayer.current_base_owner:
+        eventPlayer.activate_base_now = false
+        eventPlayer.active_base_owner = null
+    async(UpdateBaseEffects, AsyncBehavior.RESTART)
+
+
+def ActivateFriendlyBase():
+    @Name "— Activate friendly base"
+
+    if eventPlayer.active_base_owner != eventPlayer:
+        if eventPlayer.current_base_owner == eventPlayer:
+            chaseBaseProgress(
+                0.6,
+                eventPlayer.activate_base_now
+                or eventPlayer.current_base_owner != eventPlayer
+            )
+        elif eventPlayer.current_base_owner.settings[Setting.BASE_MODE] == BaseMode.FRIENDLY:
+            chaseBaseProgress(
+                0.6,
+                eventPlayer.activate_base_now
+                or eventPlayer.current_base_owner.settings[Setting.BASE_MODE] != BaseMode.FRIENDLY
+                or eventPlayer.last_known_base_owner != eventPlayer.current_base_owner
+            )
+
+        if eventPlayer.base_progress == 100 or eventPlayer.activate_base_now:
+            eventPlayer.active_base_owner = eventPlayer.current_base_owner
+            eventPlayer.activate_base_now = false
+            BuffExplosionSound()
+        eventPlayer.base_progress = 0
+    UpdateBaseEffects()
+
+
+def RemoveBase():
+    @Name "— Remove base"
+
+    eventPlayer.base_vector = null
+    DestroyBase()
+    UpdateBaseEffects()
+    BackupPlayer()  
+
 
 def Confine():
     @Name "— Confine to base"
@@ -427,7 +313,7 @@ def Confine():
         )
         if not eventPlayer in getPlayersInRadius(
             eventPlayer.active_base_owner.base_vector,
-            eventPlayer.active_base_owner.preferences[Preference.BASE_SIZE] + 3,
+            eventPlayer.active_base_owner.settings[Setting.BASE_SIZE] + 3,
             Team.ALL,
             LosCheck.OFF
         ):
@@ -437,8 +323,46 @@ def Confine():
                     eventPlayer.active_base_owner.base_vector,
                     pos()
                 )
-                * (eventPlayer.active_base_owner.preferences[Preference.BASE_SIZE])
+                * (eventPlayer.active_base_owner.settings[Setting.BASE_SIZE])
                 + eventPlayer.active_base_owner.base_vector
             )
         wait(0.1)
     while isInDifferentBase() and isConfined()
+
+
+def Repel():
+    @Name "— Repel from base"
+
+    do:
+        eventPlayer.applyImpulse(
+            directionTowards(eventPlayer.current_base_owner.base_vector, pos()),
+            15,
+            Relativity.TO_WORLD,
+            Impulse.CANCEL_CONTRARY_MOTION_XYZ
+        )
+        if eventPlayer.current_base_owner.settings[Setting.BASE_MODE] == BaseMode.HOSTILE:
+            damage(
+                eventPlayer,
+                eventPlayer.current_base_owner,
+                eventPlayer.getHealth() * (
+                    eventPlayer.current_base_owner.settings[Setting.BASE_SIZE]
+                    - distance(
+                        eventPlayer.current_base_owner.base_vector,
+                        pos()
+                    )
+                )
+                / eventPlayer.current_base_owner.settings[Setting.BASE_SIZE]
+            )
+        wait(0.25)
+    while [
+        p for p in getAllPlayers()
+        if p.base_vector
+        and eventPlayer in getPlayersInRadius(
+            p.base_vector,
+            p.settings[Setting.BASE_SIZE],
+            Team.ALL,
+            LosCheck.OFF
+        )
+    ][0].settings[Setting.BASE_MODE] >= BaseMode.REPULSIVE
+
+

@@ -185,7 +185,7 @@ stasis_data = [Status.KNOCKED_DOWN, Status.STUNNED, Status.ASLEEP, Status.FROZEN
 eventPlayer.clearStatusEffect(stasis_data[index])  # Type error!
 
 # CORRECT — Use switch statement with Status inlined
-switch pref(Preference.STASIS_MODE):
+switch s(Setting.STASIS_MODE):
     case Stasis.KNOCKED_DOWN:
         eventPlayer.clearStatusEffect(Status.KNOCKED_DOWN)
         break
@@ -205,7 +205,7 @@ This project defines shorthand macros in `script/macros.opy` to reduce verbosity
 
 | Macro | Expands To | Usage |
 |-------|-----------|-------|
-| `pref(Preference.X)` | `eventPlayer.preferences[Preference.X]` | Read/write player preferences |
+| `s(Setting.X)` | `eventPlayer.settings[Setting.X]` | Read/write player preferences |
 | `pos()` | `eventPlayer.getPosition()` | Get event player position |
 | `eye()` | `eventPlayer.getEyePosition()` | Get event player eye position |
 | `face()` | `eventPlayer.getFacingDirection()` | Get event player facing direction |
@@ -214,8 +214,8 @@ This project defines shorthand macros in `script/macros.opy` to reduce verbosity
 
 ```overpy
 # Correct
-pref(Preference.PLAYER_MODE)                                    # for eventPlayer
-eventPlayer.focused_player.preferences[Preference.SIZE]         # for other players
+s(Setting.PLAYER_MODE)                                    # for eventPlayer
+eventPlayer.focused_player.preferences[Setting.SIZE]         # for other players
 
 # Correct
 eye() + face() * 100                                            # for eventPlayer
@@ -224,8 +224,8 @@ eventPlayer.focused_player.getEyePosition()                     # for other play
 
 Since macros expand inline, `pref()` can be used on both sides of assignment:
 ```overpy
-pref(Preference.DREAM_MODE) = true
-pref(Preference.THIRD_PERSON_OFFSET) = pref(Preference.THIRD_PERSON_OFFSET) * -1
+s(Setting.DREAM_MODE) = true
+s(Setting.THIRD_PERSON_OFFSET) = s(Setting.THIRD_PERSON_OFFSET) * -1
 eventPlayer.isInDreamMode = true  # dream mode state uses a dedicated playervar
 ```
 
@@ -233,9 +233,9 @@ eventPlayer.isInDreamMode = true  # dream mode state uses a dedicated playervar
 
 Key enums used throughout:
 
-- **`Preference`** — indices into `eventPlayer.preferences[]` array (PLAYER_MODE, THIRD_PERSON, BASE_SIZE, etc.)
+- **`Preference`** — indices into `eventPlayer.settings[]` array (PLAYER_MODE, THIRD_PERSON, BASE_SIZE, etc.)
 - **`ProgHUD`** — indices for `eventPlayer.progress_hud[]` (TEXT, COLOR)
-- **`PreferencesHUD`** — indices for preferences display HUD
+- **`SettingsHUD`** — indices for preferences display HUD
 - **`OnScreenHUD`** — indices for on-screen HUD elements
 - **`InWorldHUD`** — indices for in-world HUD elements
 - **`ExtendedColor`** — extended color palette including RAINBOW
@@ -285,7 +285,7 @@ Commonly used macros in `script/macros.opy` for effects and sounds:
 ### Player State
 
 Players have several important state variables:
-- `eventPlayer.preferences[]` — array of all preference values (use `pref()` macro)
+- `eventPlayer.settings[]` — array of all preference values (use `pref()` macro)
 - `eventPlayer.base_vector` — position of the player's base (null if no base)
 - `eventPlayer.active_base_owner` — whose base the player is currently activated in
 - `eventPlayer.current_base_owner` — whose base the player is currently standing in
@@ -313,7 +313,7 @@ wait()
 # 3. Set actual camera position with transition
 eventPlayer.startCamera(cameraPos, lookAt, transitionSpeed)
 # 4. Optionally upgrade to updateEveryFrame for smooth tracking
-if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
+if not optimize and not s(Setting.THIRD_PERSON_SMOOTHING):
     wait(0.2)
     eventPlayer.startCamera(updateEveryFrame(cameraPos), updateEveryFrame(lookAt), 0)
 ```
@@ -322,7 +322,7 @@ if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
 
 ```overpy
 eventPlayer.progress_hud[ProgHUD.TEXT] = "Doing something..."
-eventPlayer.progress_hud[ProgHUD.COLOR] = pref(Preference.BASE_COLOR)
+eventPlayer.progress_hud[ProgHUD.COLOR] = s(Setting.BASE_COLOR)
 chaseProgress(duration, cancelCondition)
 if eventPlayer.progress == 100:
     # Success action

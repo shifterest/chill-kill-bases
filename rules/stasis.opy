@@ -7,12 +7,12 @@ rule "Stasis":
 
 rule "— Enter stasis":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
-    @Condition eventPlayer.preferences[Preference.STASIS]
+    @Condition eventPlayer.settings[Setting.PLAYER_MODE]
+    @Condition eventPlayer.settings[Setting.STASIS]
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
     @Condition eventPlayer.uiState != UIState.MODERATING
-    @Condition eventPlayer.uiState != UIState.VIEWING_PREFERENCES
+    @Condition eventPlayer.uiState != UIState.IN_ORB
 
     if eventPlayer.isInStasis:
         ExitStasis()
@@ -26,8 +26,8 @@ def ExitStasis():
     @Name "— Exit stasis"
 
     eventPlayer.isInStasis = false
-    if not eventPlayer.isInModeratorStasis:
-        switch eventPlayer.preferences[Preference.STASIS_MODE]:
+    if not eventPlayer.isInModStasis:
+        switch eventPlayer.settings[Setting.STASIS_MODE]:
             case Stasis.KNOCKED_DOWN:
                 eventPlayer.clearStatusEffect(Status.KNOCKED_DOWN)
                 break
@@ -45,10 +45,10 @@ def ExitStasis():
 
 rule "— Enter / remain in stasis":
     @Event eachPlayer
-    @Condition eventPlayer.isInModeratorStasis or eventPlayer.isInStasis
+    @Condition eventPlayer.isInModStasis or eventPlayer.isInStasis
 
     do:
-        switch eventPlayer.preferences[Preference.STASIS_MODE]:
+        switch eventPlayer.settings[Setting.STASIS_MODE]:
             case Stasis.KNOCKED_DOWN:
                 if not eventPlayer.hasStatusEffect(Status.KNOCKED_DOWN):
                     if eventPlayer.hasStatusEffect(Status.PHASED_OUT):

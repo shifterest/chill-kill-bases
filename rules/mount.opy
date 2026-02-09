@@ -7,7 +7,7 @@ rule "Mount":
 
 rule "— Mount to player":
     @Event eachPlayer
-    @Condition eventPlayer.preferences[Preference.PLAYER_MODE]
+    @Condition eventPlayer.settings[Setting.PLAYER_MODE]
     @Condition not eventPlayer.mount
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition not eventPlayer.isHoldingButton(Button.ABILITY_1)
@@ -15,7 +15,7 @@ rule "— Mount to player":
     @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL).hasSpawned()
     @Condition not eventPlayer.getRealPlayerClosestToReticle(Team.ALL).rider
     @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL) != eventPlayer.rider
-    @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL).preferences[Preference.ALLOW_MOUNTING]
+    @Condition eventPlayer.getRealPlayerClosestToReticle(Team.ALL).settings[Setting.ALLOW_MOUNTING]
     @Condition isInMountingRange(eventPlayer)
 
     eventPlayer.mount = eventPlayer.getRealPlayerClosestToReticle(Team.ALL)
@@ -39,7 +39,7 @@ def UpdateRider():
     @Name "— Update mounted player"
 
     if eventPlayer.rider:
-        switch eventPlayer.preferences[Preference.MOUNTING_MODE]:
+        switch eventPlayer.settings[Setting.MOUNTING_MODE]:
             case MountingMode.STACK:
                 eventPlayer.rider.attachTo(eventPlayer, vect(0, distance(eventPlayer.rider.getPosition(), eventPlayer.rider.getEyePosition()), 0))
                 break
@@ -47,16 +47,16 @@ def UpdateRider():
                 eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 0))
                 break
             case MountingMode.FRONT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
+                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, 1.5 * (eventPlayer.settings[Setting.SIZE] / 100) if eventPlayer.settings[Setting.PLAYER_MODE] else 1))
                 break
             case MountingMode.BACK:
-                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, -1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1))
+                eventPlayer.rider.attachTo(eventPlayer, vect(0, 0, -1.5 * (eventPlayer.settings[Setting.SIZE] / 100) if eventPlayer.settings[Setting.PLAYER_MODE] else 1))
                 break
             case MountingMode.LEFT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
+                eventPlayer.rider.attachTo(eventPlayer, vect(1.5 * (eventPlayer.settings[Setting.SIZE] / 100) if eventPlayer.settings[Setting.PLAYER_MODE] else 1, 0, 0))
                 break
             case MountingMode.RIGHT:
-                eventPlayer.rider.attachTo(eventPlayer, vect(-1.5 * (eventPlayer.preferences[Preference.SIZE] / 100) if eventPlayer.preferences[Preference.PLAYER_MODE] else 1, 0, 0))
+                eventPlayer.rider.attachTo(eventPlayer, vect(-1.5 * (eventPlayer.settings[Setting.SIZE] / 100) if eventPlayer.settings[Setting.PLAYER_MODE] else 1, 0, 0))
                 break
 
 
@@ -83,7 +83,7 @@ rule "— Eject from mount on kill mode / mount disconnect":
     @Event eachPlayer
     @Condition eventPlayer.mount
     @Condition (
-        not eventPlayer.preferences[Preference.PLAYER_MODE]
+        not eventPlayer.settings[Setting.PLAYER_MODE]
         or not eventPlayer.mount in getAllPlayers()
     )
 
@@ -105,7 +105,7 @@ def EjectRider():
     iconMessage(eventPlayer, iconString(Icon.CHECKMARK), "ejected {}".format(eventPlayer.rider))
     wait(0.1)
     eventPlayer.rider.detach()
-    if eventPlayer.preferences[Preference.ALLOW_MOUNTING]:
+    if eventPlayer.settings[Setting.ALLOW_MOUNTING]:
         eventPlayer.rider.applyImpulse(
             eventPlayer.getFacingDirection(),
             25,

@@ -48,6 +48,7 @@ rule "— Toggle moderator mode":
     eventPlayer.focused_player = null
     async(UpdateCamera, AsyncBehavior.RESTART)
     UpdateAbilities()
+    UpdateHUD()
 
 
 rule "— Switch player on leave":
@@ -94,15 +95,15 @@ rule "— Apply / remove stasis from player":
         or not eventPlayer.focused_player.hasSpawned()
     ):
         DebuffImpactSoundPlayerFocus()
-        if eventPlayer.focused_player.isInStasis or eventPlayer.focused_player.isInModeratorStasis:
+        if eventPlayer.focused_player.isInStasis or eventPlayer.focused_player.isInModStasis:
             iconMessage(eventPlayer, iconString(Icon.WARNING), f"you can't remove stasis from {eventPlayer.focused_player}")
         else:
             iconMessage(eventPlayer, iconString(Icon.WARNING), f"you can't apply stasis to {eventPlayer.focused_player}")
     else:
-        if eventPlayer.focused_player.isInModeratorStasis:
-            eventPlayer.focused_player.isInModeratorStasis = false
+        if eventPlayer.focused_player.isInModStasis:
+            eventPlayer.focused_player.isInModStasis = false
             if not eventPlayer.focused_player.isInStasis:
-                switch eventPlayer.focused_player.preferences[Preference.STASIS_MODE]:
+                switch eventPlayer.focused_player.settings[Setting.STASIS_MODE]:
                     case Stasis.KNOCKED_DOWN:
                         eventPlayer.focused_player.clearStatusEffect(Status.KNOCKED_DOWN)
                         break
@@ -120,7 +121,7 @@ rule "— Apply / remove stasis from player":
             iconMessage(eventPlayer, iconString(Icon.CHECKMARK), f"removed stasis from {eventPlayer.focused_player}")
             BuffImpactSound()
         else:
-            eventPlayer.focused_player.isInModeratorStasis = true
+            eventPlayer.focused_player.isInModStasis = true
             if eventPlayer.focused_player != eventPlayer:
                 iconMessage(eventPlayer.focused_player, abilityIconString(Hero.ANA, Button.ABILITY_1), "stasis applied by moderator")
             iconMessage(eventPlayer, abilityIconString(Hero.ANA, Button.ABILITY_1), f"applied stasis to {eventPlayer.focused_player}")
@@ -148,12 +149,12 @@ rule "— Kill / resurrect player":
                 iconMessage(eventPlayer.focused_player, iconString(Icon.SKULL), "resurrected by moderator")
             iconMessage(eventPlayer, iconString(Icon.SKULL), f"{eventPlayer.focused_player} resurrected")
         else:
-            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
+            if eventPlayer.focused_player.settings[Setting.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(100)
             if eventPlayer.focused_player.hasStatusEffect(Status.PHASED_OUT):
                 eventPlayer.focused_player.clearStatusEffect(Status.PHASED_OUT)
             kill(eventPlayer.focused_player, null)
-            if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE] == PlayerMode.ZEN:
+            if eventPlayer.focused_player.settings[Setting.PLAYER_MODE] == PlayerMode.ZEN:
                 eventPlayer.focused_player.setDamageReceived(0)
             DebuffImpactSoundBothFocus()
             if eventPlayer.focused_player != eventPlayer:
@@ -214,7 +215,7 @@ rule "— Teleport player to you":
         iconMessage(eventPlayer, iconString(Icon.WARNING), f"you can't teleport {eventPlayer.focused_player} to you")
     else:
         eventPlayer.progress_hud[ProgHUD.TEXT] = f"teleporting {heroIcon(eventPlayer.focused_player.getCurrentHero())} {eventPlayer.focused_player} to you..."
-        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.focused_player.settings[Setting.OUTLINE_COLOR]
         chaseProgress(
             0.6,
             not eventPlayer.focused_player.hasSpawned()
@@ -242,7 +243,7 @@ rule "— Teleport to player":
         iconMessage(eventPlayer, iconString(Icon.WARNING), f"you can't teleport to {eventPlayer.focused_player}")
     else:
         eventPlayer.progress_hud[ProgHUD.TEXT] = f"teleporting to {heroIcon(eventPlayer.focused_player.getCurrentHero())} {eventPlayer.focused_player}..."
-        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.focused_player.preferences[Preference.OUTLINE_COLOR]
+        eventPlayer.progress_hud[ProgHUD.COLOR] = eventPlayer.focused_player.settings[Setting.OUTLINE_COLOR]
         chaseProgress(
             0.6,
             not eventPlayer.focused_player.hasSpawned()

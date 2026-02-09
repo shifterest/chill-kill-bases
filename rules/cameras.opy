@@ -7,8 +7,8 @@ rule "Cameras":
 
 rule "— ADS in third-person":
     @Event eachPlayer
-    @Condition not optimize
-    @Condition pref(Preference.THIRD_PERSON)
+    @Condition not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD]
+    @Condition s(Setting.THIRD_PERSON)
     @Condition (
         eventPlayer.getCurrentHero() == Hero.ANA
         or eventPlayer.getCurrentHero() == Hero.ASHE
@@ -33,8 +33,8 @@ rule "— ADS in third-person":
 
 rule "— Ultimate in third-person":
     @Event eachPlayer
-    @Condition not optimize
-    @Condition pref(Preference.THIRD_PERSON)
+    @Condition not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD]
+    @Condition s(Setting.THIRD_PERSON)
     @Condition (
         eventPlayer.getCurrentHero() == Hero.BASTION
         or eventPlayer.getCurrentHero() == Hero.JUNKRAT
@@ -57,14 +57,31 @@ rule "— Ultimate in third-person":
 
 rule "— Switch shoulder":
     @Event eachPlayer
-    @Condition pref(Preference.THIRD_PERSON) == ThirdPersonCamera.REAR
-    @Condition pref(Preference.THIRD_PERSON_OFFSET) != 0
+    @Condition s(Setting.THIRD_PERSON) == ThirdPersonCamera.REAR
+    @Condition s(Setting.THIRD_PERSON_OFFSET) != 0
     @Condition eventPlayer.uiState == UIState.NORMAL
     @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition eventPlayer.isHoldingButton(Button.MELEE)
 
-    pref(Preference.THIRD_PERSON_OFFSET) = pref(Preference.THIRD_PERSON_OFFSET) * -1
+    s(Setting.THIRD_PERSON_OFFSET) = s(Setting.THIRD_PERSON_OFFSET) * -1
     async(UpdateCamera, AsyncBehavior.RESTART)
+
+
+def SnapCamera():
+    @Name "— Snap camera"
+
+    eventPlayer.startCamera(
+        eye(),
+        raycast(
+            eye(),
+            eye() + face() * 100,
+            null,
+            eventPlayer,
+            false
+        ).getHitPosition(),
+        1
+    )
+    wait()
 
 
 def UpdateCamera():
@@ -75,16 +92,16 @@ def UpdateCamera():
     if eventPlayer.uiState == UIState.BASE_CREATION:
         BaseCreationCamera()
     elif eventPlayer.active_base_owner == eventPlayer:
-        switch pref(Preference.THIRD_PERSON):
+        switch s(Setting.THIRD_PERSON):
             default:
             case ThirdPersonCamera.REAR:
                 RearCamera()
                 break
             case ThirdPersonCamera.OFF:
-                StopCamera()
+                ResetCamera()
                 break
     else:
-        switch pref(Preference.THIRD_PERSON):
+        switch s(Setting.THIRD_PERSON):
             default:
             case ThirdPersonCamera.REAR:
                 RearCamera()
@@ -99,7 +116,7 @@ def UpdateCamera():
                 FrontCamera()
                 break
             case ThirdPersonCamera.OFF:
-                StopCamera()
+                ResetCamera()
                 break
 
     async(UpdateAura, AsyncBehavior.RESTART)
@@ -109,12 +126,12 @@ def BaseCreationCamera():
     @Name "— Enable base creation camera"
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
-    snapCamera()
+    SnapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
             eye() + (
-                Vector.UP + face() * pref(Preference.BASE_SIZE) * -1.5
+                Vector.UP + face() * s(Setting.BASE_SIZE) * -1.5
             ),
             null,
             eventPlayer,
@@ -129,14 +146,14 @@ def BaseCreationCamera():
         ).getHitPosition(),
         30
     )
-    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
+    if not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] and not s(Setting.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
                 raycast(
                     eye(),
                     eye() + (
-                        Vector.UP + face() * pref(Preference.BASE_SIZE) * -1.5
+                        Vector.UP + face() * s(Setting.BASE_SIZE) * -1.5
                     ),
                     null,
                     eventPlayer,
@@ -156,31 +173,41 @@ def BaseCreationCamera():
         )
 
 
+def MenuCamera():
+    @Name "— Enable menu camera"
+
+    SnapCamera()
+    eventPlayer.startCamera(
+        eventPlayer.getEyePosition(),
+        eventPlayer.getEyePosition() + eventPlayer.last_transform[1],
+        0
+    )
+
 def RearCamera():
     @Name "— Enable rear camera"
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
-    snapCamera()
+    SnapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
             eye() + (
                 Vector.UP * (
                     (
-                        pref(Preference.SIZE)
-                        if pref(Preference.PLAYER_MODE)
+                        s(Setting.SIZE)
+                        if s(Setting.PLAYER_MODE)
                         else 100
                     ) / 100
                 ) + face()
                 * (
                     (
-                        pref(Preference.SIZE)
-                        if pref(Preference.PLAYER_MODE)
+                        s(Setting.SIZE)
+                        if s(Setting.PLAYER_MODE)
                         else 100
                     ) / -40
-                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                 + crossProduct(Vector.UP, face())
-                * pref(Preference.THIRD_PERSON_OFFSET)
+                * s(Setting.THIRD_PERSON_OFFSET)
             ),
             null,
             eventPlayer,
@@ -195,7 +222,7 @@ def RearCamera():
         ).getHitPosition(),
         30
     )
-    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
+    if not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] and not s(Setting.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
@@ -204,20 +231,20 @@ def RearCamera():
                     eye() + (
                         Vector.UP * (
                             (
-                                pref(Preference.SIZE)
-                                if pref(Preference.PLAYER_MODE)
+                                s(Setting.SIZE)
+                                if s(Setting.PLAYER_MODE)
                                 else 100
                             ) / 100
                         ) + face()
                         * (
                             (
-                                pref(Preference.SIZE)
-                                if pref(Preference.PLAYER_MODE)
+                                s(Setting.SIZE)
+                                if s(Setting.PLAYER_MODE)
                                 else 100
                             ) / -40
-                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                        ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                         + crossProduct(Vector.UP, face())
-                        * pref(Preference.THIRD_PERSON_OFFSET)
+                        * s(Setting.THIRD_PERSON_OFFSET)
                     ),
                     null,
                     eventPlayer,
@@ -240,7 +267,7 @@ def RearSpectatorCamera():
     @Name "— Enable rear spectator camera"
 
     # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
-    snapCamera()
+    SnapCamera()
     eventPlayer.startCamera(
         raycast(
             eventPlayer.focused_player.getEyePosition(),
@@ -248,20 +275,20 @@ def RearSpectatorCamera():
             + (
                 Vector.UP * (
                     (
-                        eventPlayer.focused_player.preferences[Preference.SIZE]
-                        if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
+                        eventPlayer.focused_player.settings[Setting.SIZE]
+                        if eventPlayer.focused_player.settings[Setting.PLAYER_MODE]
                         else 100
                     ) / 100
                 ) + eventPlayer.focused_player.getFacingDirection()
                 * (
                     (
-                        eventPlayer.focused_player.preferences[Preference.SIZE]
-                        if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
+                        eventPlayer.focused_player.settings[Setting.SIZE]
+                        if eventPlayer.focused_player.settings[Setting.PLAYER_MODE]
                         else 100
                     ) / -40
-                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                 + crossProduct(Vector.UP, eventPlayer.focused_player.getFacingDirection())
-                * eventPlayer.focused_player.preferences[Preference.THIRD_PERSON_OFFSET]
+                * eventPlayer.focused_player.settings[Setting.THIRD_PERSON_OFFSET]
             ),
             null,
             eventPlayer.focused_player,
@@ -276,7 +303,7 @@ def RearSpectatorCamera():
         ).getHitPosition(),
         30
     )
-    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
+    if not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] and not s(Setting.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
@@ -285,20 +312,20 @@ def RearSpectatorCamera():
                     eventPlayer.focused_player.getEyePosition() + (
                         Vector.UP * (
                             (
-                                eventPlayer.focused_player.preferences[Preference.SIZE]
-                                if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
+                                eventPlayer.focused_player.settings[Setting.SIZE]
+                                if eventPlayer.focused_player.settings[Setting.PLAYER_MODE]
                                 else 100
                             ) / 100
                         ) + eventPlayer.focused_player.getFacingDirection()
                         * (
                             (
-                                eventPlayer.focused_player.preferences[Preference.SIZE]
-                                if eventPlayer.focused_player.preferences[Preference.PLAYER_MODE]
+                                eventPlayer.focused_player.settings[Setting.SIZE]
+                                if eventPlayer.focused_player.settings[Setting.PLAYER_MODE]
                                 else 100
                             ) / -40
-                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                        ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                         + crossProduct(Vector.UP, eventPlayer.focused_player.getFacingDirection())
-                        * eventPlayer.focused_player.preferences[Preference.THIRD_PERSON_OFFSET]
+                        * eventPlayer.focused_player.settings[Setting.THIRD_PERSON_OFFSET]
                     ),
                     null,
                     eventPlayer.focused_player,
@@ -321,18 +348,18 @@ def RearSpectatorCamera():
 def TopDownCamera():
     @Name "— Enable top-down camera"
 
-    snapCamera()
+    SnapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
             eye() + (
                 Vector.UP * (
                     (
-                        pref(Preference.SIZE)
-                        if pref(Preference.PLAYER_MODE)
+                        s(Setting.SIZE)
+                        if s(Setting.PLAYER_MODE)
                         else 100
                     ) / 15
-                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                 - vect(face().x, 0, face().z)
             ),
             null,
@@ -342,7 +369,7 @@ def TopDownCamera():
         eye(),
         30
     )
-    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
+    if not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] and not s(Setting.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
@@ -351,11 +378,11 @@ def TopDownCamera():
                     eye() + (
                         Vector.UP * (
                             (
-                                pref(Preference.SIZE)
-                                if pref(Preference.PLAYER_MODE)
+                                s(Setting.SIZE)
+                                if s(Setting.PLAYER_MODE)
                                 else 100
                             ) / 15
-                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                        ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                         - vect(face().x, 0, face().z)
                     ),
                     null,
@@ -371,18 +398,18 @@ def TopDownCamera():
 def StaticTopDownCamera():
     @Name "— Enable static top-down camera"
 
-    snapCamera()
+    SnapCamera()
     eventPlayer.startCamera(
         raycast(
             eye(),
             eye() + (
                 Vector.UP * (
                     (
-                        pref(Preference.SIZE)
-                        if pref(Preference.PLAYER_MODE)
+                        s(Setting.SIZE)
+                        if s(Setting.PLAYER_MODE)
                         else 100
                     ) / 15
-                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                 + Vector.FORWARD
             ),
             null,
@@ -392,7 +419,7 @@ def StaticTopDownCamera():
         eye(),
         30
     )
-    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
+    if not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] and not s(Setting.THIRD_PERSON_SMOOTHING):
         wait(0.2)
         eventPlayer.startCamera(
             updateEveryFrame(
@@ -401,12 +428,79 @@ def StaticTopDownCamera():
                     eye() + (
                         Vector.UP * (
                             (
-                                pref(Preference.SIZE)
-                                if pref(Preference.PLAYER_MODE)
+                                s(Setting.SIZE)
+                                if s(Setting.PLAYER_MODE)
                                 else 100
                             ) / 15
-                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
+                        ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
                         + Vector.FORWARD
+                    ),
+                    null,
+                    eventPlayer,
+                    false
+                ).getHitPosition()
+            ),
+            updateEveryFrame(eye()),
+            0
+        )
+
+
+def FrontCamera():
+    @Name "— Enable front camera"
+
+    # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
+    SnapCamera()
+    eventPlayer.startCamera(
+        raycast(
+            eye(),
+            eye() + (
+                Vector.UP * (
+                    (
+                        s(Setting.SIZE)
+                        if s(Setting.PLAYER_MODE)
+                        else 100
+                    ) / 100
+                ) + face()
+                * (
+                    (
+                        s(Setting.SIZE)
+                        if s(Setting.PLAYER_MODE)
+                        else 100
+                    ) / 40
+                ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
+                + crossProduct(Vector.UP, face())
+                * s(Setting.THIRD_PERSON_OFFSET)
+            ),
+            null,
+            eventPlayer,
+            false
+        ).getHitPosition(),
+        eye(),
+        30
+    )
+    if not workshop_settings[WorkshopSettings.REDUCE_SERVER_LOAD] and not s(Setting.THIRD_PERSON_SMOOTHING):
+        wait(0.2)
+        eventPlayer.startCamera(
+            updateEveryFrame(
+                raycast(
+                    eye(),
+                    eye() + (
+                        Vector.UP * (
+                            (
+                                s(Setting.SIZE)
+                                if s(Setting.PLAYER_MODE)
+                                else 100
+                            ) / 100
+                        ) + face()
+                        * (
+                            (
+                                s(Setting.SIZE)
+                                if s(Setting.PLAYER_MODE)
+                                else 100
+                            ) / 40
+                        ) * (s(Setting.THIRD_PERSON_DISTANCE) / 100)
+                        + crossProduct(Vector.UP, face())
+                        * s(Setting.THIRD_PERSON_OFFSET)
                     ),
                     null,
                     eventPlayer,
@@ -421,13 +515,13 @@ def StaticTopDownCamera():
 def DreamCamera():
     @Name "— Enable dream camera"
 
-    snapCamera()
-    if pref(Preference.CLIP_CAMERA):
+    SnapCamera()
+    if s(Setting.CLIP_CAMERA):
         eventPlayer.startCamera(
             raycast(
                 evalOnce(eventPlayer.focused_player).getEyePosition(),
                 evalOnce(eventPlayer.focused_player).getEyePosition() + (
-                    Vector.UP * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / 100) + evalOnce(eventPlayer.focused_player).getFacingDirection() * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / -20)
+                    Vector.UP * (evalOnce(eventPlayer.focused_player).settings[Setting.SIZE] / 100) + evalOnce(eventPlayer.focused_player).getFacingDirection() * (evalOnce(eventPlayer.focused_player).settings[Setting.SIZE] / -20)
                 ),
                 null,
                 eventPlayer,
@@ -439,82 +533,15 @@ def DreamCamera():
     else:
         eventPlayer.startCamera(
             evalOnce(eventPlayer.focused_player).getEyePosition() + (
-                Vector.UP * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / 100) + evalOnce(eventPlayer.focused_player).getFacingDirection() * (evalOnce(eventPlayer.focused_player).preferences[Preference.SIZE] / -20)
+                Vector.UP * (evalOnce(eventPlayer.focused_player).settings[Setting.SIZE] / 100) + evalOnce(eventPlayer.focused_player).getFacingDirection() * (evalOnce(eventPlayer.focused_player).settings[Setting.SIZE] / -20)
             ),
             evalOnce(eventPlayer.focused_player).getEyePosition(),
             2
         )
 
 
-def FrontCamera():
-    @Name "— Enable front camera"
-
-    # based on "Waitedboat4's Thirdperson Mod" (code 3F79Z)
-    snapCamera()
-    eventPlayer.startCamera(
-        raycast(
-            eye(),
-            eye() + (
-                Vector.UP * (
-                    (
-                        pref(Preference.SIZE)
-                        if pref(Preference.PLAYER_MODE)
-                        else 100
-                    ) / 100
-                ) + face()
-                * (
-                    (
-                        pref(Preference.SIZE)
-                        if pref(Preference.PLAYER_MODE)
-                        else 100
-                    ) / 40
-                ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
-                + crossProduct(Vector.UP, face())
-                * pref(Preference.THIRD_PERSON_OFFSET)
-            ),
-            null,
-            eventPlayer,
-            false
-        ).getHitPosition(),
-        eye(),
-        30
-    )
-    if not optimize and not pref(Preference.THIRD_PERSON_SMOOTHING):
-        wait(0.2)
-        eventPlayer.startCamera(
-            updateEveryFrame(
-                raycast(
-                    eye(),
-                    eye() + (
-                        Vector.UP * (
-                            (
-                                pref(Preference.SIZE)
-                                if pref(Preference.PLAYER_MODE)
-                                else 100
-                            ) / 100
-                        ) + face()
-                        * (
-                            (
-                                pref(Preference.SIZE)
-                                if pref(Preference.PLAYER_MODE)
-                                else 100
-                            ) / 40
-                        ) * (pref(Preference.THIRD_PERSON_DISTANCE) / 100)
-                        + crossProduct(Vector.UP, face())
-                        * pref(Preference.THIRD_PERSON_OFFSET)
-                    ),
-                    null,
-                    eventPlayer,
-                    false
-                ).getHitPosition()
-            ),
-            updateEveryFrame(eye()),
-            0
-        )
-
-
-def StopCamera():
-    @Name "— Stop camera"
+def ResetCamera():
+    @Name "— Reset camera"
 
     eventPlayer.startCamera(
         eye(), 
